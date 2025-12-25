@@ -1,0 +1,24 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+
+class AdditionalSeeders extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        // Call individual seeders here
+        $this->call([
+            MahasiswaSeeder::class,
+            TahunAkademikSeeder::class,
+            TarifSeeder::class,
+            BeasiswaSeeder::class,
+            KeuanganDummySeeder::class,
+            // Add more seeders as needed
+        ]);
+    }
+}
