@@ -178,6 +178,107 @@
     </div>
 </div>
 
+<!-- Rekap Kehadiran & Dosen Wali -->
+<div class="row g-4 mb-4">
+    <!-- Rekap Kehadiran -->
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clipboard-data me-2"></i>Rekap Kehadiran Semester Ini</span>
+                <a href="{{ route('mahasiswa.kehadiran.index') }}" class="btn btn-sm btn-outline-primary">Detail</a>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col">
+                        <div class="p-3 rounded bg-success bg-opacity-10">
+                            <h3 class="text-success mb-0">{{ $rekapKehadiran['hadir'] ?? 0 }}</h3>
+                            <small class="text-muted">Hadir</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 rounded bg-info bg-opacity-10">
+                            <h3 class="text-info mb-0">{{ $rekapKehadiran['izin'] ?? 0 }}</h3>
+                            <small class="text-muted">Izin</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 rounded bg-warning bg-opacity-10">
+                            <h3 class="text-warning mb-0">{{ $rekapKehadiran['sakit'] ?? 0 }}</h3>
+                            <small class="text-muted">Sakit</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 rounded bg-danger bg-opacity-10">
+                            <h3 class="text-danger mb-0">{{ $rekapKehadiran['alpha'] ?? 0 }}</h3>
+                            <small class="text-muted">Alpha</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 rounded bg-secondary bg-opacity-10">
+                            <h3 class="text-secondary mb-0">{{ $rekapKehadiran['total'] ?? 0 }}</h3>
+                            <small class="text-muted">Total</small>
+                        </div>
+                    </div>
+                </div>
+                @if(($persentaseKehadiran ?? 100) < 80)
+                <div class="alert alert-warning mt-3 mb-0">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Perhatian!</strong> Kehadiran Anda kurang dari 80%. Pastikan untuk mengikuti perkuliahan agar tidak terkena sanksi akademik.
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dosen Wali -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-person-badge me-2"></i>Dosen Wali
+            </div>
+            <div class="card-body">
+                @if($mahasiswa->dosenWali)
+                <div class="text-center mb-3">
+                    @if($mahasiswa->dosenWali->foto)
+                    <img src="{{ Storage::url($mahasiswa->dosenWali->foto) }}" alt="Foto" class="rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;">
+                    @else
+                    <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px;">
+                        <span class="text-white fs-3">{{ strtoupper(substr($mahasiswa->dosenWali->nama, 0, 1)) }}</span>
+                    </div>
+                    @endif
+                    <h6 class="mb-1">{{ $mahasiswa->dosenWali->nama }}</h6>
+                    <small class="text-muted">{{ $mahasiswa->dosenWali->nidn ?? '-' }}</small>
+                </div>
+                @if($mahasiswa->dosenWali->email)
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-envelope text-primary me-2"></i>
+                    <small>{{ $mahasiswa->dosenWali->email }}</small>
+                </div>
+                @endif
+                @if($mahasiswa->dosenWali->no_hp)
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-phone text-primary me-2"></i>
+                    <small>{{ $mahasiswa->dosenWali->no_hp }}</small>
+                </div>
+                @endif
+                @else
+                <div class="text-center py-4">
+                    <i class="bi bi-person-x text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mb-0 mt-2">Dosen wali belum ditentukan</p>
+                </div>
+                @endif
+            </div>
+            @if($mahasiswa->dosenWali)
+            <div class="card-footer bg-light">
+                <a href="{{ route('bimbingan-akademik.index') }}" class="text-decoration-none">
+                    <small>Bimbingan Akademik <i class="bi bi-arrow-right"></i></small>
+                </a>
+            </div>
+            @endif
+        </div>
+    </div>
+</div>
+
 <!-- Stats Keuangan -->
 <div class="row g-4 mb-4">
     <div class="col-sm-6 col-xl-3">
