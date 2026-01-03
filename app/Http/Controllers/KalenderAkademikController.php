@@ -18,7 +18,35 @@ class KalenderAkademikController extends Controller
             ->orderBy('semester', 'desc')
             ->get();
         
-        return view('kalender.index', compact('tahunAkademiks'));
+        // Get upcoming events (next 30 days)
+        $upcomingEvents = KalenderAkademik::active()
+            ->where('tanggal_mulai', '>=', now())
+            ->where('tanggal_mulai', '<=', now()->addDays(30))
+            ->orderBy('tanggal_mulai')
+            ->limit(10)
+            ->get();
+        
+        // Get ongoing events
+        $ongoingEvents = KalenderAkademik::active()
+            ->where('tanggal_mulai', '<=', now())
+            ->where(function($q) {
+                $q->whereNull('tanggal_selesai')
+                  ->orWhere('tanggal_selesai', '>=', now());
+            })
+            ->orderBy('tanggal_mulai')
+            ->get();
+        
+        // Get today's events
+        $todayEvents = KalenderAkademik::active()
+            ->whereDate('tanggal_mulai', '<=', now())
+            ->where(function($q) {
+                $q->whereNull('tanggal_selesai')
+                  ->orWhereDate('tanggal_selesai', '>=', now());
+            })
+            ->orderBy('tanggal_mulai')
+            ->get();
+        
+        return view('kalender.index', compact('tahunAkademiks', 'upcomingEvents', 'ongoingEvents', 'todayEvents'));
     }
 
     /**

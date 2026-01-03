@@ -19,11 +19,14 @@ class Krs extends Model
         'status',
         'tanggal_pengajuan',
         'tanggal_persetujuan',
+        'is_konversi',
+        'detail_konversi_kegiatan_id',
     ];
 
     protected $casts = [
         'tanggal_pengajuan' => 'datetime',
         'tanggal_persetujuan' => 'datetime',
+        'is_konversi' => 'boolean',
     ];
 
     public function mahasiswa()
@@ -49,6 +52,11 @@ class Krs extends Model
     public function absensi()
     {
         return $this->hasMany(Absensi::class);
+    }
+
+    public function detailKonversiKegiatan()
+    {
+        return $this->belongsTo(DetailKonversiKegiatan::class);
     }
 
     // Hitung persentase kehadiran

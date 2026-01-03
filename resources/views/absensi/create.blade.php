@@ -57,8 +57,9 @@
 
     <div class="col-lg-8">
         <div class="card">
-            <div class="card-header">
-                <i class="bi bi-clipboard-check me-2"></i>Form Absensi Pertemuan ke-{{ $pertemuan }} dari {{ $jumlahPertemuan }}
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clipboard-check me-2"></i>Form Input Absensi</span>
+                <span class="badge bg-info">{{ count($availablePertemuan) }} pertemuan tersedia dari {{ $jumlahPertemuan }}</span>
             </div>
             <div class="card-body">
                 @if(session('error'))
@@ -76,14 +77,22 @@
                 @else
                 <form action="{{ route('absensi.store', $jadwalKuliah) }}" method="POST">
                     @csrf
-                    <input type="hidden" name="pertemuan" value="{{ $pertemuan }}">
-
+                    
                     <div class="row mb-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <label class="form-label">Pertemuan ke <span class="text-danger">*</span></label>
+                            <select name="pertemuan" class="form-select" required>
+                                @foreach($availablePertemuan as $p)
+                                <option value="{{ $p }}" {{ $p == $pertemuan ? 'selected' : '' }}>Pertemuan {{ $p }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Pilih nomor pertemuan yang akan diinput</small>
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label">Tanggal <span class="text-danger">*</span></label>
                             <input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Materi</label>
                             <input type="text" name="materi" class="form-control" placeholder="Topik/materi pertemuan">
                         </div>

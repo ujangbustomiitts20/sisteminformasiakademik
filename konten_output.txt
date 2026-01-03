@@ -1,0 +1,22 @@
+{
+    "nama_institusi": "Universitas Contoh Indonesia",
+    "singkatan_institusi": "UCI",
+    "tagline": "Membangun Generasi Unggul untuk Indonesia",
+    "hero_title": "Raih Masa Depanmu Bersama Kami",
+    "hero_subtitle": "Bergabunglah dengan ribuan mahasiswa yang telah mewujudkan mimpi mereka di universitas kami",
+    "tahun_berdiri": "1985",
+    "total_prodi": "45",
+    "total_mahasiswa": "15000",
+    "total_dosen": "500",
+    "meta_description": "Penerimaan Mahasiswa Baru Universitas Contoh Indonesia - Daftar sekarang dan wujudkan impianmu!",
+    "meta_keywords": "pmb, pendaftaran mahasiswa baru, universitas, kuliah",
+    "alur_step_1": "Registrasi akun di website PMB",
+    "alur_step_2": "Lengkapi formulir pendaftaran online",
+    "alur_step_3": "Upload dokumen persyaratan",
+    "alur_step_4": "Bayar biaya pendaftaran",
+    "alur_step_5": "Ikuti ujian seleksi",
+    "alur_step_6": "Cek pengumuman hasil seleksi",
+    "alur_step_7": "Daftar ulang jika dinyatakan lulus",
+    "nama_universitas": "Universitas Contoh Indonesia",
+    "singkatan": "UCI"
+}

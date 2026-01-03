@@ -13,16 +13,22 @@ class JadwalUjian extends Model
     protected $table = 'jadwal_ujian';
 
     protected $fillable = [
+        'periode_ujian_id',
         'tahun_akademik_id',
         'mata_kuliah_id',
         'jadwal_kuliah_id',
         'dosen_id',
+        'ruangan_id',
         'jenis_ujian',
         'tanggal',
         'jam_mulai',
         'jam_selesai',
+        'waktu_mulai',
+        'waktu_selesai',
         'ruangan',
         'durasi_menit',
+        'pengawas_1',
+        'pengawas_2',
         'keterangan',
         'status',
     ];
@@ -38,6 +44,11 @@ class JadwalUjian extends Model
         return $this->belongsTo(TahunAkademik::class);
     }
 
+    public function periodeUjian(): BelongsTo
+    {
+        return $this->belongsTo(PeriodeUjian::class);
+    }
+
     public function mataKuliah(): BelongsTo
     {
         return $this->belongsTo(MataKuliah::class);
@@ -51,6 +62,11 @@ class JadwalUjian extends Model
     public function dosen(): BelongsTo
     {
         return $this->belongsTo(Dosen::class);
+    }
+
+    public function ruangan(): BelongsTo
+    {
+        return $this->belongsTo(Ruangan::class);
     }
 
     // Accessor untuk badge jenis ujian

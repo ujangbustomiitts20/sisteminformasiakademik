@@ -48,10 +48,13 @@
                             <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
                             <option value="dosen" {{ old('role', $user->role) == 'dosen' ? 'selected' : '' }}>Dosen</option>
                             <option value="mahasiswa" {{ old('role', $user->role) == 'mahasiswa' ? 'selected' : '' }}>Mahasiswa</option>
+                            <option value="kaprodi" {{ old('role', $user->role) == 'kaprodi' ? 'selected' : '' }}>Kaprodi</option>
+                            <option value="dekan" {{ old('role', $user->role) == 'dekan' ? 'selected' : '' }}>Dekan</option>
                         </select>
                         @error('role')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                        <small class="text-muted">Catatan: Mengubah role kaprodi/dekan sebaiknya melalui menu Pejabat Akademik.</small>
                     </div>
 
                     <hr>

@@ -8,16 +8,29 @@ use App\Models\Krs;
 use App\Models\Nilai;
 use App\Models\Pembayaran;
 use App\Models\TahunAkademik;
+use App\Exports\MahasiswaExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ExportController extends Controller
 {
     /**
-     * Export Mahasiswa to CSV
+     * Export Mahasiswa to CSV or Excel
      */
     public function mahasiswa(Request $request)
     {
+        $format = $request->get('format', 'csv');
+        
+        // Export ke Excel menggunakan Maatwebsite
+        if ($format === 'excel') {
+            return Excel::download(
+                new MahasiswaExport($request), 
+                'data_mahasiswa_' . date('Y-m-d') . '.xlsx'
+            );
+        }
+        
+        // Export ke CSV (default)
         $query = Mahasiswa::with(['programStudi.fakultas', 'user']);
         
         if ($request->program_studi_id) {

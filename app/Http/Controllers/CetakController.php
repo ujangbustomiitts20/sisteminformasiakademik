@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Krs;
 use App\Models\Mahasiswa;
 use App\Models\TahunAkademik;
+use App\Models\KonfigurasiCetak;
+use App\Services\CetakService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
@@ -32,10 +34,15 @@ class CetakController extends Controller
 
         $totalSks = $krs->sum(fn($k) => $k->jadwalKuliah->mataKuliah->sks);
 
-        $pdf = Pdf::loadView('cetak.krs', compact('mahasiswa', 'tahunAkademik', 'krs', 'totalSks'));
-        $pdf->setPaper('a4', 'portrait');
-        
-        return $pdf->stream('KRS_' . $mahasiswa->nim . '_' . str_replace('/', '-', $tahunAkademik->tahun) . '.pdf');
+        // Get print configuration
+        $config = KonfigurasiCetak::getByKode('krs');
+
+        return CetakService::stream(
+            'krs',
+            'cetak.krs',
+            compact('mahasiswa', 'tahunAkademik', 'krs', 'totalSks', 'config'),
+            'KRS_' . $mahasiswa->nim . '_' . str_replace('/', '-', $tahunAkademik->tahun) . '.pdf'
+        );
     }
 
     public function cetakKhs(Request $request)
@@ -70,10 +77,15 @@ class CetakController extends Controller
         }
         $ips = $totalSks > 0 ? round($totalBobot / $totalSks, 2) : 0;
 
-        $pdf = Pdf::loadView('cetak.khs', compact('mahasiswa', 'tahunAkademik', 'krs', 'ips', 'totalSks'));
-        $pdf->setPaper('a4', 'portrait');
-        
-        return $pdf->stream('KHS_' . $mahasiswa->nim . '_' . str_replace('/', '-', $tahunAkademik->tahun) . '.pdf');
+        // Get print configuration
+        $config = KonfigurasiCetak::getByKode('khs');
+
+        return CetakService::stream(
+            'khs',
+            'cetak.khs',
+            compact('mahasiswa', 'tahunAkademik', 'krs', 'ips', 'totalSks', 'config'),
+            'KHS_' . $mahasiswa->nim . '_' . str_replace('/', '-', $tahunAkademik->tahun) . '.pdf'
+        );
     }
 
     public function cetakTranskrip(Request $request)
@@ -105,9 +117,14 @@ class CetakController extends Controller
         }
         $ipk = $totalSks > 0 ? round($totalBobot / $totalSks, 2) : 0;
 
-        $pdf = Pdf::loadView('cetak.transkrip', compact('mahasiswa', 'krs', 'ipk', 'totalSks'));
-        $pdf->setPaper('a4', 'portrait');
-        
-        return $pdf->stream('Transkrip_' . $mahasiswa->nim . '.pdf');
+        // Get print configuration
+        $config = KonfigurasiCetak::getByKode('transkrip');
+
+        return CetakService::stream(
+            'transkrip',
+            'cetak.transkrip',
+            compact('mahasiswa', 'krs', 'ipk', 'totalSks', 'config'),
+            'Transkrip_' . $mahasiswa->nim . '.pdf'
+        );
     }
 }

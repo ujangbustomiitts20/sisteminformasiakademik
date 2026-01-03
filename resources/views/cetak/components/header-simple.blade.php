@@ -1,0 +1,12 @@
+{{-- 
+    Komponen Header Simple (untuk laporan)
+    Usage: @include('cetak.components.header-simple', ['title' => 'Judul', 'subtitle' => 'Sub Judul'])
+--}}
+<div class="header-simple">
+    <h2>{{ setting('nama_institusi', 'SIAKAD') }}</h2>
+    <h3>{{ $title ?? 'Dokumen' }}</h3>
+    @if(isset($subtitle))
+        <p>{{ $subtitle }}</p>
+    @endif
+    <p>Dicetak pada: {{ now()->format('d/m/Y H:i') }}</p>
+</div>

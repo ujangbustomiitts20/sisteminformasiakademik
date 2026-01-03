@@ -37,13 +37,19 @@
 <div class="card mb-4">
     <div class="card-body">
         <div class="row align-items-center">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <h5 class="mb-1">{{ $tahunAkademikAktif->nama_lengkap ?? '-' }}</h5>
                 <p class="text-muted mb-0">Tahun Akademik Aktif</p>
             </div>
-            <div class="col-md-6 text-md-end">
+            <div class="col-md-4 text-md-center">
                 <h5 class="mb-1">{{ $totalSks ?? 0 }} SKS</h5>
                 <p class="text-muted mb-0">Total SKS Diambil</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <span class="badge bg-{{ ($modeKrs ?? 'pilihan') === 'paket' ? 'primary' : 'info' }} fs-6">
+                    <i class="bi bi-{{ ($modeKrs ?? 'pilihan') === 'paket' ? 'box-seam' : 'hand-index-thumb' }} me-1"></i>
+                    Mode: {{ ($modeKrs ?? 'pilihan') === 'paket' ? 'KRS Paket' : 'KRS Pilihan' }}
+                </span>
             </div>
         </div>
         
@@ -51,6 +57,9 @@
         <div class="alert alert-success mt-3 mb-0">
             <i class="bi bi-check-circle me-2"></i>
             Periode pengisian KRS: <strong>{{ $tahunAkademikAktif->mulai_krs->format('d M Y') }}</strong> - <strong>{{ $tahunAkademikAktif->selesai_krs->format('d M Y') }}</strong>
+            @if(($modeKrs ?? 'pilihan') === 'paket')
+            <br><small>Mode KRS Paket: Mata kuliah sudah ditentukan berdasarkan kurikulum dan semester Anda.</small>
+            @endif
         </div>
         @else
         <div class="alert alert-warning mt-3 mb-0">

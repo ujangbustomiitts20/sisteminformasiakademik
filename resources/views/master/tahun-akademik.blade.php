@@ -27,6 +27,7 @@
                                 <th width="50">No</th>
                                 <th>Tahun</th>
                                 <th>Semester</th>
+                                <th>Periode KRS</th>
                                 <th class="text-center" width="120">Status</th>
                                 <th class="text-center" width="100">Aksi</th>
                             </tr>
@@ -37,6 +38,22 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td><strong>{{ $ta->tahun }}</strong></td>
                                 <td>{{ $ta->semester }}</td>
+                                <td>
+                                    @if($ta->mulai_krs && $ta->selesai_krs)
+                                        <small>
+                                            {{ $ta->mulai_krs->format('d/m/Y') }} - {{ $ta->selesai_krs->format('d/m/Y') }}
+                                            @php
+                                                $now = now();
+                                                $isKrsOpen = $now->between($ta->mulai_krs, $ta->selesai_krs);
+                                            @endphp
+                                            @if($isKrsOpen)
+                                                <span class="badge bg-success ms-1">Buka</span>
+                                            @endif
+                                        </small>
+                                    @else
+                                        <small class="text-muted">Belum diatur</small>
+                                    @endif
+                                </td>
                                 <td class="text-center">
                                     @if($ta->is_aktif)
                                     <span class="badge bg-success">Aktif</span>
@@ -91,6 +108,20 @@
                                                         <option value="Genap" {{ $ta->semester == 'Genap' ? 'selected' : '' }}>Genap</option>
                                                     </select>
                                                 </div>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Mulai KRS</label>
+                                                            <input type="date" name="mulai_krs" class="form-control" value="{{ $ta->mulai_krs ? $ta->mulai_krs->format('Y-m-d') : '' }}">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Selesai KRS</label>
+                                                            <input type="date" name="selesai_krs" class="form-control" value="{{ $ta->selesai_krs ? $ta->selesai_krs->format('Y-m-d') : '' }}">
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <div class="mb-3">
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox" name="is_aktif" id="is_aktif{{ $ta->id }}" value="1" {{ $ta->is_aktif ? 'checked' : '' }}>
@@ -110,7 +141,7 @@
                             </div>
                             @empty
                             <tr>
-                                <td colspan="5" class="text-center py-4">
+                                <td colspan="6" class="text-center py-4">
                                     <i class="bi bi-calendar-range text-muted" style="font-size: 2rem;"></i>
                                     <p class="text-muted mb-0 mt-2">Belum ada data tahun akademik</p>
                                 </td>
@@ -147,6 +178,26 @@
                         @error('semester')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="mulai_krs" class="form-label">Mulai KRS</label>
+                                <input type="date" name="mulai_krs" id="mulai_krs" class="form-control @error('mulai_krs') is-invalid @enderror" value="{{ old('mulai_krs') }}">
+                                @error('mulai_krs')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="selesai_krs" class="form-label">Selesai KRS</label>
+                                <input type="date" name="selesai_krs" id="selesai_krs" class="form-control @error('selesai_krs') is-invalid @enderror" value="{{ old('selesai_krs') }}">
+                                @error('selesai_krs')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <div class="form-check">

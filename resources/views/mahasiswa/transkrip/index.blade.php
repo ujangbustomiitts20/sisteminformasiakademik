@@ -93,13 +93,9 @@
                     $ta = $nilaiList->first()->tahunAkademik;
                     $totalSks = 0;
                     $totalBobot = 0;
-                    foreach($nilaiList as $n) {
-                        $sks = $n->mataKuliah->sks ?? 0;
-                        $bobot = match(strtoupper($n->nilai_huruf)) {
-                            'A' => 4.0, 'A-' => 3.75, 'B+' => 3.5, 'B' => 3.0, 'B-' => 2.75,
-                            'C+' => 2.5, 'C' => 2.0, 'C-' => 1.75, 'D+' => 1.5, 'D' => 1.0,
-                            default => 0,
-                        };
+                    foreach($nilaiList as $krs) {
+                        $sks = $krs->jadwalKuliah->mataKuliah->sks ?? 0;
+                        $bobot = $krs->nilai->bobot ?? 0;
                         $totalSks += $sks;
                         $totalBobot += ($sks * $bobot);
                     }
@@ -121,24 +117,22 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($nilaiList as $nilai)
+                            @foreach($nilaiList as $krs)
                             @php
-                                $bobot = match(strtoupper($nilai->nilai_huruf)) {
-                                    'A' => 4.0, 'A-' => 3.75, 'B+' => 3.5, 'B' => 3.0, 'B-' => 2.75,
-                                    'C+' => 2.5, 'C' => 2.0, 'C-' => 1.75, 'D+' => 1.5, 'D' => 1.0,
-                                    default => 0,
-                                };
+                                $mataKuliah = $krs->jadwalKuliah->mataKuliah ?? null;
+                                $nilaiHuruf = $krs->nilai->huruf ?? '-';
+                                $nilaiBobot = $krs->nilai->bobot ?? 0;
                             @endphp
                             <tr>
-                                <td><code>{{ $nilai->mataKuliah->kode ?? '-' }}</code></td>
-                                <td>{{ $nilai->mataKuliah->nama ?? '-' }}</td>
-                                <td class="text-center">{{ $nilai->mataKuliah->sks ?? 0 }}</td>
+                                <td><code>{{ $mataKuliah->kode ?? '-' }}</code></td>
+                                <td>{{ $mataKuliah->nama ?? '-' }}</td>
+                                <td class="text-center">{{ $mataKuliah->sks ?? 0 }}</td>
                                 <td class="text-center">
-                                    <span class="badge bg-{{ in_array($nilai->nilai_huruf, ['A', 'A-', 'B+', 'B']) ? 'success' : (in_array($nilai->nilai_huruf, ['B-', 'C+', 'C']) ? 'warning' : 'danger') }}">
-                                        {{ $nilai->nilai_huruf }}
+                                    <span class="badge bg-{{ in_array($nilaiHuruf, ['A', 'A-', 'B+', 'B']) ? 'success' : (in_array($nilaiHuruf, ['B-', 'C+', 'C']) ? 'warning' : 'danger') }}">
+                                        {{ $nilaiHuruf }}
                                     </span>
                                 </td>
-                                <td class="text-center">{{ number_format($bobot, 2) }}</td>
+                                <td class="text-center">{{ number_format($nilaiBobot, 2) }}</td>
                             </tr>
                             @endforeach
                         </tbody>

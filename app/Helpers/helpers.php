@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Setting;
+use App\Models\KonfigurasiCetak;
 
 if (!function_exists('setting')) {
     /**
@@ -25,5 +26,67 @@ if (!function_exists('settings')) {
     function settings(): array
     {
         return Setting::getAll();
+    }
+}
+
+if (!function_exists('konfigurasi_cetak')) {
+    /**
+     * Get print configuration by code
+     *
+     * @param string $kode
+     * @return KonfigurasiCetak|null
+     */
+    function konfigurasi_cetak(string $kode): ?KonfigurasiCetak
+    {
+        return KonfigurasiCetak::getByKode($kode);
+    }
+}
+
+if (!function_exists('format_rupiah')) {
+    /**
+     * Format number to Indonesian Rupiah
+     *
+     * @param float|int $number
+     * @param bool $withPrefix
+     * @return string
+     */
+    function format_rupiah($number, bool $withPrefix = true): string
+    {
+        $formatted = number_format($number, 0, ',', '.');
+        return $withPrefix ? 'Rp ' . $formatted : $formatted;
+    }
+}
+
+if (!function_exists('format_tanggal')) {
+    /**
+     * Format date to Indonesian format
+     *
+     * @param mixed $date
+     * @param string $format
+     * @return string
+     */
+    function format_tanggal($date, string $format = 'd F Y'): string
+    {
+        if (!$date) return '-';
+        
+        $bulan = [
+            'January' => 'Januari',
+            'February' => 'Februari',
+            'March' => 'Maret',
+            'April' => 'April',
+            'May' => 'Mei',
+            'June' => 'Juni',
+            'July' => 'Juli',
+            'August' => 'Agustus',
+            'September' => 'September',
+            'October' => 'Oktober',
+            'November' => 'November',
+            'December' => 'Desember',
+        ];
+        
+        $date = $date instanceof \Carbon\Carbon ? $date : \Carbon\Carbon::parse($date);
+        $formatted = $date->format($format);
+        
+        return strtr($formatted, $bulan);
     }
 }

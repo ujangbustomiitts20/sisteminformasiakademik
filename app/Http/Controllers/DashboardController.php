@@ -14,6 +14,9 @@ use App\Models\TransaksiPembayaran;
 use App\Models\PotonganMahasiswa;
 use App\Models\Cicilan;
 use App\Models\PeriodeDiskon;
+use App\Models\KalenderAkademik;
+use App\Models\Absensi;
+use App\Models\ProgramStudi;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -47,19 +50,8 @@ class DashboardController extends Controller
         }
 
         if ($user->isDosen()) {
-            $dosen = $user->dosen;
-            $data['dosen'] = $dosen;
-            
-            if ($dosen && $data['tahunAkademikAktif']) {
-                $data['jadwalMengajar'] = $dosen->jadwalKuliah()
-                    ->where('tahun_akademik_id', $data['tahunAkademikAktif']->id)
-                    ->with(['mataKuliah', 'ruangan'])
-                    ->get();
-                
-                $data['mahasiswaWali'] = $dosen->mahasiswaWali()->where('status', 'Aktif')->count();
-            }
-
-            return view('dashboard.dosen', $data);
+            // Redirect ke unified dashboard dosen
+            return redirect()->route('dosen.dashboard');
         }
 
         if ($user->isMahasiswa()) {
@@ -67,6 +59,9 @@ class DashboardController extends Controller
             $data['mahasiswa'] = $mahasiswa;
             
             if ($mahasiswa && $data['tahunAkademikAktif']) {
+                // Load relasi mahasiswa
+                $mahasiswa->load(['programStudi.fakultas', 'dosenWali']);
+                
                 // Akademik
                 $data['krsSemesterIni'] = Krs::where('mahasiswa_id', $mahasiswa->id)
                     ->where('tahun_akademik_id', $data['tahunAkademikAktif']->id)
@@ -76,6 +71,54 @@ class DashboardController extends Controller
                 
                 $data['ipk'] = $mahasiswa->hitungIPK();
                 $data['totalSks'] = $mahasiswa->totalSksLulus();
+                
+                // SKS semester ini
+                $data['sksSemesterIni'] = $data['krsSemesterIni']->sum(fn($krs) => $krs->jadwalKuliah?->mataKuliah?->sks ?? 0);
+                
+                // Target SKS (asumsi 144 SKS untuk S1)
+                $data['targetSks'] = $mahasiswa->programStudi?->total_sks ?? 144;
+                $data['progressSks'] = $data['targetSks'] > 0 ? round(($data['totalSks'] / $data['targetSks']) * 100) : 0;
+                
+                // Jadwal Hari Ini
+                $hariIni = now()->locale('id')->isoFormat('dddd');
+                $data['jadwalHariIni'] = $data['krsSemesterIni']
+                    ->filter(fn($krs) => $krs->jadwalKuliah && $krs->jadwalKuliah->hari === $hariIni)
+                    ->sortBy(fn($krs) => $krs->jadwalKuliah->jam_mulai);
+                
+                // Kalender Akademik - Event mendatang 14 hari
+                $data['eventMendatang'] = KalenderAkademik::where('tanggal_mulai', '>=', now())
+                    ->where('tanggal_mulai', '<=', now()->addDays(14))
+                    ->orderBy('tanggal_mulai', 'asc')
+                    ->take(5)
+                    ->get();
+                
+                // Rekap Kehadiran Semester Ini
+                $jadwalIds = $data['krsSemesterIni']->pluck('jadwal_kuliah_id')->filter();
+                $data['rekapKehadiran'] = [
+                    'hadir' => 0,
+                    'izin' => 0,
+                    'sakit' => 0,
+                    'alpha' => 0,
+                    'total' => 0,
+                ];
+                if ($jadwalIds->count() > 0) {
+                    $absensi = Absensi::where('mahasiswa_id', $mahasiswa->id)
+                        ->whereIn('jadwal_kuliah_id', $jadwalIds)
+                        ->get();
+                    $data['rekapKehadiran'] = [
+                        'hadir' => $absensi->where('status', 'Hadir')->count(),
+                        'izin' => $absensi->where('status', 'Izin')->count(),
+                        'sakit' => $absensi->where('status', 'Sakit')->count(),
+                        'alpha' => $absensi->where('status', 'Alpha')->count(),
+                        'total' => $absensi->count(),
+                    ];
+                    $totalHadir = $data['rekapKehadiran']['hadir'] + $data['rekapKehadiran']['izin'] + $data['rekapKehadiran']['sakit'];
+                    $data['persentaseKehadiran'] = $data['rekapKehadiran']['total'] > 0 
+                        ? round(($totalHadir / $data['rekapKehadiran']['total']) * 100) 
+                        : 100;
+                } else {
+                    $data['persentaseKehadiran'] = 100;
+                }
                 
                 // Pembayaran lama (untuk backward compatibility)
                 $data['pembayaranTerakhir'] = Pembayaran::where('mahasiswa_id', $mahasiswa->id)

@@ -59,12 +59,33 @@
                 
                 <hr>
                 
+                <!-- Kelengkapan Profil -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted">Kelengkapan Profil</small>
+                        <span class="badge bg-{{ $kelengkapanProfil >= 80 ? 'success' : ($kelengkapanProfil >= 50 ? 'warning' : 'danger') }}">
+                            {{ $kelengkapanProfil }}%
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-{{ $kelengkapanProfil >= 80 ? 'success' : ($kelengkapanProfil >= 50 ? 'warning' : 'danger') }}" 
+                             role="progressbar" style="width: {{ $kelengkapanProfil }}%"></div>
+                    </div>
+                    @if($kelengkapanProfil < 80)
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>Lengkapi profil untuk kemudahan administrasi
+                    </small>
+                    @endif
+                </div>
+                
+                <hr>
+                
                 <!-- Quick Actions -->
                 <div class="d-grid gap-2">
-                    <a href="{{ route('profile') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('mahasiswa.profil.edit') }}" class="btn btn-outline-primary">
                         <i class="bi bi-pencil me-2"></i>Edit Profil
                     </a>
-                    <a href="{{ route('mahasiswa.download-kartu') }}" class="btn btn-outline-secondary">
+                    <a href="{{ route('mahasiswa.kartu') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-download me-2"></i>Download Kartu Mahasiswa
                     </a>
                 </div>
@@ -125,7 +146,15 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label text-muted small">Jenis Kelamin</label>
-                        <p class="mb-0">{{ $mahasiswa->jenis_kelamin ?? '-' }}</p>
+                        <p class="mb-0">
+                            @if($mahasiswa->jenis_kelamin == 'L')
+                                <i class="bi bi-gender-male text-primary me-1"></i>Laki-laki
+                            @elseif($mahasiswa->jenis_kelamin == 'P')
+                                <i class="bi bi-gender-female text-danger me-1"></i>Perempuan
+                            @else
+                                -
+                            @endif
+                        </p>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label text-muted small">Tempat, Tanggal Lahir</label>
@@ -145,6 +174,98 @@
                         <label class="form-label text-muted small">Alamat</label>
                         <p class="mb-0">{{ $mahasiswa->alamat ?? '-' }}</p>
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Kependudukan -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-card-text me-2"></i>Data Kependudukan
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">NIK</label>
+                        <p class="mb-0">
+                            @if($mahasiswa->nik)
+                                {{ substr($mahasiswa->nik, 0, 6) }}******{{ substr($mahasiswa->nik, -4) }}
+                            @else
+                                <span class="text-warning"><i class="bi bi-exclamation-circle me-1"></i>Belum diisi</span>
+                            @endif
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">No. Kartu Keluarga</label>
+                        <p class="mb-0">
+                            @if($mahasiswa->no_kk)
+                                {{ substr($mahasiswa->no_kk, 0, 6) }}******{{ substr($mahasiswa->no_kk, -4) }}
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">Kewarganegaraan</label>
+                        <p class="mb-0">{{ $mahasiswa->kewarganegaraan ?? 'WNI' }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">Golongan Darah</label>
+                        <p class="mb-0">{{ $mahasiswa->golongan_darah ?? '-' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Pendidikan Asal -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-building me-2"></i>Data Pendidikan Asal
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">Jalur Masuk</label>
+                        <p class="mb-0">
+                            @if($mahasiswa->jalur_masuk)
+                                <span class="badge bg-primary">{{ $mahasiswa->jalur_masuk }}</span>
+                            @else
+                                <span class="text-warning"><i class="bi bi-exclamation-circle me-1"></i>Belum diisi</span>
+                            @endif
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">Sekolah Asal</label>
+                        <p class="mb-0">
+                            @if($mahasiswa->sekolah)
+                                {{ $mahasiswa->sekolah->nama }}
+                            @elseif($mahasiswa->asal_sekolah)
+                                {{ $mahasiswa->asal_sekolah }}
+                            @else
+                                <span class="text-warning"><i class="bi bi-exclamation-circle me-1"></i>Belum diisi</span>
+                            @endif
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">Jurusan Asal</label>
+                        <p class="mb-0">{{ $mahasiswa->jurusan_asal ?? '-' }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">Tahun Lulus</label>
+                        <p class="mb-0">{{ $mahasiswa->tahun_lulus_sekolah ?? '-' }}</p>
+                    </div>
+                    @if($mahasiswa->no_ijazah_sma)
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">No. Ijazah</label>
+                        <p class="mb-0">{{ $mahasiswa->no_ijazah_sma }}</p>
+                    </div>
+                    @endif
+                    @if($mahasiswa->nilai_un)
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">Nilai UN</label>
+                        <p class="mb-0">{{ number_format($mahasiswa->nilai_un, 2) }}</p>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -222,6 +343,35 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Data Wali (Jika ada) -->
+        @if($mahasiswa->nama_wali)
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-person-badge me-2"></i>Data Wali
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">Nama Wali</label>
+                        <p class="mb-0">{{ $mahasiswa->nama_wali }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">Hubungan</label>
+                        <p class="mb-0">{{ $mahasiswa->hubungan_wali ?? '-' }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">Pekerjaan</label>
+                        <p class="mb-0">{{ $mahasiswa->pekerjaan_wali ?? '-' }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted small">No. HP</label>
+                        <p class="mb-0">{{ $mahasiswa->no_hp_wali ?? '-' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
         
         <!-- Akun -->
         <div class="card">

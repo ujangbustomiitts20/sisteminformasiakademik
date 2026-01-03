@@ -19,11 +19,17 @@
         <div class="card">
             <div class="card-body text-center">
                 <div class="mb-3">
+                    @if($dosen->foto)
+                    <img src="{{ Storage::url($dosen->foto) }}" alt="{{ $dosen->nama }}" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                    @else
                     <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px; font-size: 2.5rem;">
                         {{ strtoupper(substr($dosen->nama, 0, 1)) }}
                     </div>
+                    @endif
                 </div>
-                <h5 class="mb-1">{{ $dosen->nama }}</h5>
+                <h5 class="mb-1">
+                    {{ $dosen->gelar_depan }} {{ $dosen->nama }}{{ $dosen->gelar_belakang ? ', ' . $dosen->gelar_belakang : '' }}
+                </h5>
                 <p class="text-muted mb-2"><code>{{ $dosen->nidn }}</code></p>
                 @if($dosen->status == 'Aktif')
                 <span class="badge bg-success">Aktif</span>
@@ -37,7 +43,7 @@
         
         <div class="card mt-3">
             <div class="card-header">
-                <i class="bi bi-info-circle me-2"></i>Informasi Kontak
+                <i class="bi bi-telephone me-2"></i>Informasi Kontak
             </div>
             <div class="card-body">
                 <p class="mb-2">
@@ -48,10 +54,60 @@
                     <i class="bi bi-telephone me-2 text-muted"></i>
                     {{ $dosen->telepon ?? '-' }}
                 </p>
-                <p class="mb-0">
+                <p class="mb-2">
+                    <i class="bi bi-phone me-2 text-muted"></i>
+                    {{ $dosen->no_hp ?? '-' }}
+                </p>
+                <hr>
+                <p class="mb-2">
                     <i class="bi bi-geo-alt me-2 text-muted"></i>
                     {{ $dosen->alamat ?? '-' }}
                 </p>
+                @if($dosen->kelurahan || $dosen->kecamatan || $dosen->kabupaten || $dosen->provinsi)
+                <p class="mb-2 small text-muted">
+                    @if($dosen->rt || $dosen->rw)RT {{ $dosen->rt ?? '-' }} / RW {{ $dosen->rw ?? '-' }}, @endif
+                    {{ $dosen->kelurahan->nama ?? '' }}
+                    {{ $dosen->kecamatan ? ', ' . $dosen->kecamatan->nama : '' }}
+                    {{ $dosen->kabupaten ? ', ' . $dosen->kabupaten->nama : '' }}
+                    {{ $dosen->provinsi ? ', ' . $dosen->provinsi->nama : '' }}
+                    {{ $dosen->kode_pos ? ' - ' . $dosen->kode_pos : '' }}
+                </p>
+                @endif
+            </div>
+        </div>
+        
+        <!-- Data Finansial -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-bank me-2"></i>Data Finansial
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted" width="100">NPWP</td>
+                        <td>: {{ $dosen->no_npwp ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Bank</td>
+                        <td>: {{ $dosen->nama_bank ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">No. Rek</td>
+                        <td>: {{ $dosen->no_rekening ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Atas Nama</td>
+                        <td>: {{ $dosen->atas_nama_rekening ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">BPJS Kes</td>
+                        <td>: {{ $dosen->no_bpjs_kesehatan ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">BPJS TK</td>
+                        <td>: {{ $dosen->no_bpjs_ketenagakerjaan ?? '-' }}</td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
@@ -74,8 +130,20 @@
                                 <td>: {{ $dosen->nama }}</td>
                             </tr>
                             <tr>
+                                <td class="text-muted">Gelar</td>
+                                <td>: {{ $dosen->gelar_depan ?? '-' }} / {{ $dosen->gelar_belakang ?? '-' }}</td>
+                            </tr>
+                            <tr>
                                 <td class="text-muted">Jenis Kelamin</td>
                                 <td>: {{ $dosen->jenis_kelamin == 'L' ? 'Laki-laki' : ($dosen->jenis_kelamin == 'P' ? 'Perempuan' : '-') }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">TTL</td>
+                                <td>: {{ $dosen->tempat_lahir ?? '-' }}, {{ $dosen->tanggal_lahir ? $dosen->tanggal_lahir->format('d M Y') : '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Pendidikan</td>
+                                <td>: {{ $dosen->pendidikan_terakhir ?? '-' }}</td>
                             </tr>
                         </table>
                     </div>
@@ -92,6 +160,61 @@
                             <tr>
                                 <td class="text-muted">Golongan</td>
                                 <td>: {{ $dosen->golongan ?? '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Bidang Keahlian</td>
+                                <td>: {{ $dosen->bidang_keahlian ?? '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Rumpun Ilmu</td>
+                                <td>: {{ $dosen->rumpun_ilmu ?? '-' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Sertifikasi -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-award me-2"></i>Data Sertifikasi & Publikasi
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td width="150" class="text-muted">No. Serdos</td>
+                                <td>: {{ $dosen->no_sertifikasi_dosen ?? '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Tahun Serdos</td>
+                                <td>: {{ $dosen->tahun_sertifikasi ?? '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Reg. DIKTI</td>
+                                <td>: {{ $dosen->no_registrasi_dikti ?? '-' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td width="150" class="text-muted">SINTA ID</td>
+                                <td>: {{ $dosen->sinta_id ?? '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Scopus ID</td>
+                                <td>: {{ $dosen->scopus_id ?? '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Google Scholar</td>
+                                <td>: {{ $dosen->google_scholar_id ?? '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">ORCID</td>
+                                <td>: {{ $dosen->orcid ?? '-' }}</td>
                             </tr>
                         </table>
                     </div>
@@ -185,6 +308,9 @@
 </div>
 
 <div class="mt-3">
+    <a href="{{ route('kepegawaian.index', $dosen) }}" class="btn btn-primary">
+        <i class="bi bi-person-badge me-1"></i>Data Kepegawaian
+    </a>
     <a href="{{ route('dosen.edit', $dosen) }}" class="btn btn-warning">
         <i class="bi bi-pencil me-1"></i>Edit
     </a>

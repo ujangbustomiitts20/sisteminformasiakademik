@@ -78,18 +78,73 @@
             <div class="card-body">
                 <table class="table table-borderless mb-0">
                     <tr>
-                        <td class="text-muted">NIDN</td>
+                        <td class="text-muted" width="40%">NIDN</td>
                         <td>: <code>{{ Auth::user()->dosen->nidn }}</code></td>
                     </tr>
                     <tr>
-                        <td class="text-muted">Fakultas</td>
-                        <td>: {{ Auth::user()->dosen->fakultas->nama ?? '-' }}</td>
+                        <td class="text-muted">Program Studi</td>
+                        <td>: {{ Auth::user()->dosen->programStudi->nama ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Jabatan Fungsional</td>
+                        <td>: {{ Auth::user()->dosen->jabatan_fungsional ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Golongan</td>
+                        <td>: {{ Auth::user()->dosen->golongan ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Jenis Kelamin</td>
+                        <td>: {{ Auth::user()->dosen->jenis_kelamin == 'L' ? 'Laki-laki' : (Auth::user()->dosen->jenis_kelamin == 'P' ? 'Perempuan' : '-') }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Tempat, Tgl Lahir</td>
+                        <td>: {{ Auth::user()->dosen->tempat_lahir ?? '-' }}{{ Auth::user()->dosen->tanggal_lahir ? ', ' . Auth::user()->dosen->tanggal_lahir->format('d M Y') : '' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Telepon</td>
+                        <td>: {{ Auth::user()->dosen->telepon ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Alamat</td>
+                        <td>: {{ Auth::user()->dosen->alamat ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td class="text-muted">Status</td>
                         <td>: <span class="badge bg-{{ Auth::user()->dosen->status == 'aktif' ? 'success' : 'secondary' }}">{{ ucfirst(Auth::user()->dosen->status) }}</span></td>
                     </tr>
                 </table>
+            </div>
+        </div>
+        
+        <!-- Statistik Dosen -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-bar-chart me-2"></i>Statistik
+            </div>
+            <div class="card-body">
+                @php
+                    $dosen = Auth::user()->dosen;
+                    $mahasiswaWali = $dosen->mahasiswaWali()->count();
+                    $bimbinganTA = \App\Models\TugasAkhir::where('pembimbing_1_id', $dosen->id)
+                        ->orWhere('pembimbing_2_id', $dosen->id)->count();
+                    $jadwalBimbingan = \App\Models\BimbinganTA::where('dosen_id', $dosen->id)
+                        ->where('status', 'dijadwalkan')->count();
+                @endphp
+                <div class="row text-center">
+                    <div class="col-4">
+                        <h4 class="mb-0 text-primary">{{ $mahasiswaWali }}</h4>
+                        <small class="text-muted">Mhs. Wali</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="mb-0 text-success">{{ $bimbinganTA }}</h4>
+                        <small class="text-muted">Bimbingan TA</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="mb-0 text-warning">{{ $jadwalBimbingan }}</h4>
+                        <small class="text-muted">Jadwal Pending</small>
+                    </div>
+                </div>
             </div>
         </div>
         @endif
@@ -228,6 +283,93 @@
                         </div>
                         @endif
                         
+                        @if(Auth::user()->isDosen())
+                        <!-- Header Data Dosen -->
+                        <div class="col-md-12 mb-2">
+                            <h6 class="text-primary"><i class="bi bi-person-badge me-2"></i>Data Pribadi Dosen</h6>
+                            <hr>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">No. Telepon</label>
+                            <input type="text" name="telepon" class="form-control @error('telepon') is-invalid @enderror" value="{{ old('telepon', Auth::user()->dosen->telepon ?? '') }}" placeholder="08xxxxxxxxxx">
+                            @error('telepon')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email Pribadi</label>
+                            <input type="email" name="email_pribadi" class="form-control @error('email_pribadi') is-invalid @enderror" value="{{ old('email_pribadi', Auth::user()->dosen->email ?? '') }}" placeholder="email@domain.com">
+                            @error('email_pribadi')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Jenis Kelamin</label>
+                            <select name="jenis_kelamin" class="form-select @error('jenis_kelamin') is-invalid @enderror">
+                                <option value="">Pilih...</option>
+                                <option value="Laki-laki" {{ old('jenis_kelamin', Auth::user()->dosen->jenis_kelamin ?? '') == 'L' || old('jenis_kelamin') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="Perempuan" {{ old('jenis_kelamin', Auth::user()->dosen->jenis_kelamin ?? '') == 'P' || old('jenis_kelamin') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                            </select>
+                            @error('jenis_kelamin')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tempat Lahir</label>
+                            <input type="text" name="tempat_lahir" class="form-control @error('tempat_lahir') is-invalid @enderror" value="{{ old('tempat_lahir', Auth::user()->dosen->tempat_lahir ?? '') }}" placeholder="Kota tempat lahir">
+                            @error('tempat_lahir')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tanggal Lahir</label>
+                            <input type="date" name="tanggal_lahir" class="form-control @error('tanggal_lahir') is-invalid @enderror" value="{{ old('tanggal_lahir', Auth::user()->dosen->tanggal_lahir?->format('Y-m-d') ?? '') }}">
+                            @error('tanggal_lahir')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Alamat</label>
+                            <textarea name="alamat" class="form-control @error('alamat') is-invalid @enderror" rows="2" placeholder="Alamat lengkap">{{ old('alamat', Auth::user()->dosen->alamat ?? '') }}</textarea>
+                            @error('alamat')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <!-- Foto Profil Dosen dengan Preview -->
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Foto Profil</label>
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="flex-shrink-0">
+                                    @if(Auth::user()->dosen->foto)
+                                    <img src="{{ asset('storage/' . Auth::user()->dosen->foto) }}" alt="Foto Profil" class="rounded border" style="width: 100px; height: 100px; object-fit: cover;" id="fotoPreviewDosen">
+                                    @else
+                                    <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;" id="fotoPreviewDosen">
+                                        <i class="bi bi-person-fill" style="font-size: 3rem;"></i>
+                                    </div>
+                                    @endif
+                                </div>
+                                <div class="flex-grow-1">
+                                    <input type="file" name="foto" class="form-control @error('foto') is-invalid @enderror" accept="image/*" id="fotoInputDosen">
+                                    @error('foto')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="text-muted d-block mt-1">Format: JPG, PNG. Maksimal 2MB. Ukuran disarankan 300x300 pixel.</small>
+                                    @if(Auth::user()->dosen->foto)
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Foto sudah diupload</small>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        @if(Auth::user()->isMahasiswa() || Auth::user()->isAdmin())
                         <div class="col-md-12 mb-3">
                             <label class="form-label">Foto Profil</label>
                             <input type="file" name="foto" class="form-control @error('foto') is-invalid @enderror" accept="image/*">
@@ -236,6 +378,7 @@
                             @enderror
                             <small class="text-muted">Format: JPG, PNG. Maksimal 2MB</small>
                         </div>
+                        @endif
                     </div>
                     
                     <div class="d-flex justify-content-end">
@@ -290,3 +433,33 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+// Preview foto untuk dosen
+document.getElementById('fotoInputDosen')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('fotoPreviewDosen');
+            if (preview.tagName === 'IMG') {
+                preview.src = e.target.result;
+            } else {
+                // Replace div with img
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = 'Foto Profil';
+                img.className = 'rounded border';
+                img.style.width = '100px';
+                img.style.height = '100px';
+                img.style.objectFit = 'cover';
+                img.id = 'fotoPreviewDosen';
+                preview.parentNode.replaceChild(img, preview);
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+@endpush

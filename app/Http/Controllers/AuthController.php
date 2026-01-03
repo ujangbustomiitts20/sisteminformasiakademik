@@ -80,6 +80,16 @@ class AuthController extends Controller
             $rules['alamat_ortu'] = 'nullable|string';
         }
         
+        // Tambahan validasi untuk dosen
+        if ($user->isDosen()) {
+            $rules['telepon'] = 'nullable|string|max:15';
+            $rules['email_pribadi'] = 'nullable|email|max:255';
+            $rules['jenis_kelamin'] = 'nullable|in:Laki-laki,Perempuan';
+            $rules['tempat_lahir'] = 'nullable|string|max:100';
+            $rules['tanggal_lahir'] = 'nullable|date';
+            $rules['alamat'] = 'nullable|string';
+        }
+        
         $request->validate($rules);
 
         $data = [
@@ -122,6 +132,46 @@ class AuthController extends Controller
                 'penghasilan_ortu' => $request->penghasilan_ortu,
                 'alamat_ortu' => $request->alamat_ortu,
             ]);
+        }
+        
+        // Update data dosen
+        if ($user->isDosen() && $user->dosen) {
+            // Konversi jenis_kelamin ke format database (L/P)
+            $jenisKelamin = null;
+            if ($request->jenis_kelamin == 'Laki-laki') {
+                $jenisKelamin = 'L';
+            } elseif ($request->jenis_kelamin == 'Perempuan') {
+                $jenisKelamin = 'P';
+            }
+            
+            $dosenData = [
+                'nama' => $request->name,
+                'telepon' => $request->telepon,
+                'email' => $request->email_pribadi,
+                'tempat_lahir' => $request->tempat_lahir,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'alamat' => $request->alamat,
+            ];
+            
+            // Hanya update jenis_kelamin jika ada nilai
+            if ($jenisKelamin) {
+                $dosenData['jenis_kelamin'] = $jenisKelamin;
+            }
+            
+            // Handle foto upload untuk dosen
+            if ($request->hasFile('foto')) {
+                // Delete old foto if exists
+                if ($user->dosen->foto) {
+                    Storage::disk('public')->delete($user->dosen->foto);
+                }
+                
+                $foto = $request->file('foto');
+                $filename = 'foto_dosen_' . $user->dosen->id . '_' . time() . '.' . $foto->getClientOriginalExtension();
+                $path = $foto->storeAs('foto/dosen', $filename, 'public');
+                $dosenData['foto'] = $path;
+            }
+            
+            $user->dosen->update($dosenData);
         }
 
         $user->update($data);

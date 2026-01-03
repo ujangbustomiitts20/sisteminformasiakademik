@@ -4,140 +4,131 @@
     <meta charset="utf-8">
     <title>Kartu Mahasiswa - {{ $mahasiswa->nim }}</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'DejaVu Sans', sans-serif; }
+        @page {
+            margin: 0;
+        }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        body { 
+            font-family: 'DejaVu Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
         .card {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%);
-            border-radius: 10px;
-            padding: 10px;
+            width: 323px;
+            height: 204px;
+            background-color: #1e40af;
+            padding: 15px;
             color: white;
             position: relative;
-            overflow: hidden;
         }
-        .card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-        }
-        .logo {
-            font-size: 8px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .photo-section {
-            float: left;
-            width: 55px;
-            height: 70px;
-            background: white;
-            border-radius: 5px;
-            margin-right: 10px;
-            overflow: hidden;
-        }
-        .photo-section img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .photo-placeholder {
-            width: 100%;
-            height: 100%;
-            background: #e0e7ff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #4f46e5;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .info {
-            font-size: 7px;
-            line-height: 1.4;
-        }
-        .info .name {
+        .header {
             font-size: 10px;
             font-weight: bold;
-            margin-bottom: 3px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #60a5fa;
+            padding-bottom: 8px;
         }
-        .info .nim {
-            font-size: 9px;
+        .content {
+            width: 100%;
+        }
+        .photo-cell {
+            width: 70px;
+            vertical-align: top;
+            padding-right: 10px;
+        }
+        .photo-box {
+            width: 60px;
+            height: 80px;
+            background-color: #ffffff;
+            text-align: center;
+            line-height: 80px;
+            color: #1e40af;
+            font-size: 28px;
             font-weight: bold;
-            margin-bottom: 5px;
+        }
+        .info-cell {
+            vertical-align: top;
+        }
+        .name {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+        }
+        .nim {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 8px;
             letter-spacing: 1px;
+            color: #93c5fd;
         }
-        .info p {
-            margin-bottom: 2px;
-            opacity: 0.9;
+        .detail {
+            font-size: 9px;
+            margin-bottom: 3px;
+            color: #e0e7ff;
         }
-        .footer-card {
+        .detail strong {
+            color: #ffffff;
+        }
+        .status-box {
             position: absolute;
-            bottom: 8px;
-            left: 10px;
-            right: 10px;
-            font-size: 6px;
-            opacity: 0.8;
-            border-top: 1px solid rgba(255,255,255,0.3);
-            padding-top: 5px;
-        }
-        .status-badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #22c55e;
+            top: 12px;
+            right: 12px;
+            background-color: {{ $mahasiswa->status == 'Aktif' ? '#16a34a' : '#dc2626' }};
             color: white;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 6px;
+            padding: 3px 8px;
+            font-size: 8px;
             font-weight: bold;
             text-transform: uppercase;
         }
-        .status-badge.inactive {
-            background: #ef4444;
+        .footer-section {
+            position: absolute;
+            bottom: 10px;
+            left: 15px;
+            right: 15px;
+            font-size: 7px;
+            color: #bfdbfe;
+            border-top: 1px solid #60a5fa;
+            padding-top: 5px;
         }
     </style>
 </head>
 <body>
     <div class="card">
-        <div class="status-badge {{ $mahasiswa->status != 'Aktif' ? 'inactive' : '' }}">
-            {{ $mahasiswa->status }}
+        <div class="status-box">{{ $mahasiswa->status }}</div>
+        
+        <div class="header">
+            {{ setting('nama_institusi', 'SISTEM INFORMASI AKADEMIK') }}
         </div>
         
-        <div class="logo">
-            SISTEM INFORMASI AKADEMIK
-        </div>
+        <table class="content" cellpadding="0" cellspacing="0">
+            <tr>
+                <td class="photo-cell">
+                    <div class="photo-box">
+                        {{ strtoupper(substr($mahasiswa->nama, 0, 1)) }}
+                    </div>
+                </td>
+                <td class="info-cell">
+                    <div class="name">{{ $mahasiswa->nama }}</div>
+                    <div class="nim">{{ $mahasiswa->nim }}</div>
+                    <div class="detail"><strong>{{ $mahasiswa->programStudi->nama ?? '-' }}</strong></div>
+                    <div class="detail">{{ $mahasiswa->programStudi->fakultas->nama ?? '-' }}</div>
+                    <div class="detail">Angkatan: {{ $mahasiswa->angkatan ?? '-' }}</div>
+                    @if($mahasiswa->tempat_lahir || $mahasiswa->tanggal_lahir)
+                    <div class="detail">{{ $mahasiswa->tempat_lahir }}{{ $mahasiswa->tanggal_lahir ? ', ' . $mahasiswa->tanggal_lahir->format('d/m/Y') : '' }}</div>
+                    @endif
+                </td>
+            </tr>
+        </table>
         
-        <div class="photo-section">
-            @if($mahasiswa->foto && file_exists(public_path('storage/' . $mahasiswa->foto)))
-            <img src="{{ public_path('storage/' . $mahasiswa->foto) }}" alt="Foto">
-            @else
-            <div class="photo-placeholder">
-                {{ strtoupper(substr($mahasiswa->nama, 0, 1)) }}
-            </div>
-            @endif
-        </div>
-        
-        <div class="info">
-            <div class="name">{{ strtoupper($mahasiswa->nama) }}</div>
-            <div class="nim">{{ $mahasiswa->nim }}</div>
-            <p><strong>{{ $mahasiswa->programStudi->nama ?? '-' }}</strong></p>
-            <p>{{ $mahasiswa->programStudi->fakultas->nama ?? '-' }}</p>
-            <p>Angkatan: {{ $mahasiswa->angkatan ?? '-' }}</p>
-            @if($mahasiswa->tempat_lahir || $mahasiswa->tanggal_lahir)
-            <p>{{ $mahasiswa->tempat_lahir }}{{ $mahasiswa->tanggal_lahir ? ', ' . $mahasiswa->tanggal_lahir->format('d/m/Y') : '' }}</p>
-            @endif
-        </div>
-        
-        <div class="footer-card">
-            <p><strong>Kartu Mahasiswa Resmi</strong> - Berlaku selama terdaftar aktif.</p>
-            <p>Dicetak: {{ now()->format('d F Y') }} | Validasi: <strong>{{ strtoupper(substr(md5($mahasiswa->nim), 0, 8)) }}</strong></p>
+        <div class="footer-section">
+            Kartu Mahasiswa Resmi - Berlaku selama terdaftar aktif | Kode: {{ strtoupper(substr(md5($mahasiswa->nim), 0, 8)) }}
         </div>
     </div>
 </body>

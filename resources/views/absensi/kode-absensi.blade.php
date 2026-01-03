@@ -225,72 +225,101 @@
 </style>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const generateKodeUrl = "{{ route('absensi.generate-kode', $jadwalKuliah) }}";
     const statusUrl = "{{ route('absensi.status', $jadwalKuliah) }}";
     const totalMahasiswa = {{ $totalMahasiswa }};
-    
-    console.log('Generate URL:', generateKodeUrl);
+    const csrfToken = "{{ csrf_token() }}";
     
     // Form generate kode
-    document.getElementById('formGenerateKode').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        const btn = document.getElementById('btnGenerate');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Memproses...';
-        
-        const payload = {
-            pertemuan: parseInt(formData.get('pertemuan')),
-            materi: formData.get('materi') || '',
-            durasi: parseInt(formData.get('durasi'))
-        };
-        
-        console.log('Sending payload:', payload);
-        
-        fetch(generateKodeUrl, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(response => {
-            console.log('Response status:', response.status);
-            if (!response.ok) {
-                return response.text().then(text => {
-                    console.error('Error response:', text);
-                    throw new Error('Server error: ' + response.status);
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Response data:', data);
-            if (data.success) {
-                // Update tampilan kode tanpa reload
-                updateKodeDisplay(data.kode, data.pertemuan, data.expiry);
-            } else {
-                alert('Gagal membuat kode absensi: ' + (data.message || 'Unknown error'));
-            }
-        })
-        .catch(error => {
-            console.error('Fetch error:', error);
-            alert('Terjadi kesalahan: ' + error.message);
-        })
-        .finally(() => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-qr-code me-2"></i>Buka Sesi Absensi';
+    const form = document.getElementById('formGenerateKode');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const btn = document.getElementById('btnGenerate');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Memproses...';
+            
+            const payload = {
+                pertemuan: parseInt(formData.get('pertemuan')),
+                materi: formData.get('materi') || '',
+                durasi: parseInt(formData.get('durasi'))
+            };
+            
+            fetch(generateKodeUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error('Server error: ' + response.status + ' - ' + text);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show success notification
+                    showNotification('success', 'Sesi absensi berhasil dibuka!');
+                    // Update tampilan kode
+                    updateKodeDisplay(data.kode, data.pertemuan, data.expiry);
+                } else {
+                    showNotification('danger', 'Gagal: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                showNotification('danger', 'Terjadi kesalahan: ' + error.message);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
         });
-    });
+    }
+
+    function showNotification(type, message) {
+        // Remove existing notifications
+        document.querySelectorAll('.alert-auto').forEach(el => el.remove());
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show alert-auto`;
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.innerHTML = `
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Insert after page-title
+        const pageTitle = document.querySelector('.page-title');
+        if (pageTitle) {
+            pageTitle.insertAdjacentElement('afterend', alertDiv);
+        } else {
+            document.querySelector('.row.mb-4').insertAdjacentElement('beforebegin', alertDiv);
+        }
+        
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+            alertDiv.classList.remove('show');
+            setTimeout(() => alertDiv.remove(), 300);
+        }, 5000);
+    }
 
     function updateKodeDisplay(kode, pertemuan, expiry) {
         const cardBody = document.querySelector('#cardKodeAbsensi .card-body');
+        const tutupUrl = "{{ route('absensi.tutup', $jadwalKuliah) }}";
+        
         cardBody.innerHTML = `
             <div id="kodeDisplay">
                 <div class="mb-3">
@@ -316,16 +345,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                 </div>
-                <button type="button" class="btn btn-danger btn-lg" onclick="location.reload()">
-                    <i class="bi bi-arrow-clockwise me-2"></i>Refresh untuk Tutup Sesi
-                </button>
+                <form action="${tutupUrl}" method="POST" class="d-inline">
+                    <input type="hidden" name="_token" value="${csrfToken}">
+                    <button type="submit" class="btn btn-danger btn-lg" onclick="return confirm('Tutup sesi absensi? Mahasiswa yang belum absen akan ditandai Alpha.')">
+                        <i class="bi bi-x-circle me-2"></i>Tutup Sesi & Rekap Absensi
+                    </button>
+                </form>
             </div>
         `;
         
         // Update status badge
-        document.getElementById('statusBadge').innerHTML = '<i class="bi bi-circle-fill me-1 blink"></i>Aktif';
-        document.getElementById('statusBadge').classList.remove('text-secondary');
-        document.getElementById('statusBadge').classList.add('text-success');
+        const statusBadge = document.getElementById('statusBadge');
+        if (statusBadge) {
+            statusBadge.innerHTML = '<i class="bi bi-circle-fill me-1 blink"></i>Aktif';
+            statusBadge.classList.remove('text-secondary');
+            statusBadge.classList.add('text-success');
+        }
         
         // Start auto refresh
         startAutoRefresh();
@@ -345,12 +380,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (sudahAbsenEl) {
                         sudahAbsenEl.textContent = data.sudah_absen;
                     }
-                } else {
-                    // Sesi sudah berakhir, reload
-                    location.reload();
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => console.error('Status check error:', error));
         }, 5000);
     }
     
@@ -360,4 +392,4 @@ document.addEventListener('DOMContentLoaded', function() {
     @endif
 });
 </script>
-@endsection
+@endpush

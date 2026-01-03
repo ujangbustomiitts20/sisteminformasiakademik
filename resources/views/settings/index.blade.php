@@ -187,6 +187,9 @@
                                                         <option value="tls" {{ $setting->value == 'tls' ? 'selected' : '' }}>TLS</option>
                                                         <option value="ssl" {{ $setting->value == 'ssl' ? 'selected' : '' }}>SSL</option>
                                                         <option value="" {{ $setting->value == '' ? 'selected' : '' }}>None</option>
+                                                    @elseif($setting->key === 'mode_krs')
+                                                        <option value="pilihan" {{ $setting->value == 'pilihan' ? 'selected' : '' }}>Pilihan (Mahasiswa memilih sendiri)</option>
+                                                        <option value="paket" {{ $setting->value == 'paket' ? 'selected' : '' }}>Paket (Otomatis berdasarkan kurikulum)</option>
                                                     @endif
                                                 </select>
                                                 @break

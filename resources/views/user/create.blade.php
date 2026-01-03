@@ -47,11 +47,13 @@
                             <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                             <option value="dosen" {{ old('role') == 'dosen' ? 'selected' : '' }}>Dosen</option>
                             <option value="mahasiswa" {{ old('role') == 'mahasiswa' ? 'selected' : '' }}>Mahasiswa</option>
+                            <option value="kaprodi" {{ old('role') == 'kaprodi' ? 'selected' : '' }}>Kaprodi</option>
+                            <option value="dekan" {{ old('role') == 'dekan' ? 'selected' : '' }}>Dekan</option>
                         </select>
                         @error('role')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                        <small class="text-muted">Catatan: Untuk dosen/mahasiswa, sebaiknya tambah melalui modul Dosen/Mahasiswa agar data lengkap.</small>
+                        <small class="text-muted">Catatan: Untuk dosen/mahasiswa, sebaiknya tambah melalui modul Dosen/Mahasiswa. Untuk kaprodi/dekan, gunakan menu Pejabat Akademik.</small>
                     </div>
 
                     <div class="mb-3">

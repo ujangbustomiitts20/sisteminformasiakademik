@@ -33,6 +33,8 @@
                         <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                         <option value="dosen" {{ request('role') == 'dosen' ? 'selected' : '' }}>Dosen</option>
                         <option value="mahasiswa" {{ request('role') == 'mahasiswa' ? 'selected' : '' }}>Mahasiswa</option>
+                        <option value="kaprodi" {{ request('role') == 'kaprodi' ? 'selected' : '' }}>Kaprodi</option>
+                        <option value="dekan" {{ request('role') == 'dekan' ? 'selected' : '' }}>Dekan</option>
                     </select>
                 </div>
                 <div class="col-md-5">
@@ -65,6 +67,7 @@
                         <th width="50">No</th>
                         <th>Nama</th>
                         <th>Email</th>
+                        <th>NIDN/NIM</th>
                         <th width="120">Role</th>
                         <th width="150">Terdaftar</th>
                         <th width="180" class="text-center">Aksi</th>
@@ -76,7 +79,7 @@
                         <td>{{ $users->firstItem() + $index }}</td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <div class="bg-{{ $user->role == 'admin' ? 'danger' : ($user->role == 'dosen' ? 'primary' : 'success') }} text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                <div class="bg-{{ $user->role == 'admin' ? 'danger' : ($user->role == 'dosen' ? 'primary' : ($user->role == 'kaprodi' ? 'info' : ($user->role == 'dekan' ? 'warning' : 'success'))) }} text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
                                     {{ strtoupper(substr($user->name, 0, 1)) }}
                                 </div>
                                 <div>
@@ -89,10 +92,23 @@
                         </td>
                         <td>{{ $user->email }}</td>
                         <td>
+                            @if($user->dosen)
+                                <code>{{ $user->dosen->nidn }}</code>
+                            @elseif($user->mahasiswa)
+                                <code>{{ $user->mahasiswa->nim }}</code>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
+                        <td>
                             @if($user->role == 'admin')
                             <span class="badge bg-danger">Admin</span>
                             @elseif($user->role == 'dosen')
                             <span class="badge bg-primary">Dosen</span>
+                            @elseif($user->role == 'kaprodi')
+                            <span class="badge bg-info">Kaprodi</span>
+                            @elseif($user->role == 'dekan')
+                            <span class="badge bg-warning text-dark">Dekan</span>
                             @else
                             <span class="badge bg-success">Mahasiswa</span>
                             @endif
@@ -126,7 +142,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="text-center py-4">
+                        <td colspan="7" class="text-center py-4">
                             <i class="bi bi-inbox display-6 text-muted"></i>
                             <p class="text-muted mt-2">Belum ada data user</p>
                         </td>

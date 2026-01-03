@@ -49,20 +49,29 @@ class AbsensiController extends Controller
             ->where('status', 'Disetujui')
             ->get();
 
-        // Get pertemuan terakhir
-        $lastPertemuan = Absensi::whereHas('krs', function($q) use ($jadwalKuliah) {
+        // Get pertemuan yang sudah ada
+        $existingPertemuan = Absensi::whereHas('krs', function($q) use ($jadwalKuliah) {
                 $q->where('jadwal_kuliah_id', $jadwalKuliah->id);
-            })->max('pertemuan') ?? 0;
+            })->distinct()->pluck('pertemuan')->toArray();
 
-        $pertemuan = min($lastPertemuan + 1, $jumlahPertemuan);
+        // Get available pertemuan (yang belum diisi)
+        $availablePertemuan = [];
+        for ($i = 1; $i <= $jumlahPertemuan; $i++) {
+            if (!in_array($i, $existingPertemuan)) {
+                $availablePertemuan[] = $i;
+            }
+        }
         
         // Check if all pertemuan sudah terisi
-        if ($lastPertemuan >= $jumlahPertemuan) {
+        if (empty($availablePertemuan)) {
             return redirect()->route('absensi.show', $jadwalKuliah)
                 ->with('error', 'Semua pertemuan (' . $jumlahPertemuan . 'x) sudah terisi!');
         }
 
-        return view('absensi.create', compact('jadwalKuliah', 'mahasiswa', 'pertemuan', 'jumlahPertemuan'));
+        // Default pertemuan adalah yang pertama dari available
+        $pertemuan = $availablePertemuan[0] ?? 1;
+
+        return view('absensi.create', compact('jadwalKuliah', 'mahasiswa', 'pertemuan', 'jumlahPertemuan', 'availablePertemuan'));
     }
 
     public function store(Request $request, JadwalKuliah $jadwalKuliah)
@@ -121,10 +130,11 @@ class AbsensiController extends Controller
         $pertemuan = Absensi::whereHas('krs', function($q) use ($jadwalKuliah) {
                 $q->where('jadwal_kuliah_id', $jadwalKuliah->id);
             })
-            ->selectRaw('pertemuan, MIN(tanggal) as tanggal, MAX(materi) as materi')
+            ->selectRaw('DISTINCT pertemuan, MIN(tanggal) as tanggal, MAX(materi) as materi')
             ->groupBy('pertemuan')
             ->orderBy('pertemuan')
-            ->get();
+            ->get()
+            ->unique('pertemuan'); // Extra safety to ensure no duplicates
 
         return view('absensi.show', compact('jadwalKuliah', 'mahasiswa', 'pertemuan'));
     }
@@ -153,19 +163,44 @@ class AbsensiController extends Controller
             'absensi' => 'required|array',
         ]);
 
+        // Get pertemuan data if exists (for linking)
+        $pertemuanData = \App\Models\Pertemuan::where('jadwal_kuliah_id', $jadwalKuliah->id)
+            ->where('pertemuan_ke', $pertemuan)
+            ->first();
+
+        $updated = 0;
+        $created = 0;
+
         foreach ($request->absensi as $krsId => $data) {
-            Absensi::where('krs_id', $krsId)
-                ->where('pertemuan', $pertemuan)
-                ->update([
+            // Use updateOrCreate to handle both existing and new records
+            $absensi = Absensi::updateOrCreate(
+                [
+                    'krs_id' => $krsId,
+                    'pertemuan' => $pertemuan,
+                ],
+                [
+                    'pertemuan_id' => $pertemuanData?->id,
                     'tanggal' => $request->tanggal,
                     'status' => $data['status'],
                     'keterangan' => $data['keterangan'] ?? null,
                     'materi' => $request->materi,
-                ]);
+                ]
+            );
+
+            if ($absensi->wasRecentlyCreated) {
+                $created++;
+            } else {
+                $updated++;
+            }
+        }
+
+        $message = 'Absensi pertemuan ke-' . $pertemuan . ' berhasil diupdate!';
+        if ($created > 0) {
+            $message .= ' (' . $updated . ' diupdate, ' . $created . ' ditambahkan)';
         }
 
         return redirect()->route('absensi.show', $jadwalKuliah)
-            ->with('success', 'Absensi pertemuan ke-' . $pertemuan . ' berhasil diupdate!');
+            ->with('success', $message);
     }
 
     public function destroy(JadwalKuliah $jadwalKuliah, $pertemuan)
@@ -309,36 +344,49 @@ class AbsensiController extends Controller
      */
     public function generateKode(Request $request, JadwalKuliah $jadwalKuliah)
     {
-        $user = auth()->user();
-        
-        // Hanya dosen pengampu atau admin
-        if (!$user->isAdmin() && (!$user->isDosen() || $user->dosen->id !== $jadwalKuliah->dosen_id)) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        try {
+            $user = auth()->user();
+            
+            // Hanya dosen pengampu atau admin
+            if (!$user->isAdmin() && (!$user->isDosen() || $user->dosen->id !== $jadwalKuliah->dosen_id)) {
+                return response()->json(['success' => false, 'message' => 'Anda tidak memiliki akses'], 403);
+            }
+
+            $request->validate([
+                'pertemuan' => 'required|integer|min:1|max:16',
+                'materi' => 'nullable|string|max:255',
+                'durasi' => 'required|integer|min:5|max:180',
+            ]);
+
+            // Generate unique code
+            $kode = strtoupper(substr(md5($jadwalKuliah->id . time() . rand(1000, 9999)), 0, 6));
+            $durasiMenit = (int) $request->durasi;
+            $expiry = Carbon::now()->addMinutes($durasiMenit);
+
+            // Store in cache
+            cache()->put('absensi_kode_' . $jadwalKuliah->id, $kode, $expiry);
+            cache()->put('absensi_expiry_' . $jadwalKuliah->id, $expiry, $expiry);
+            cache()->put('absensi_pertemuan_' . $jadwalKuliah->id, (int) $request->pertemuan, $expiry);
+            cache()->put('absensi_materi_' . $jadwalKuliah->id, $request->materi ?? '', $expiry);
+
+            return response()->json([
+                'success' => true,
+                'kode' => $kode,
+                'expiry' => $expiry->format('H:i:s'),
+                'pertemuan' => (int) $request->pertemuan,
+                'message' => 'Sesi absensi berhasil dibuka'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal: ' . implode(', ', $e->validator->errors()->all())
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
-
-        $request->validate([
-            'pertemuan' => 'required|integer|min:1|max:16',
-            'materi' => 'nullable|string|max:255',
-            'durasi' => 'required|integer|min:5|max:180', // durasi dalam menit
-        ]);
-
-        // Generate unique code
-        $kode = strtoupper(substr(md5($jadwalKuliah->id . time() . rand(1000, 9999)), 0, 6));
-        $durasiMenit = (int) $request->durasi;
-        $expiry = Carbon::now()->addMinutes($durasiMenit);
-
-        // Store in cache for cross-session access (mahasiswa akan akses dari session berbeda)
-        cache()->put('absensi_kode_' . $jadwalKuliah->id, $kode, $expiry);
-        cache()->put('absensi_expiry_' . $jadwalKuliah->id, $expiry, $expiry);
-        cache()->put('absensi_pertemuan_' . $jadwalKuliah->id, (int) $request->pertemuan, $expiry);
-        cache()->put('absensi_materi_' . $jadwalKuliah->id, $request->materi ?? '', $expiry);
-
-        return response()->json([
-            'success' => true,
-            'kode' => $kode,
-            'expiry' => $expiry->format('H:i:s'),
-            'pertemuan' => (int) $request->pertemuan,
-        ]);
     }
 
     /**

@@ -169,7 +169,7 @@ class WisudaController extends Controller
     {
         $pendaftaran->load(['mahasiswa.programStudi', 'periodeWisuda', 'verifikator', 'yudisium']);
 
-        return view('akademik.wisuda.pendaftaran-show', compact('pendaftaran'));
+        return view('akademik.wisuda.pendaftaran_show', compact('pendaftaran'));
     }
 
     /**
@@ -205,7 +205,7 @@ class WisudaController extends Controller
             ->orderBy('nim')
             ->get();
 
-        return view('akademik.wisuda.pendaftaran-create', compact('wisuda', 'mahasiswa'));
+        return view('akademik.wisuda.pendaftaran_create', compact('wisuda', 'mahasiswa'));
     }
 
     /**

@@ -7,10 +7,12 @@ use App\Models\Dosen;
 use App\Models\User;
 use App\Models\ProgramStudi;
 use App\Models\Fakultas;
+use App\Imports\MahasiswaImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ImportController extends Controller
 {
@@ -23,15 +25,38 @@ class ImportController extends Controller
     }
 
     /**
-     * Import Mahasiswa from CSV
+     * Import Mahasiswa from CSV or Excel
      */
     public function mahasiswa(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:csv,txt|max:5120'
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:5120'
         ]);
 
         $file = $request->file('file');
+        $extension = $file->getClientOriginalExtension();
+        
+        // Import Excel menggunakan Maatwebsite
+        if (in_array($extension, ['xlsx', 'xls'])) {
+            $import = new MahasiswaImport();
+            Excel::import($import, $file);
+            
+            $success = $import->getSuccessCount();
+            $failed = $import->getFailedCount();
+            $errors = $import->getErrors();
+            
+            $message = "Import selesai. Berhasil: {$success}, Gagal: {$failed}";
+            if (!empty($errors)) {
+                $message .= ". Errors: " . implode(', ', array_slice($errors, 0, 5));
+                if (count($errors) > 5) {
+                    $message .= "... dan " . (count($errors) - 5) . " error lainnya";
+                }
+            }
+            
+            return back()->with($failed > 0 && $success == 0 ? 'error' : 'success', $message);
+        }
+        
+        // Import CSV
         $handle = fopen($file->getPathname(), 'r');
         
         // Skip header
@@ -67,6 +92,13 @@ class ImportController extends Controller
                     $errors[] = "NIM {$nim} sudah terdaftar";
                     continue;
                 }
+                
+                // Cek apakah email sudah ada
+                if (User::where('email', $email)->exists()) {
+                    $failed++;
+                    $errors[] = "Email {$email} sudah terdaftar untuk NIM {$nim}";
+                    continue;
+                }
 
                 // Cari program studi
                 $programStudi = ProgramStudi::where('kode', $programStudiKode)->first();
@@ -90,6 +122,7 @@ class ImportController extends Controller
                     'user_id' => $user->id,
                     'nim' => $nim,
                     'nama' => $nama,
+                    'email' => $email,
                     'jenis_kelamin' => $jenisKelamin,
                     'tempat_lahir' => $tempatLahir,
                     'tanggal_lahir' => $tanggalLahir,
@@ -97,7 +130,7 @@ class ImportController extends Controller
                     'telepon' => $telepon,
                     'program_studi_id' => $programStudi->id,
                     'angkatan' => $angkatan,
-                    'status' => 'aktif'
+                    'status' => 'Aktif'
                 ]);
 
                 $success++;
@@ -226,20 +259,38 @@ class ImportController extends Controller
     /**
      * Download template CSV for Mahasiswa
      */
-    public function templateMahasiswa()
+    public function templateMahasiswa(Request $request)
     {
+        $format = $request->get('format', 'csv');
+        
+        // Export ke Excel menggunakan Maatwebsite
+        if ($format === 'excel') {
+            return Excel::download(
+                new \App\Exports\MahasiswaTemplateExport(), 
+                'template_import_mahasiswa.xlsx'
+            );
+        }
+        
+        // Export CSV (default)
         $headers = [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="template_import_mahasiswa.csv"',
         ];
 
         $columns = ['nim', 'nama', 'email', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'kode_prodi', 'angkatan', 'alamat', 'telepon'];
-        $example = ['2024001001', 'Ahmad Fauzi', 'ahmad@student.siakad.ac.id', 'Laki-laki', 'Jakarta', '2000-01-15', 'TI', '2024', 'Jl. Contoh No. 1', '08123456789'];
+        $examples = [
+            ['AUTO', 'Ahmad Fauzi', 'AUTO', 'Laki-laki', 'Jakarta', '2000-01-15', 'TI', date('Y'), 'Jl. Contoh No. 1', '08123456789'],
+            ['AUTO', 'Siti Rahma', 'AUTO', 'Perempuan', 'Bandung', '2000-05-20', 'SI', date('Y'), 'Jl. Contoh No. 2', '08987654321'],
+        ];
 
-        $callback = function() use ($columns, $example) {
+        $callback = function() use ($columns, $examples) {
             $file = fopen('php://output', 'w');
+            // BOM untuk UTF-8
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
             fputcsv($file, $columns);
-            fputcsv($file, $example);
+            foreach ($examples as $example) {
+                fputcsv($file, $example);
+            }
             fclose($file);
         };
 

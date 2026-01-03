@@ -38,14 +38,14 @@
                     <h5 class="mb-0"><i class="bi bi-mortarboard me-2"></i>Import Data Mahasiswa</h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted">Import data mahasiswa dari file CSV. Format kolom yang dibutuhkan:</p>
+                    <p class="text-muted">Import data mahasiswa dari file CSV atau Excel. Format kolom yang dibutuhkan:</p>
                     <ul class="small text-muted">
-                        <li><code>nim</code> - NIM Mahasiswa (wajib)</li>
+                        <li><code>nim</code> - NIM Mahasiswa (isi <strong>AUTO</strong> untuk generate otomatis)</li>
                         <li><code>nama</code> - Nama Lengkap (wajib)</li>
-                        <li><code>email</code> - Email (wajib)</li>
+                        <li><code>email</code> - Email (isi <strong>AUTO</strong> untuk generate dari NIM)</li>
                         <li><code>jenis_kelamin</code> - Laki-laki / Perempuan (wajib)</li>
-                        <li><code>tempat_lahir</code> - Tempat Lahir (wajib)</li>
-                        <li><code>tanggal_lahir</code> - Format YYYY-MM-DD (wajib)</li>
+                        <li><code>tempat_lahir</code> - Tempat Lahir (opsional)</li>
+                        <li><code>tanggal_lahir</code> - Format YYYY-MM-DD (opsional)</li>
                         <li><code>kode_prodi</code> - Kode Program Studi (wajib)</li>
                         <li><code>angkatan</code> - Tahun Angkatan (opsional)</li>
                         <li><code>alamat</code> - Alamat (opsional)</li>
@@ -53,21 +53,25 @@
                     </ul>
                     <div class="alert alert-info small">
                         <i class="bi bi-info-circle me-1"></i>
-                        Password default untuk mahasiswa adalah NIM
+                        <strong>Tips:</strong> Isi <code>AUTO</code> pada kolom NIM dan Email untuk generate otomatis.
+                        Password default adalah NIM.
                     </div>
                     
                     <form action="{{ route('import.mahasiswa') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-3">
-                            <label for="file_mahasiswa" class="form-label">Pilih File CSV</label>
-                            <input type="file" name="file" id="file_mahasiswa" class="form-control" accept=".csv,.txt" required>
+                            <label for="file_mahasiswa" class="form-label">Pilih File CSV / Excel</label>
+                            <input type="file" name="file" id="file_mahasiswa" class="form-control" accept=".csv,.txt,.xlsx,.xls" required>
                         </div>
-                        <div class="d-flex gap-2">
+                        <div class="d-flex gap-2 flex-wrap">
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-upload me-1"></i>Import
                             </button>
                             <a href="{{ route('import.template.mahasiswa') }}" class="btn btn-outline-secondary">
-                                <i class="bi bi-download me-1"></i>Download Template
+                                <i class="bi bi-filetype-csv me-1"></i>Template CSV
+                            </a>
+                            <a href="{{ route('import.template.mahasiswa', ['format' => 'excel']) }}" class="btn btn-outline-success">
+                                <i class="bi bi-file-earmark-excel me-1"></i>Template Excel
                             </a>
                         </div>
                     </form>

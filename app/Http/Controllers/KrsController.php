@@ -6,6 +6,8 @@ use App\Models\Krs;
 use App\Models\JadwalKuliah;
 use App\Models\TahunAkademik;
 use App\Models\Mahasiswa;
+use App\Models\KurikulumMataKuliah;
+use App\Models\Kurikulum;
 use Illuminate\Http\Request;
 
 class KrsController extends Controller
@@ -30,8 +32,9 @@ class KrsController extends Controller
             ->sum(fn($krs) => $krs->jadwalKuliah->mataKuliah->sks ?? 0);
 
         $isPeriodeKrs = $tahunAkademikAktif->isPeriodeKrs();
+        $modeKrs = setting('mode_krs', 'pilihan'); // paket atau pilihan
 
-        return view('krs.index', compact('mahasiswa', 'tahunAkademikAktif', 'krsSemesterIni', 'totalSks', 'isPeriodeKrs'));
+        return view('krs.index', compact('mahasiswa', 'tahunAkademikAktif', 'krsSemesterIni', 'totalSks', 'isPeriodeKrs', 'modeKrs'));
     }
 
     // Form pengambilan KRS
@@ -49,6 +52,72 @@ class KrsController extends Controller
             return back()->with('error', 'Periode pengisian KRS belum dibuka!');
         }
 
+        $modeKrs = setting('mode_krs', 'pilihan');
+
+        // Mode KRS Paket - ambil berdasarkan kurikulum dan semester mahasiswa
+        if ($modeKrs === 'paket') {
+            return $this->createPaket($mahasiswa, $tahunAkademikAktif);
+        }
+
+        // Mode KRS Pilihan - mahasiswa memilih sendiri
+        return $this->createPilihan($mahasiswa, $tahunAkademikAktif);
+    }
+
+    // KRS Mode Paket
+    private function createPaket($mahasiswa, $tahunAkademikAktif)
+    {
+        // Hitung semester mahasiswa saat ini
+        $semesterMahasiswa = $mahasiswa->semester ?? $this->hitungSemester($mahasiswa);
+        
+        // Cari kurikulum aktif untuk program studi mahasiswa
+        $kurikulum = Kurikulum::where('program_studi_id', $mahasiswa->program_studi_id)
+            ->where('is_aktif', true)
+            ->first();
+
+        if (!$kurikulum) {
+            return back()->with('error', 'Kurikulum tidak ditemukan untuk program studi Anda!');
+        }
+
+        // Ambil mata kuliah paket untuk semester ini
+        $mataKuliahPaket = KurikulumMataKuliah::where('kurikulum_id', $kurikulum->id)
+            ->where('semester_rekomendasi', $semesterMahasiswa)
+            ->with('mataKuliah')
+            ->get();
+
+        // Cari jadwal untuk mata kuliah paket
+        $mataKuliahIds = $mataKuliahPaket->pluck('mata_kuliah_id');
+        
+        $jadwalPaket = JadwalKuliah::where('tahun_akademik_id', $tahunAkademikAktif->id)
+            ->whereIn('mata_kuliah_id', $mataKuliahIds)
+            ->with(['mataKuliah', 'dosen', 'ruangan'])
+            ->get();
+
+        // Filter jadwal yang belum diambil
+        $krsIds = Krs::where('mahasiswa_id', $mahasiswa->id)
+            ->where('tahun_akademik_id', $tahunAkademikAktif->id)
+            ->pluck('jadwal_kuliah_id')
+            ->toArray();
+
+        $jadwalPaket = $jadwalPaket->filter(function($jadwal) use ($krsIds) {
+            return !in_array($jadwal->id, $krsIds);
+        });
+
+        // Group by mata kuliah untuk pilihan kelas
+        $jadwalGrouped = $jadwalPaket->groupBy('mata_kuliah_id');
+
+        return view('krs.create-paket', compact(
+            'mahasiswa', 
+            'tahunAkademikAktif', 
+            'mataKuliahPaket',
+            'jadwalGrouped',
+            'semesterMahasiswa',
+            'kurikulum'
+        ));
+    }
+
+    // KRS Mode Pilihan
+    private function createPilihan($mahasiswa, $tahunAkademikAktif)
+    {
         // Ambil jadwal yang tersedia untuk program studi mahasiswa
         $jadwalTersedia = JadwalKuliah::where('tahun_akademik_id', $tahunAkademikAktif->id)
             ->whereHas('mataKuliah', function($q) use ($mahasiswa) {
@@ -68,6 +137,89 @@ class KrsController extends Controller
         });
 
         return view('krs.create', compact('mahasiswa', 'tahunAkademikAktif', 'jadwalTersedia'));
+    }
+
+    // Hitung semester mahasiswa berdasarkan tahun masuk/angkatan
+    private function hitungSemester($mahasiswa)
+    {
+        $tahunMasuk = $mahasiswa->tahun_masuk ?? $mahasiswa->angkatan ?? now()->year;
+        $tahunAkademik = TahunAkademik::getAktif();
+        
+        if (!$tahunAkademik) {
+            return 1;
+        }
+
+        // Parse tahun akademik (format: 2024/2025)
+        $tahunAwal = (int) substr($tahunAkademik->tahun, 0, 4);
+        $semester = $tahunAkademik->semester; // Ganjil atau Genap
+        
+        // Hitung selisih tahun
+        $selisihTahun = $tahunAwal - $tahunMasuk;
+        
+        // Hitung semester: tahun * 2 + (1 jika genap, 0 jika ganjil)
+        $semesterMahasiswa = ($selisihTahun * 2) + ($semester === 'Genap' ? 2 : 1);
+        
+        return max(1, $semesterMahasiswa);
+    }
+
+    // Simpan KRS Paket (ambil semua paket sekaligus)
+    public function storePaket(Request $request)
+    {
+        $request->validate([
+            'jadwal_kuliah_id' => 'required|array',
+            'jadwal_kuliah_id.*' => 'exists:jadwal_kuliah,id',
+        ]);
+
+        $user = auth()->user();
+        $mahasiswa = $user->mahasiswa;
+        $tahunAkademikAktif = TahunAkademik::getAktif();
+
+        if (!$tahunAkademikAktif->isPeriodeKrs()) {
+            return back()->with('error', 'Periode pengisian KRS belum dibuka!');
+        }
+
+        $errors = [];
+        $berhasil = 0;
+
+        foreach ($request->jadwal_kuliah_id as $jadwalId) {
+            // Check apakah sudah diambil
+            $exists = Krs::where('mahasiswa_id', $mahasiswa->id)
+                ->where('tahun_akademik_id', $tahunAkademikAktif->id)
+                ->where('jadwal_kuliah_id', $jadwalId)
+                ->exists();
+
+            if ($exists) {
+                continue;
+            }
+
+            // Cek kuota
+            $jadwal = JadwalKuliah::with('mataKuliah')->find($jadwalId);
+            if ($jadwal && $jadwal->sisaKuota() <= 0) {
+                $errors[] = "Kuota kelas {$jadwal->mataKuliah->nama} ({$jadwal->kelas}) sudah penuh!";
+                continue;
+            }
+
+            Krs::create([
+                'mahasiswa_id' => $mahasiswa->id,
+                'tahun_akademik_id' => $tahunAkademikAktif->id,
+                'jadwal_kuliah_id' => $jadwalId,
+                'status' => 'Disetujui', // KRS Paket langsung disetujui
+                'tanggal_pengajuan' => now(),
+                'tanggal_persetujuan' => now(),
+            ]);
+            $berhasil++;
+        }
+
+        if (!empty($errors)) {
+            $errorMsg = implode("<br>", $errors);
+            if ($berhasil > 0) {
+                return redirect()->route('krs.index')
+                    ->with('warning', "{$berhasil} mata kuliah berhasil ditambahkan. Beberapa gagal:<br>" . $errorMsg);
+            }
+            return back()->with('error', $errorMsg);
+        }
+
+        return redirect()->route('krs.index')->with('success', "KRS Paket berhasil! {$berhasil} mata kuliah telah ditambahkan.");
     }
 
     // Simpan KRS

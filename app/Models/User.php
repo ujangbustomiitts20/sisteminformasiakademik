@@ -73,6 +73,16 @@ class User extends Authenticatable
         return $this->role === 'mahasiswa';
     }
 
+    public function isKaprodi()
+    {
+        return $this->role === 'kaprodi';
+    }
+
+    public function isDekan()
+    {
+        return $this->role === 'dekan';
+    }
+
     public function notifications()
     {
         return $this->hasMany(Notification::class);

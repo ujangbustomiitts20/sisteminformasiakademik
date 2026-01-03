@@ -12,7 +12,7 @@ class JadwalController extends Controller
     /**
      * Jadwal kuliah mahasiswa
      */
-    public function mahasiswa()
+    public function mahasiswa(Request $request)
     {
         $user = auth()->user();
         $mahasiswa = $user->mahasiswa;
@@ -21,7 +21,34 @@ class JadwalController extends Controller
             return back()->with('error', 'Data mahasiswa tidak ditemukan');
         }
 
-        $tahunAkademik = TahunAkademik::getAktif();
+        // Get list of tahun akademik yang mahasiswa punya KRS
+        $tahunAkademikList = TahunAkademik::whereIn('id', function($query) use ($mahasiswa) {
+            $query->select('tahun_akademik_id')
+                ->from('krs')
+                ->where('mahasiswa_id', $mahasiswa->id)
+                ->where('status', 'Disetujui')
+                ->distinct();
+        })->orderBy('tahun', 'desc')->orderBy('semester', 'desc')->get();
+
+        // Default ke tahun akademik aktif atau yang terakhir mahasiswa punya KRS
+        $tahunAkademikAktif = TahunAkademik::getAktif();
+        
+        if ($request->filled('tahun_akademik_id')) {
+            $tahunAkademik = TahunAkademik::find($request->tahun_akademik_id);
+        } else {
+            // Cek apakah mahasiswa punya KRS di tahun aktif
+            $hasKrsAktif = Krs::where('mahasiswa_id', $mahasiswa->id)
+                ->where('tahun_akademik_id', $tahunAkademikAktif?->id)
+                ->where('status', 'Disetujui')
+                ->exists();
+            
+            if ($hasKrsAktif) {
+                $tahunAkademik = $tahunAkademikAktif;
+            } else {
+                // Gunakan tahun akademik terakhir yang punya KRS
+                $tahunAkademik = $tahunAkademikList->first() ?? $tahunAkademikAktif;
+            }
+        }
         
         $jadwal = Krs::with(['jadwalKuliah.mataKuliah', 'jadwalKuliah.dosen', 'jadwalKuliah.ruangan'])
             ->where('mahasiswa_id', $mahasiswa->id)
@@ -33,7 +60,7 @@ class JadwalController extends Controller
                 return ($hariOrder[$krs->jadwalKuliah->hari] ?? 7) . $krs->jadwalKuliah->jam_mulai;
             });
 
-        return view('jadwal.mahasiswa', compact('jadwal', 'tahunAkademik', 'mahasiswa'));
+        return view('jadwal.mahasiswa', compact('jadwal', 'tahunAkademik', 'mahasiswa', 'tahunAkademikList'));
     }
 
     /**

@@ -24,7 +24,9 @@ class UserController extends Controller
             $query->where('role', $request->role);
         }
 
-        $users = $query->orderBy('name')->paginate(15);
+        $users = $query->with(['dosen', 'mahasiswa'])
+            ->orderBy('name')
+            ->paginate(15);
 
         return view('user.index', compact('users'));
     }
@@ -40,7 +42,7 @@ class UserController extends Controller
             'name' => 'required|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6|confirmed',
-            'role' => 'required|in:admin,dosen,mahasiswa',
+            'role' => 'required|in:admin,dosen,mahasiswa,kaprodi,dekan',
         ]);
 
         User::create([
@@ -55,6 +57,7 @@ class UserController extends Controller
 
     public function show(User $user)
     {
+        $user->load(['dosen.programStudi.fakultas', 'mahasiswa.programStudi.fakultas']);
         return view('user.show', compact('user'));
     }
 
@@ -69,7 +72,7 @@ class UserController extends Controller
             'name' => 'required|max:255',
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|min:6|confirmed',
-            'role' => 'required|in:admin,dosen,mahasiswa',
+            'role' => 'required|in:admin,dosen,mahasiswa,kaprodi,dekan',
         ]);
 
         $data = [

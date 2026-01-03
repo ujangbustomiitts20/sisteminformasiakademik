@@ -13,13 +13,23 @@
     </nav>
 </div>
 
-<!-- Info Semester -->
+<!-- Filter Tahun Akademik -->
 <div class="card mb-4">
     <div class="card-body">
         <div class="row align-items-center">
-            <div class="col-md-8">
+            <div class="col-md-4">
+                <label class="form-label">Pilih Semester</label>
+                <select class="form-select" id="tahunAkademikSelect" onchange="window.location.href='{{ route('jadwal.mahasiswa') }}?tahun_akademik_id='+this.value">
+                    @foreach($tahunAkademikList as $ta)
+                        <option value="{{ $ta->id }}" {{ $tahunAkademik?->id == $ta->id ? 'selected' : '' }}>
+                            {{ $ta->nama_lengkap }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
                 <h5 class="mb-1">{{ $tahunAkademik->nama_lengkap ?? '-' }}</h5>
-                <p class="text-muted mb-0">Tahun Akademik Aktif</p>
+                <p class="text-muted mb-0">Semester Terpilih</p>
             </div>
             <div class="col-md-4 text-md-end">
                 <h5 class="mb-1">{{ $jadwal->count() }} Mata Kuliah</h5>

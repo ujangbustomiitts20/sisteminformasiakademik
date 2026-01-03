@@ -15,6 +15,7 @@ class Nilai extends Model
     protected $fillable = [
         'krs_id',
         'tugas',
+        'kehadiran',
         'uts',
         'uas',
         'nilai_akhir',
@@ -27,11 +28,26 @@ class Nilai extends Model
         return $this->belongsTo(Krs::class);
     }
 
-    // Hitung nilai akhir otomatis (30% Tugas, 30% UTS, 40% UAS)
+    // Hitung nilai akhir otomatis dengan bobot komponen
+    // Default: 20% Kehadiran, 20% Tugas, 25% UTS, 35% UAS (jika kehadiran ada)
+    // Atau: 30% Tugas, 30% UTS, 40% UAS (jika kehadiran tidak ada)
     public function hitungNilaiAkhir()
     {
-        if ($this->tugas !== null && $this->uts !== null && $this->uas !== null) {
-            $this->nilai_akhir = ($this->tugas * 0.3) + ($this->uts * 0.3) + ($this->uas * 0.4);
+        if ($this->uts !== null && $this->uas !== null) {
+            if ($this->kehadiran !== null) {
+                // Dengan kehadiran
+                $this->nilai_akhir = 
+                    ($this->kehadiran * 0.20) + 
+                    (($this->tugas ?? 0) * 0.20) + 
+                    ($this->uts * 0.25) + 
+                    ($this->uas * 0.35);
+            } else {
+                // Tanpa kehadiran (formula lama)
+                $this->nilai_akhir = 
+                    (($this->tugas ?? 0) * 0.30) + 
+                    ($this->uts * 0.30) + 
+                    ($this->uas * 0.40);
+            }
             $this->huruf = $this->konversiHuruf($this->nilai_akhir);
             $this->bobot = $this->konversiBobot($this->huruf);
             $this->save();

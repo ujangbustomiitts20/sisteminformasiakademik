@@ -52,4 +52,28 @@ trait HashidsTrait
     {
         return Hashids::encode($id);
     }
+
+    /**
+     * Find model by hashid.
+     */
+    public static function findByHashid(string $hashid)
+    {
+        $decoded = Hashids::decode($hashid);
+        if (empty($decoded)) {
+            return null;
+        }
+        return static::find($decoded[0]);
+    }
+
+    /**
+     * Find model by hashid or fail.
+     */
+    public static function findByHashidOrFail(string $hashid)
+    {
+        $decoded = Hashids::decode($hashid);
+        if (empty($decoded)) {
+            abort(404);
+        }
+        return static::findOrFail($decoded[0]);
+    }
 }

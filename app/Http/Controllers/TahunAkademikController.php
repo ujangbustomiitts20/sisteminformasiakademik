@@ -20,6 +20,8 @@ class TahunAkademikController extends Controller
         $request->validate([
             'tahun' => 'required|max:10',
             'semester' => 'required|in:Ganjil,Genap,ganjil,genap',
+            'mulai_krs' => 'nullable|date',
+            'selesai_krs' => 'nullable|date|after_or_equal:mulai_krs',
         ]);
 
         $semester = ucfirst(strtolower($request->semester));
@@ -43,6 +45,8 @@ class TahunAkademikController extends Controller
             'semester' => $semester,
             'tanggal_mulai' => now(),
             'tanggal_selesai' => now()->addMonths(6),
+            'mulai_krs' => $request->mulai_krs,
+            'selesai_krs' => $request->selesai_krs,
             'is_aktif' => $request->is_aktif ? true : false,
         ]);
         return redirect()->route('tahun-akademik.index')->with('success', 'Tahun akademik berhasil ditambahkan!');
@@ -53,6 +57,8 @@ class TahunAkademikController extends Controller
         $request->validate([
             'tahun' => 'required|max:10',
             'semester' => 'required|in:Ganjil,Genap,ganjil,genap',
+            'mulai_krs' => 'nullable|date',
+            'selesai_krs' => 'nullable|date|after_or_equal:mulai_krs',
         ]);
 
         $semester = ucfirst(strtolower($request->semester));
@@ -65,6 +71,8 @@ class TahunAkademikController extends Controller
         $tahunAkademik->update([
             'tahun' => $request->tahun,
             'semester' => $semester,
+            'mulai_krs' => $request->mulai_krs,
+            'selesai_krs' => $request->selesai_krs,
             'is_aktif' => $request->is_aktif ? true : false,
         ]);
         return redirect()->route('tahun-akademik.index')->with('success', 'Tahun akademik berhasil diperbarui!');

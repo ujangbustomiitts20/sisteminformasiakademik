@@ -1,0 +1,422 @@
+
+Warning: Module "imagick" is already loaded in Unknown on line 0
+===========================================
+   DETAIL DATABASE itts_sikad             
+===========================================
+
+Total Tables: 578
+
+===========================================
+TABEL DENGAN DATA (> 0 rows):
+===========================================
+  oauth_auth_code                                  161,416 rows
+  kelaskuliah_presensimahasiswa                     87,093 rows
+  kuesionerpp_hasil                                 62,928 rows
+  tbpst                                             41,082 rows
+  list_sekolah                                      26,507 rows
+  pengambilanmk                                     20,219 rows
+  trnlm                                             20,219 rows
+  nilai                                             17,771 rows
+  kuesionerla_hasil                                 17,101 rows
+  transkrip_detil                                   14,696 rows
+  biayatagihan                                      13,377 rows
+  bayartagihan_detil                                10,476 rows
+  jadwalujian_ruanganmahasiswa                       9,772 rows
+  tbpti                                              9,251 rows
+  wilayah                                            8,522 rows
+  laporan_rekap_kuesionerpp                          7,786 rows
+  laporan_rekap_kuesionerpp_penjawab                 7,174 rows
+  biayakomponenkeuangan_semester                     7,154 rows
+  dosen_kesediaan                                    5,474 rows
+  notifikasi                                         4,711 rows
+  kelaskuliah_presensidosen                          4,400 rows
+  krss                                               4,347 rows
+  bayartagihan                                       4,234 rows
+  mahasiswa_kampus                                   4,067 rows
+  kuliah_mhs                                         3,825 rows
+  mahasiswa_jeniskelas                               3,650 rows
+  kuesionerpp_status                                 3,587 rows
+  pengambilanmk_status                               3,096 rows
+  yusidium_mkde                                      3,003 rows
+  trakm                                              2,976 rows
+  bayartagihan_finnet_settlement                     2,672 rows
+  mahasiswa_wali                                     2,632 rows
+  oauth_user                                         1,951 rows
+  nilaikonversi                                      1,940 rows
+  biayakomponenkeuangan                              1,759 rows
+  account                                            1,744 rows
+  biodata                                            1,744 rows
+  komponen                                           1,484 rows
+  kelaskuliah_prodi                                  1,222 rows
+  trlsm                                              1,162 rows
+  trlsm_bak                                          1,162 rows
+  kelaskuliah_pengajar                               1,138 rows
+  kelaskuliah                                        1,071 rows
+  yusidium                                             966 rows
+  mahasiswa                                            918 rows
+  msmhs                                                918 rows
+  kuesionerpp_soal_untuk                               848 rows
+  oauth_menu_scope                                     789 rows
+  paymentchannel                                       774 rows
+  oauth_menu                                           731 rows
+  transkrip                                            688 rows
+  formulir_pmb                                         631 rows
+  migration_versions                                   471 rows
+  dosen_kualifikasi_mengajar                           463 rows
+  laporan_rekap_kuesionerla_prodi                      441 rows
+  kuesionerks_hasil                                    414 rows
+  finnet_settlement                                    402 rows
+  kurikulum_makul                                      359 rows
+  kuesionerla_status                                   349 rows
+  oauth_scope                                          346 rows
+  oauth_role_scope                                     345 rows
+  kelaskuliah_jadwal                                   341 rows
+  kelulusan_mhs                                        313 rows
+  jadwalujian_slotmakul                                295 rows
+  negara                                               243 rows
+  makul                                                206 rows
+  kuesionerla_soal                                     196 rows
+  kelaskuliah_pengajar_logentrinilai                   169 rows
+  kelaskuliah_pengajar_logkoreksinilai                 169 rows
+  mahasiswa_beasiswaoperator                           164 rows
+  mahasiswa_fkartuujian                                155 rows
+  mahasiswa_pesertakrsonline                           155 rows
+  kuesionerdo_hasil                                    120 rows
+  mahasiswa_aktivitas_peserta                          116 rows
+  mahasiswa2                                           110 rows
+  kuesionerpp_soal                                     106 rows
+  mahasiswa_aktivitas                                  105 rows
+  jadwalujian_kelompokhari                             104 rows
+  komponenkeuangan_prodi                                96 rows
+  libur_akademik                                        95 rows
+  mahasiswa_aktivitas_dosenpembimbing                   95 rows
+  komponenkeuangan_batasbayar                           93 rows
+  mahasiswa_aktivitas_dosenpenguji                      93 rows
+  jadwalujian_manual                                    88 rows
+  kegiatan_akademik                                     87 rows
+  skpi_verifikator_prodi                                87 rows
+  kuesionerks_status                                    69 rows
+  dosen                                                 64 rows
+  msdos                                                 64 rows
+  limitasi_login                                        62 rows
+  dosen_kesediaan_status                                61 rows
+  payment_channel                                       58 rows
+  labelkelas                                            52 rows
+  skpi_verifikator                                      51 rows
+  user                                                  51 rows
+  makul_evaluasi                                        48 rows
+  biayakomponenkegiatan                                 46 rows
+  skpi_jeniskelengkapan_status                          45 rows
+  biayatagihan_deleted                                  40 rows
+  kuesionerdo_soal                                      39 rows
+  komponenkeuangan                                      32 rows
+  makul_rencana                                         32 rows
+  pengumuman_kategori                                   31 rows
+  jenisbeasiswa_komponen                                30 rows
+  pengumuman                                            30 rows
+  meta_konfigportalpmb                                  28 rows
+  tbbnl                                                 27 rows
+  mahasiswa_aktivitas_peserta_nilai                     26 rows
+  bkd_struktural                                        25 rows
+  jenjang_pendidikan                                    24 rows
+  kuesionerks_soal                                      24 rows
+  kuesionerpp_jawabanpg                                 24 rows
+  skpi_nomer                                            24 rows
+  finnet_biaya                                          23 rows
+  finnet_statusnonaktif                                 23 rows
+  pekerjaanref                                          20 rows
+  ruangan                                               20 rows
+  oauth_role                                            19 rows
+  skpi_mahasiswa                                        19 rows
+  bahankuliah                                           17 rows
+  payment_method                                        17 rows
+  jenis_kegiatan                                        16 rows
+  kuesionerla_jawabanpg                                 16 rows
+  sesi_kuliah                                           16 rows
+  skskelulusan                                          15 rows
+  jadwalkuliah_kuesioner_dosen                          13 rows
+  jadwalkuliah_publikasi_dosen                          13 rows
+  jadwalkuliah_publikasi_mahasiswa                      13 rows
+  jadwalujian_publikasi_dosen                           13 rows
+  jadwalujian_publikasi_mahasiswa                       13 rows
+  trpid                                                 13 rows
+  waktuakademik                                         13 rows
+  dosen2                                                12 rows
+  grade                                                 11 rows
+  kuesionerdo_warna                                     10 rows
+  biayakomponenmahasiswa                                 9 rows
+  konversipredikat_prodi                                 9 rows
+  konversiumum                                           9 rows
+  skpi_jeniskelengkapan                                  9 rows
+  kuesionerdo_jawabanpg                                  8 rows
+  oauth_client_role                                      8 rows
+  panduan_hak                                            8 rows
+  presensi_honor                                         8 rows
+  waktuentrinilaikomponen                                8 rows
+  durasisks                                              6 rows
+  jadwalujian_mkpengecualian                             6 rows
+  kuesionerdo_status                                     6 rows
+  kuesionerks_aspek                                      6 rows
+  kuesionerpp_aspek                                      6 rows
+  kuesionerpp_predikat                                   6 rows
+  kurikulum                                              6 rows
+  msphs                                                  6 rows
+  sesi_ujian                                             6 rows
+  usulan_mk                                              6 rows
+  alumni                                                 5 rows
+  fakultas                                               5 rows
+  kuesionerdo_waktu                                      5 rows
+  kuesionerla_aspek                                      5 rows
+  msfak                                                  5 rows
+  oauth_grant                                            5 rows
+  periodecetakkartuujian                                 5 rows
+  periodeujian                                           5 rows
+  settingkopfakultas                                     5 rows
+  skpi_status                                            5 rows
+  skpi_tingkat                                           5 rows
+  waktukrs_pembatas_member                               5 rows
+  jenispresensi                                          4 rows
+  kelompokkurikulum                                      4 rows
+  komponendefault                                        4 rows
+  konsentrasi                                            4 rows
+  mahasiswa_rabbitmq_tagihan                             4 rows
+  mspds                                                  4 rows
+  oauth_client_grant                                     4 rows
+  pesan                                                  4 rows
+  pesant                                                 4 rows
+  riwayatpendidikandosen                                 4 rows
+  skpi_p_indikator                                       4 rows
+  skpi_template                                          4 rows
+  waktukrs                                               4 rows
+  backup_makul_20251106                                  3 rows
+  departemen                                             3 rows
+  jenisbeasiswa                                          3 rows
+  json_settings                                          3 rows
+  kuesionerdo_aspek                                      3 rows
+  kuesionerla_waktu                                      3 rows
+  lockjurnal_konfig                                      3 rows
+  mspst                                                  3 rows
+  penandatangan                                          3 rows
+  pmb_voucher                                            3 rows
+  prodi                                                  3 rows
+  queue_presensi_mahasiswa                               3 rows
+  skpi_prodi                                             3 rows
+  waktucuti                                              3 rows
+  waktukrs_pembatas                                      3 rows
+  additional_biodata_fields                              2 rows
+  cuti_usulan                                            2 rows
+  jeniskelas                                             2 rows
+  kartu_ujian                                            2 rows
+  kategori                                               2 rows
+  kuesionerdo_rating                                     2 rows
+  kuesionerks_waktu                                      2 rows
+  kuesionerpp_waktu                                      2 rows
+  oauth_client                                           2 rows
+  panduan                                                2 rows
+  periode_kesediaan_mengajar                             2 rows
+  sesi_kelompok                                          2 rows
+  waktuentrinilai                                        2 rows
+  waktukegiatan                                          2 rows
+  akun                                                   1 rows
+  bank                                                   1 rows
+  bayartagihan_detil_deleted                             1 rows
+  dosen_pengabdian                                       1 rows
+  gedung                                                 1 rows
+  grupkelas                                              1 rows
+  info                                                   1 rows
+  jadwaldokter_kampus                                    1 rows
+  lokasi                                                 1 rows
+  mspti                                                  1 rows
+  msyys                                                  1 rows
+  parameterbiaya                                         1 rows
+  pegawai                                                1 rows
+  penandatangan_keuangan                                 1 rows
+  penandatanganumum                                      1 rows
+  sanksiakademik                                         1 rows
+  schema_migrations                                      1 rows
+  setingijazah                                           1 rows
+  settingkartu                                           1 rows
+  settingkop                                             1 rows
+  sistem                                                 1 rows
+  sksmaksimum_umum                                       1 rows
+  surattugasmengajar_setting                             1 rows
+  trkap                                                  1 rows
+  waktukrsprodiasli2                                     1 rows
+  waktukrss                                              1 rows
+  waktukrss_pembatas                                     1 rows
+  waktupkrs_pembatas                                     1 rows
+
+===========================================
+Total tables dengan data: 236
+===========================================
+
+===========================================
+STRUKTUR TABEL UTAMA:
+===========================================
+
+📋 biayakomponenmahasiswa:
+   - IDMAHASISWA (char(20))
+   - IDKOMPONEN (char(10))
+   - UTS (decimal(15,2) unsigned)
+   - BIAYA (decimal(15,2) unsigned)
+   - UPDATER (varchar(20))
+   - LASTUPDATE (datetime)
+   - TAHUN (year)
+   - SEMESTER (smallint unsigned)
+   - KRS (decimal(15,2) unsigned)
+   - DATECREATED (datetime)
+   - CREATOR (char(20))
+   - UAS (decimal(15,2) unsigned)
+
+📋 dosen:
+   - ID (varchar(20))
+   - ACCOUNT_ID (varchar(50))
+   - NAMA (varchar(100))
+   - ALAMAT (tinytext)
+   - STATUS (char(1))
+   - IDDEPARTEMEN (char(20))
+   - PASSWORD (varchar(100))
+   - KODERESETPASSWORD (varchar(100))
+   - CSS (varchar(30))
+   - NIPPNS (varchar(30))
+   - INSTANSI (varchar(100))
+   - AKTE (smallint unsigned)
+   - IZIN (smallint unsigned)
+   - STATUSKERJA (char(1))
+   - SETTINGTAMPILAN (varchar(200))
+   - STATUSLOGIN (smallint unsigned)
+   - LASTLOGIN (datetime)
+   - LASTAKSI (datetime)
+   - TOKEN (varchar(200))
+   - FLAGPASSWORD (smallint unsigned)
+   - PENGINGATPASSWORD (date)
+   - SESUAIBIDANG (char(1))
+   - JABATAN (varchar(50))
+   - SALT (varchar(100))
+   - AGAMA (smallint unsigned)
+   - NIDN (varchar(20))
+   - TELEPON (varchar(50))
+   - HP (varchar(50))
+   - EMAIL (varchar(50))
+   - IDKONSENTRASI (char(20))
+   - NIK (varchar(30))
+   - KOTA (varchar(30))
+   - PROVINSI (varchar(30))
+   - DUSUN (varchar(50))
+   - RT (varchar(2))
+   - RW (varchar(2))
+   - KELURAHAN (varchar(50))
+   - IDKECAMATAN (varchar(8))
+   - STATUSNIKAH (char(1))
+   - TANGGALAWAL (date)
+   - GELARAKADEMIK (varchar(40))
+   - GOLONGAN (char(2))
+   - JABATANSTRUKTURAL (varchar(50))
+   - FEEDERIDPTK (varchar(255))
+   - LASTUPDATE (timestamp)
+   - LASTSYNC (timestamp)
+   - FEEDERSYNCMESSAGE (mediumtext)
+   - JENISPEGAWAI (char(1))
+   - KODEGAJI (char(10))
+   - KUOTA (smallint unsigned)
+   - NPWP (varchar(50))
+   - REKENING (varchar(50))
+   - NAMAREKENING (varchar(50))
+   - BANK (varchar(3))
+   - JENISKUOTA (char(1))
+   - NUPTK (varchar(16))
+   - NIP (varchar(18))
+   - KODEPT (char(6))
+   - KODEPRODI (char(5))
+   - KODEJENJANG (char(1))
+   - TEMPATLAHIR (char(20))
+   - TGLLAHIR (date)
+   - KELAMIN (char(1))
+   - KODEJABATAN (char(1))
+   - PENDIDIKANTERTINGGI (char(1))
+   - STATUSIKATANKERJA (char(1))
+   - STATUSAKTIVITAS (char(1))
+   - SEMESTERMULAIKELUAR (char(5))
+   - SEMESTERAWAL (char(5))
+   - NODOS_ (varchar(10))
+   - CETAKMSDOS (char(1))
+   - KODEWILAYAH (char(2))
+   - AKTAMENGAJAR (char(30))
+   - FEEDERIDREGPTK (varchar(255))
+   - GELARDEPAN (varchar(10))
+   - VALIDASIDOSENDIKTI2020 (int unsigned)
+   - KODEPOS (varchar(10))
+   - NAMAFILEFOTO (varchar(255))
+   - STATUSBKD (varchar(5))
+   - FILETTD (varchar(255))
+   - LASTUPDATEFILETTD (datetime)
+   - IDKAMPUS (varchar(10))
+   - BAHASA (varchar(2))
+
+📋 pegawai:
+   - ID (char(20))
+   - IDPRODI (char(20))
+   - NAMA (varchar(100))
+   - PANGGILAN (varchar(30))
+   - TEMPATLAHIR (varchar(100))
+   - TANGGALLAHIR (date)
+   - KELAMIN (char(1))
+   - AGAMA (char(2))
+   - ALAMAT (varchar(255))
+   - TELEPON (varchar(20))
+   - HP (varchar(20))
+   - EMAIL (varchar(100))
+   - PENDIDIKAN (char(2))
+   - TMTP (date)
+   - NIP (varchar(50))
+   - KODEHONOR (varchar(20))
+   - KUOTA (smallint unsigned)
+   - REKENING (varchar(20))
+   - FOTO (varchar(255))
+   - FOTOKTP (varchar(255))
+   - FOTOKK (varchar(255))
+   - FOTONPWP (varchar(255))
+   - NOMORKK (varchar(20))
+   - NPWP (varchar(20))
+   - UPDATER (varchar(20))
+   - CREATOR (varchar(20))
+   - LASTUPDATE (datetime)
+   - DATECREATED (datetime)
+
+📋 fakultas:
+   - ID (varchar(10))
+   - NAMA (varchar(100))
+   - NIPPIMPINAN (varchar(25))
+   - NAMAPIMPINAN (varchar(100))
+   - ALAMAT (tinytext)
+   - FILE (longblob)
+   - NAMAPD1 (varchar(100))
+   - NIPPD1 (varchar(30))
+   - NAMA2 (varchar(100))
+   - KDPTIMSFAK (char(6))
+
+📋 event_prodi:
+   - IDEVENT (varchar(36))
+   - IDPRODI (varchar(20))
+
+📋 krs_online_tanggal:
+   - IDMAHASISWA (char(20))
+   - TAHUN (year)
+   - SEMESTER (smallint)
+   - SEMESTERKRS (smallint)
+   - TANGGAL (datetime)
+
+📋 kelaskuliah_pengajar_logentrinilai:
+   - TAHUN (year)
+   - SEMESTER (smallint unsigned)
+   - IDKAMPUS (char(20))
+   - IDMAKUL (char(20))
+   - IDKELAS (char(5))
+   - IDPENGAJAR (char(20))
+   - JENIS (char(1))
+   - BULANGAJI (smallint unsigned)
+   - TAHUNGAJI (year)
+   - TANGGAL (datetime)
+   - IDKOMPONEN (char(20))
+   - TANGGALUJIAN (date)
+   - TOTALLIBUR (int unsigned)

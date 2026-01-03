@@ -90,6 +90,9 @@
                                 <a href="{{ route('dosen.show', $d) }}" class="btn btn-outline-info" title="Detail">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                <a href="{{ route('kepegawaian.index', $d) }}" class="btn btn-outline-primary" title="Kepegawaian">
+                                    <i class="bi bi-person-badge"></i>
+                                </a>
                                 <a href="{{ route('dosen.edit', $d) }}" class="btn btn-outline-warning" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
