@@ -21,10 +21,29 @@ class CheckRole
 
         $user = auth()->user();
 
-        if (!in_array($user->role, $roles)) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+        // Check direct role match
+        if (in_array($user->role, $roles)) {
+            return $next($request);
         }
 
-        return $next($request);
+        // Allow users with dosen data to access dosen routes
+        if (in_array('dosen', $roles) && $user->canAccessDosenFeatures()) {
+            return $next($request);
+        }
+
+        // Check if dosen has additional roles (dekan/kaprodi)
+        if ($user->role === 'dosen') {
+            // Allow dosen who is also dekan to access dekan routes
+            if (in_array('dekan', $roles) && $user->isDekan()) {
+                return $next($request);
+            }
+            
+            // Allow dosen who is also kaprodi to access kaprodi routes
+            if (in_array('kaprodi', $roles) && $user->isKaprodi()) {
+                return $next($request);
+            }
+        }
+
+        abort(403, 'Anda tidak memiliki akses ke halaman ini.');
     }
 }

@@ -69,9 +69,21 @@
             </ol>
         </nav>
     </div>
-    <button class="btn btn-outline-primary" onclick="window.print()">
-        <i class="bi bi-printer me-1"></i>Cetak Jadwal
-    </button>
+    <div class="d-flex gap-2 align-items-center">
+        <!-- Filter Tahun Akademik -->
+        <form method="GET" action="{{ route('jadwal.dosen') }}" class="d-flex align-items-center">
+            <select name="tahun_akademik_id" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                @foreach($tahunAkademikList as $ta)
+                <option value="{{ $ta->id }}" {{ $tahunAkademik?->id == $ta->id ? 'selected' : '' }}>
+                    {{ $ta->tahun }} {{ $ta->semester }} {{ $ta->is_aktif ? '(Aktif)' : '' }}
+                </option>
+                @endforeach
+            </select>
+        </form>
+        <button class="btn btn-outline-primary btn-sm" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i>Cetak
+        </button>
+    </div>
 </div>
 
 <!-- Statistik Ringkas -->

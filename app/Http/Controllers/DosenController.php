@@ -248,4 +248,30 @@ class DosenController extends Controller
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Search dosen for Select2 AJAX
+     */
+    public function search(Request $request)
+    {
+        $search = $request->get('q', '');
+        
+        $dosen = Dosen::where('status', 'Aktif')
+            ->where(function($query) use ($search) {
+                $query->where('nama', 'like', "%{$search}%")
+                      ->orWhere('nidn', 'like', "%{$search}%");
+            })
+            ->orderBy('nama')
+            ->limit(20)
+            ->get(['id', 'nama', 'nidn']);
+        
+        $results = $dosen->map(function($d) {
+            return [
+                'id' => $d->nama,
+                'text' => $d->nama . ' (' . $d->nidn . ')'
+            ];
+        });
+        
+        return response()->json(['results' => $results]);
+    }
 }

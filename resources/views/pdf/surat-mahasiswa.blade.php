@@ -111,12 +111,20 @@
     </style>
 </head>
 <body>
+    @php
+        $pejabat = \App\Models\PejabatPenandatangan::where('kode', 'dekan_' . strtolower($mahasiswa->programStudi->fakultas->kode ?? 'fti'))
+            ->orWhere('kode', 'dekan_fti')
+            ->where('aktif', true)
+            ->first();
+        $namaInstitusi = setting('institution_name', 'Universitas');
+        $namaFakultas = $mahasiswa->programStudi->fakultas->nama ?? 'Fakultas Teknologi Informasi';
+    @endphp
     <!-- Kop Surat -->
     <div class="kop-surat">
-        <h2>UNIVERSITAS CONTOH</h2>
-        <h3>FAKULTAS TEKNOLOGI INFORMASI</h3>
-        <p>Jalan Raya Kampus No. 123, Telp. (021) 12345678</p>
-        <p>Email: info@universitascontoh.ac.id | Website: www.universitascontoh.ac.id</p>
+        <h2>{{ strtoupper($namaInstitusi) }}</h2>
+        <h3>{{ strtoupper($namaFakultas) }}</h3>
+        <p>{{ setting('institution_address', 'Alamat Institusi') }}, Telp. {{ setting('contact_phone', '-') }}</p>
+        <p>Email: {{ setting('contact_email', '-') }} | Website: {{ setting('contact_website', '-') }}</p>
     </div>
     
     <!-- Nomor Surat -->
@@ -127,7 +135,7 @@
     
     <!-- Content -->
     <div class="content">
-        <p>Yang bertanda tangan di bawah ini, Dekan Fakultas Teknologi Informasi Universitas Contoh, menerangkan bahwa:</p>
+        <p>Yang bertanda tangan di bawah ini, {{ $pejabat?->jabatan ?? ('Dekan ' . $namaFakultas) }} {{ $namaInstitusi }}, menerangkan bahwa:</p>
         
         <div class="data-mahasiswa">
             <table>
@@ -162,23 +170,23 @@
         @if($pengajuan->jenis_surat == 'Surat Keterangan Aktif Kuliah')
         <p>
             Adalah benar mahasiswa yang terdaftar dan <strong>aktif kuliah</strong> pada Semester {{ $mahasiswa->semester_aktif }} 
-            Tahun Akademik {{ date('Y') }}/{{ date('Y') + 1 }} di Universitas Contoh.
+            Tahun Akademik {{ date('Y') }}/{{ date('Y') + 1 }} di {{ $namaInstitusi }}.
         </p>
         @elseif($pengajuan->jenis_surat == 'Surat Pengantar Penelitian')
         <p>
             Mahasiswa tersebut di atas akan melaksanakan kegiatan <strong>penelitian</strong> dalam rangka penyusunan 
             skripsi/tugas akhir sebagai salah satu syarat untuk menyelesaikan studi pada program Sarjana (S1) 
-            di Universitas Contoh.
+            di {{ $namaInstitusi }}.
         </p>
         @elseif($pengajuan->jenis_surat == 'Surat Pengantar Magang/PKL')
         <p>
             Mahasiswa tersebut di atas akan melaksanakan kegiatan <strong>magang/praktik kerja lapangan (PKL)</strong> 
             sebagai salah satu persyaratan akademik untuk menyelesaikan studi pada program Sarjana (S1) 
-            di Universitas Contoh.
+            di {{ $namaInstitusi }}.
         </p>
         @elseif($pengajuan->jenis_surat == 'Surat Keterangan Berkelakuan Baik')
         <p>
-            Mahasiswa tersebut di atas selama mengikuti perkuliahan di Universitas Contoh 
+            Mahasiswa tersebut di atas selama mengikuti perkuliahan di {{ $namaInstitusi }} 
             <strong>berkelakuan baik</strong> dan tidak pernah terlibat dalam tindakan yang melanggar 
             peraturan akademik maupun tata tertib kampus.
         </p>
@@ -186,11 +194,11 @@
         <p>
             Mahasiswa tersebut di atas telah dinyatakan <strong>lulus</strong> dan berhak menyandang gelar 
             Sarjana Komputer (S.Kom) setelah menyelesaikan seluruh persyaratan akademik 
-            di Universitas Contoh.
+            di {{ $namaInstitusi }}.
         </p>
         @else
         <p>
-            Mahasiswa tersebut di atas adalah mahasiswa aktif yang terdaftar di Universitas Contoh 
+            Mahasiswa tersebut di atas adalah mahasiswa aktif yang terdaftar di {{ $namaInstitusi }} 
             dan memerlukan surat keterangan ini untuk keperluan <strong>{{ $pengajuan->keperluan }}</strong>.
         </p>
         @endif
@@ -213,10 +221,15 @@
     
     <!-- TTD -->
     <div class="ttd">
-        <p>{{ \Carbon\Carbon::parse($pengajuan->tanggal_diproses)->translatedFormat('d F Y') }}</p>
-        <p>Dekan Fakultas Teknologi Informasi,</p>
-        <p class="nama">Dr. Ahmad Hidayat, M.Kom</p>
-        <p>NIP. 19750815 200312 1 001</p>
+        <p>{{ setting('kota_institusi', 'Jakarta') }}, {{ \Carbon\Carbon::parse($pengajuan->tanggal_diproses)->translatedFormat('d F Y') }}</p>
+        <p>{{ $pejabat?->jabatan ?? ('Dekan ' . $namaFakultas) }},</p>
+        @if($pejabat?->tanda_tangan)
+            <img src="{{ $pejabat->tanda_tangan_url }}" alt="TTD" style="height: 50px; margin: 10px 0;">
+        @endif
+        <p class="nama">{{ $pejabat?->nama_lengkap ?? '_______________' }}</p>
+        @if($pejabat?->nip)
+        <p>NIP. {{ $pejabat->nip }}</p>
+        @endif
     </div>
     
     <!-- Footer -->

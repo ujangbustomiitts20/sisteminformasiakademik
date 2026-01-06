@@ -104,7 +104,7 @@
         <div class="status-box">{{ $mahasiswa->status }}</div>
         
         <div class="header">
-            {{ setting('nama_institusi', 'SISTEM INFORMASI AKADEMIK') }}
+            {{ setting('institution_name', 'SISTEM INFORMASI AKADEMIK') }}
         </div>
         
         <table class="content" cellpadding="0" cellspacing="0">

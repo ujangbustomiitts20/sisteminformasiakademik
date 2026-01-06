@@ -29,6 +29,25 @@ class Yudisium extends Model
         'catatan',
         'diproses_oleh',
         'tanggal_proses',
+        // Legacy fields
+        'no_sk_yudisium',
+        'tanggal_sk_yudisium',
+        'no_sk_rektor',
+        'tanggal_sk_rektor',
+        'no_blanko',
+        'no_pin',
+        'no_nirl',
+        'url_pddikti',
+        'feeder_aktivitas',
+        'status_keluar',
+        'tahun_semester',
+        'nilai_kompre',
+        'nilai_uap_tulis',
+        'nilai_uap_praktek',
+        'simbol_uap_tulis',
+        'simbol_uap_praktek',
+        'peminatan',
+        'legacy_id',
     ];
 
     protected $casts = [
@@ -36,7 +55,12 @@ class Yudisium extends Model
         'tanggal_masuk' => 'date',
         'tanggal_lulus' => 'date',
         'tanggal_proses' => 'datetime',
+        'tanggal_sk_yudisium' => 'date',
+        'tanggal_sk_rektor' => 'date',
         'ipk_akhir' => 'decimal:2',
+        'nilai_kompre' => 'decimal:2',
+        'nilai_uap_tulis' => 'decimal:2',
+        'nilai_uap_praktek' => 'decimal:2',
     ];
 
     const STATUS_PENDING = 'Pending';

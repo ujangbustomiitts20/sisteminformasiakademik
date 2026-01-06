@@ -108,10 +108,15 @@
     </style>
 </head>
 <body>
+    @php
+        $pejabat = \App\Models\PejabatPenandatangan::where('kode', 'kepala_baak')
+            ->where('aktif', true)
+            ->first();
+    @endphp
     <div class="header">
-        <h2>UNIVERSITAS CONTOH</h2>
+        <h2>{{ strtoupper(setting('institution_name', 'UNIVERSITAS')) }}</h2>
         <h3>{{ $kartuUjian->mahasiswa->programStudi->fakultas->nama ?? 'FAKULTAS' }}</h3>
-        <p>Jl. Contoh No. 123, Kota - Telp. (021) 123456</p>
+        <p>{{ setting('institution_address', 'Alamat Institusi') }} - Telp. {{ setting('contact_phone', '-') }}</p>
     </div>
 
     <div class="title">
@@ -184,11 +189,13 @@
 
     <div class="footer">
         <div class="signature">
-            <p>{{ now()->format('d F Y') }}</p>
-            <p>Kepala Bagian Akademik</p>
+            <p>{{ setting('kota_institusi', 'Jakarta') }}, {{ now()->translatedFormat('d F Y') }}</p>
+            <p>{{ $pejabat?->jabatan ?? 'Kepala Bagian Akademik' }}</p>
             <div class="line"></div>
-            <p>(.............................)</p>
-            <p>NIP. </p>
+            <p>({{ $pejabat?->nama_lengkap ?? '.............................' }})</p>
+            @if($pejabat?->nip)
+            <p>NIP. {{ $pejabat->nip }}</p>
+            @endif
         </div>
     </div>
 

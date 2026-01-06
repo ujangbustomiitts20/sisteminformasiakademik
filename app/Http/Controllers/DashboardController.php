@@ -93,7 +93,7 @@ class DashboardController extends Controller
                     ->get();
                 
                 // Rekap Kehadiran Semester Ini
-                $jadwalIds = $data['krsSemesterIni']->pluck('jadwal_kuliah_id')->filter();
+                $krsIds = $data['krsSemesterIni']->pluck('id')->filter();
                 $data['rekapKehadiran'] = [
                     'hadir' => 0,
                     'izin' => 0,
@@ -101,10 +101,8 @@ class DashboardController extends Controller
                     'alpha' => 0,
                     'total' => 0,
                 ];
-                if ($jadwalIds->count() > 0) {
-                    $absensi = Absensi::where('mahasiswa_id', $mahasiswa->id)
-                        ->whereIn('jadwal_kuliah_id', $jadwalIds)
-                        ->get();
+                if ($krsIds->count() > 0) {
+                    $absensi = Absensi::whereIn('krs_id', $krsIds)->get();
                     $data['rekapKehadiran'] = [
                         'hadir' => $absensi->where('status', 'Hadir')->count(),
                         'izin' => $absensi->where('status', 'Izin')->count(),

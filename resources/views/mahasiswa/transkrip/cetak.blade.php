@@ -95,11 +95,20 @@
     </style>
 </head>
 <body>
+    @php
+        $pejabat = \App\Models\PejabatPenandatangan::where('kode', 'dekan_' . strtolower($mahasiswa->programStudi->fakultas->kode ?? 'fti'))
+            ->orWhere('kode', 'dekan_fti')
+            ->where('aktif', true)
+            ->first();
+    @endphp
     <div class="header">
-        <h1>Universitas Contoh</h1>
-        <h2>Fakultas Ilmu Komputer</h2>
-        <p>Jl. Contoh No. 123, Kota Contoh 12345</p>
-        <p>Telp: (021) 1234567 | Email: info@univ-contoh.ac.id</p>
+        <h1>{{ setting('institution_name', 'Universitas') }}</h1>
+        <h2>{{ $mahasiswa->programStudi->fakultas->nama ?? 'Fakultas' }}</h2>
+        <p>{{ setting('institution_address', 'Alamat Institusi') }}</p>
+        <p>
+            @if(setting('contact_phone'))Telp: {{ setting('contact_phone') }}@endif
+            @if(setting('contact_email')) | Email: {{ setting('contact_email') }}@endif
+        </p>
     </div>
 
     <div class="title">
@@ -190,11 +199,13 @@
     </div>
 
     <div class="footer">
-        <p>Kota Contoh, {{ now()->format('d F Y') }}</p>
-        <p>Dekan Fakultas Ilmu Komputer</p>
+        <p>{{ setting('kota_institusi', 'Jakarta') }}, {{ now()->translatedFormat('d F Y') }}</p>
+        <p>{{ $pejabat?->jabatan ?? ('Dekan ' . ($mahasiswa->programStudi->fakultas->nama ?? 'Fakultas')) }}</p>
         <div class="ttd">
-            <p><u><strong>Dr. Nama Dekan, M.Kom</strong></u></p>
-            <p>NIP. 19700101 199903 1 001</p>
+            <p><u><strong>{{ $pejabat?->nama_lengkap ?? '_______________' }}</strong></u></p>
+            @if($pejabat?->nip)
+            <p>NIP. {{ $pejabat->nip }}</p>
+            @endif
         </div>
     </div>
 </body>

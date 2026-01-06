@@ -23,6 +23,73 @@
     </div>
     @endif
 
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        @php
+            $stats = \App\Models\SidangTA::selectRaw('
+                COUNT(*) as total,
+                SUM(CASE WHEN status = "diajukan" THEN 1 ELSE 0 END) as diajukan,
+                SUM(CASE WHEN status = "dijadwalkan" THEN 1 ELSE 0 END) as dijadwalkan,
+                SUM(CASE WHEN status = "selesai" THEN 1 ELSE 0 END) as selesai,
+                SUM(CASE WHEN hasil = "lulus" THEN 1 ELSE 0 END) as lulus,
+                SUM(CASE WHEN hasil = "lulus_revisi" THEN 1 ELSE 0 END) as lulus_revisi,
+                SUM(CASE WHEN hasil = "tidak_lulus" THEN 1 ELSE 0 END) as tidak_lulus
+            ')->first();
+        @endphp
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Total Sidang</h6>
+                            <h3 class="mb-0">{{ $stats->total ?? 0 }}</h3>
+                        </div>
+                        <i class="bi bi-mortarboard fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Menunggu Jadwal</h6>
+                            <h3 class="mb-0">{{ $stats->diajukan ?? 0 }}</h3>
+                        </div>
+                        <i class="bi bi-calendar-plus fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Terjadwal</h6>
+                            <h3 class="mb-0">{{ $stats->dijadwalkan ?? 0 }}</h3>
+                        </div>
+                        <i class="bi bi-calendar-check fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Lulus</h6>
+                            <h3 class="mb-0">{{ ($stats->lulus ?? 0) + ($stats->lulus_revisi ?? 0) }}</h3>
+                        </div>
+                        <i class="bi bi-trophy fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Filter -->
     <div class="card mb-4">
         <div class="card-body">
@@ -52,79 +119,56 @@
 
     <div class="card">
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>No. Sidang</th>
-                            <th>Mahasiswa</th>
-                            <th>Judul TA</th>
-                            <th>Jadwal</th>
-                            <th>Ruangan</th>
-                            <th>Status</th>
-                            <th>Hasil</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($sidangs as $key => $sidang)
-                        <tr>
-                            <td>{{ $sidangs->firstItem() + $key }}</td>
-                            <td><code>{{ $sidang->nomor_sidang }}</code></td>
-                            <td>
-                                <strong>{{ $sidang->tugasAkhir->mahasiswa->nama ?? '-' }}</strong><br>
-                                <small class="text-muted">{{ $sidang->tugasAkhir->mahasiswa->nim ?? '-' }}</small>
-                            </td>
-                            <td>
-                                <span title="{{ $sidang->tugasAkhir->judul ?? '-' }}">
-                                    {{ Str::limit($sidang->tugasAkhir->judul ?? '-', 50) }}
-                                </span>
-                            </td>
-                            <td>
-                                @if($sidang->tanggal)
-                                {{ $sidang->tanggal->format('d/m/Y') }}<br>
-                                <small>{{ $sidang->waktu_mulai }} - {{ $sidang->waktu_selesai }}</small>
-                                @else
-                                <span class="text-muted">Belum dijadwalkan</span>
-                                @endif
-                            </td>
-                            <td>{{ $sidang->ruangan ?? '-' }}</td>
-                            <td>
-                                <span class="badge bg-{{ $sidang->status_badge }}">
-                                    {{ $sidang->status_label }}
-                                </span>
-                            </td>
-                            <td>
-                                @if($sidang->hasil)
-                                <span class="badge bg-{{ $sidang->hasil == 'lulus' ? 'success' : ($sidang->hasil == 'lulus_revisi' ? 'warning' : 'danger') }}">
-                                    {{ ucfirst(str_replace('_', ' ', $sidang->hasil)) }}
-                                </span>
-                                @if($sidang->nilai_akhir)
-                                <br><small class="text-muted">{{ number_format($sidang->nilai_akhir, 2) }} ({{ $sidang->grade }})</small>
-                                @endif
-                                @else
-                                -
-                                @endif
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#detailModal{{ $sidang->hashid }}">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    @if($sidang->status == 'diajukan')
-                                    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#jadwalModal{{ $sidang->hashid }}">
-                                        <i class="bi bi-calendar-plus"></i>
-                                    </button>
-                                    @endif
-                                    @if($sidang->status == 'dijadwalkan' || $sidang->status == 'berlangsung')
-                                    <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#nilaiModal{{ $sidang->hashid }}">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
+            @forelse($sidangs as $key => $sidang)
+            <div class="border rounded p-3 mb-3">
+                <div class="row">
+                    <div class="col-md-1 text-center">
+                        <span class="badge bg-secondary fs-6">{{ $sidangs->firstItem() + $key }}</span>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Mahasiswa</small>
+                        <div class="fw-bold">{{ $sidang->tugasAkhir->mahasiswa->nama ?? '-' }}</div>
+                        <code>{{ $sidang->tugasAkhir->mahasiswa->nim ?? '-' }}</code>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">Judul TA</small>
+                        <div>{{ Str::limit($sidang->tugasAkhir->judul ?? '-', 80) }}</div>
+                        <small class="text-muted">{{ $sidang->nomor_sidang }}</small>
+                    </div>
+                    <div class="col-md-2">
+                        <small class="text-muted">Jadwal</small>
+                        @if($sidang->tanggal)
+                        <div>{{ $sidang->tanggal->format('d/m/Y') }}</div>
+                        <small>{{ $sidang->waktu_mulai ? \Carbon\Carbon::parse($sidang->waktu_mulai)->format('H:i') : '-' }} | {{ $sidang->ruangan ?: '-' }}</small>
+                        @else
+                        <div class="text-muted">Belum dijadwalkan</div>
+                        @endif
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <div class="mb-2">
+                            <span class="badge bg-{{ $sidang->status_badge }}">{{ $sidang->status_label }}</span>
+                            @if($sidang->hasil)
+                            <span class="badge bg-{{ $sidang->hasil == 'lulus' ? 'success' : ($sidang->hasil == 'lulus_revisi' ? 'warning' : 'danger') }}">{{ ucfirst(str_replace('_', ' ', $sidang->hasil)) }}</span>
+                            @endif
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#detailModal{{ $sidang->hashid }}">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            @if($sidang->status == 'diajukan')
+                            <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#jadwalModal{{ $sidang->hashid }}">
+                                <i class="bi bi-calendar-plus"></i>
+                            </button>
+                            @endif
+                            @if($sidang->status == 'dijadwalkan' || $sidang->status == 'berlangsung')
+                            <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#nilaiModal{{ $sidang->hashid }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
                         
                         <!-- Detail Modal -->
                         <div class="modal fade" id="detailModal{{ $sidang->hashid }}" tabindex="-1">
@@ -374,18 +418,11 @@
                         </div>
                         @endif
                         @empty
-                        <tr>
-                            <td colspan="9" class="text-center py-4">
-                                <div class="text-muted">
-                                    <i class="bi bi-inbox display-4 d-block mb-2"></i>
-                                    Belum ada data sidang tugas akhir
-                                </div>
-                            </td>
-                        </tr>
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox display-4 d-block mb-2 text-muted"></i>
+                            <p class="text-muted">Belum ada data sidang tugas akhir</p>
+                        </div>
                         @endforelse
-                    </tbody>
-                </table>
-            </div>
             
             {{ $sidangs->appends(request()->query())->links() }}
         </div>

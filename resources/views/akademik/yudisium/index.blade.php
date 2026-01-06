@@ -81,13 +81,11 @@
             <div class="card-body">
                 <!-- Filter -->
                 <form method="GET" class="row g-3 mb-4">
-                    <div class="col-md-3">
-                        <select name="periode_wisuda_id" class="form-select">
-                            <option value="">Semua Periode</option>
-                            @foreach($periodeWisuda as $pw)
-                            <option value="{{ $pw->id }}" {{ request('periode_wisuda_id') == $pw->id ? 'selected' : '' }}>
-                                {{ $pw->nama }}
-                            </option>
+                    <div class="col-md-2">
+                        <select name="tahun_lulus" class="form-select">
+                            <option value="">Semua Tahun</option>
+                            @foreach($tahunLulusList as $tahun)
+                            <option value="{{ $tahun }}" {{ request('tahun_lulus') == $tahun ? 'selected' : '' }}>{{ $tahun }}</option>
                             @endforeach
                         </select>
                     </div>

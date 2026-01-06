@@ -22,10 +22,8 @@ class YudisiumController extends Controller
     {
         $query = Yudisium::with(['mahasiswa.programStudi', 'pendaftaranWisuda.periodeWisuda']);
 
-        if ($request->filled('periode_wisuda_id')) {
-            $query->whereHas('pendaftaranWisuda', function ($q) use ($request) {
-                $q->where('periode_wisuda_id', $request->periode_wisuda_id);
-            });
+        if ($request->filled('tahun_lulus')) {
+            $query->whereYear('tanggal_lulus', $request->tahun_lulus);
         }
 
         if ($request->filled('status')) {
@@ -44,9 +42,14 @@ class YudisiumController extends Controller
             });
         }
 
-        $yudisium = $query->orderBy('tanggal_yudisium', 'desc')->paginate(15);
+        $yudisium = $query->orderBy('tanggal_lulus', 'desc')->paginate(15);
         
-        $periodeWisuda = PeriodeWisuda::orderBy('tanggal_wisuda', 'desc')->get();
+        // Get list of graduation years for filter
+        $tahunLulusList = Yudisium::selectRaw('YEAR(tanggal_lulus) as tahun')
+            ->distinct()
+            ->orderBy('tahun', 'desc')
+            ->pluck('tahun')
+            ->filter(); // Remove null values
 
         $stats = [
             'total' => Yudisium::count(),
@@ -55,7 +58,7 @@ class YudisiumController extends Controller
             'cum_laude' => Yudisium::where('predikat', Yudisium::PREDIKAT_CUM_LAUDE)->disetujui()->count(),
         ];
 
-        return view('akademik.yudisium.index', compact('yudisium', 'periodeWisuda', 'stats'));
+        return view('akademik.yudisium.index', compact('yudisium', 'tahunLulusList', 'stats'));
     }
 
     /**

@@ -217,6 +217,21 @@ class TugasAkhirController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_sidang', 'like', "%{$search}%")
+                    ->orWhereHas('tugasAkhir', function ($q2) use ($search) {
+                        $q2->where('judul', 'like', "%{$search}%")
+                            ->orWhereHas('mahasiswa', function ($q3) use ($search) {
+                                $q3->where('nim', 'like', "%{$search}%")
+                                    ->orWhere('nama', 'like', "%{$search}%");
+                            });
+                    });
+            });
+        }
+
         $sidangs = $query->paginate(15);
         $dosens = Dosen::orderBy('nama')->get();
 

@@ -106,10 +106,10 @@
 </head>
 <body>
     <div class="header">
-        <h1>{{ setting('nama_institusi', 'UNIVERSITAS') }}</h1>
+        <h1>{{ setting('institution_name', 'UNIVERSITAS') }}</h1>
         <h2>{{ $tugasAkhir->mahasiswa->programStudi->fakultas->nama ?? 'FAKULTAS' }}</h2>
         <h2>{{ $tugasAkhir->mahasiswa->programStudi->nama ?? 'PROGRAM STUDI' }}</h2>
-        <p>{{ setting('alamat_institusi', 'Alamat Kampus') }}</p>
+        <p>{{ setting('institution_address', 'Alamat Kampus') }}</p>
     </div>
 
     <div class="title">

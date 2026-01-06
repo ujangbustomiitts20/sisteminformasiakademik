@@ -44,6 +44,7 @@ use App\Http\Controllers\AkunBankController;
 use App\Http\Controllers\MutasiBankController;
 use App\Http\Controllers\RekonsiliasiBankController;
 use App\Http\Controllers\KeuanganDashboardController;
+use App\Http\Controllers\AkademikDashboardController;
 use App\Http\Controllers\RefundController;
 use App\Http\Controllers\JenisPotonganController;
 use App\Http\Controllers\PeriodeDiskonController;
@@ -151,6 +152,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/kelurahan', [WilayahController::class, 'kelurahan'])->name('api.kelurahan');
         Route::get('/sekolah', [WilayahController::class, 'sekolah'])->name('api.sekolah');
         Route::get('/sekolah/{id}', [WilayahController::class, 'sekolahDetail'])->name('api.sekolah.detail');
+        Route::get('/dosen/search', [DosenController::class, 'search'])->name('api.dosen.search');
     });
 
     // Dashboard
@@ -169,6 +171,9 @@ Route::middleware(['auth'])->group(function () {
     // ADMIN ROUTES
     // =====================
     Route::middleware(['role:admin'])->group(function () {
+        // Dashboard Akademik
+        Route::get('/akademik', [AkademikDashboardController::class, 'index'])->name('akademik.dashboard');
+        
         // Manajemen User
         Route::resource('user', UserController::class);
         Route::post('/user/{user}/reset-password', [UserController::class, 'resetPassword'])->name('user.reset-password');
@@ -183,6 +188,45 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/remove-kaprodi/{user}', [PejabatAkademikController::class, 'removeKaprodi'])->name('remove-kaprodi');
             Route::delete('/remove-dekan/{user}', [PejabatAkademikController::class, 'removeDekan'])->name('remove-dekan');
             Route::post('/quick-create', [PejabatAkademikController::class, 'quickCreate'])->name('quick-create');
+        });
+        
+        // Pejabat Penandatangan
+        Route::prefix('pejabat-penandatangan')->name('admin.pejabat-penandatangan.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\PejabatPenandatanganController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Admin\PejabatPenandatanganController::class, 'store'])->name('store');
+            Route::get('/{pejabatPenandatangan}', [\App\Http\Controllers\Admin\PejabatPenandatanganController::class, 'show'])->name('show');
+            Route::get('/{pejabatPenandatangan}/edit', [\App\Http\Controllers\Admin\PejabatPenandatanganController::class, 'edit'])->name('edit');
+            Route::put('/{pejabatPenandatangan}', [\App\Http\Controllers\Admin\PejabatPenandatanganController::class, 'update'])->name('update');
+            Route::delete('/{pejabatPenandatangan}', [\App\Http\Controllers\Admin\PejabatPenandatanganController::class, 'destroy'])->name('destroy');
+            Route::patch('/{pejabatPenandatangan}/toggle-status', [\App\Http\Controllers\Admin\PejabatPenandatanganController::class, 'toggleStatus'])->name('toggle-status');
+            Route::delete('/{pejabatPenandatangan}/tanda-tangan', [\App\Http\Controllers\Admin\PejabatPenandatanganController::class, 'deleteTandaTangan'])->name('delete-ttd');
+            Route::delete('/{pejabatPenandatangan}/stempel', [\App\Http\Controllers\Admin\PejabatPenandatanganController::class, 'deleteStempel'])->name('delete-stempel');
+        });
+        
+        // Nama Jabatan
+        Route::prefix('nama-jabatan')->name('admin.nama-jabatan.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\NamaJabatanController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Admin\NamaJabatanController::class, 'store'])->name('store');
+            Route::put('/{namaJabatan}', [\App\Http\Controllers\Admin\NamaJabatanController::class, 'update'])->name('update');
+            Route::delete('/{namaJabatan}', [\App\Http\Controllers\Admin\NamaJabatanController::class, 'destroy'])->name('destroy');
+            Route::patch('/{namaJabatan}/toggle-status', [\App\Http\Controllers\Admin\NamaJabatanController::class, 'toggleStatus'])->name('toggle-status');
+            Route::get('/by-kategori', [\App\Http\Controllers\Admin\NamaJabatanController::class, 'getByKategori'])->name('by-kategori');
+        });
+        
+        // Template Dokumen
+        Route::prefix('template-dokumen')->name('admin.template-dokumen.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\TemplateDokumenController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Admin\TemplateDokumenController::class, 'store'])->name('store');
+            Route::get('/{templateDokumen}', [\App\Http\Controllers\Admin\TemplateDokumenController::class, 'show'])->name('show');
+            Route::get('/{templateDokumen}/edit', [\App\Http\Controllers\Admin\TemplateDokumenController::class, 'edit'])->name('edit');
+            Route::put('/{templateDokumen}', [\App\Http\Controllers\Admin\TemplateDokumenController::class, 'update'])->name('update');
+            Route::delete('/{templateDokumen}', [\App\Http\Controllers\Admin\TemplateDokumenController::class, 'destroy'])->name('destroy');
+            Route::get('/{templateDokumen}/fields', [\App\Http\Controllers\Admin\TemplateDokumenController::class, 'fields'])->name('fields');
+            Route::post('/{templateDokumen}/fields', [\App\Http\Controllers\Admin\TemplateDokumenController::class, 'storeField'])->name('store-field');
+            Route::put('/{templateDokumen}/fields/{field}', [\App\Http\Controllers\Admin\TemplateDokumenController::class, 'updateField'])->name('update-field');
+            Route::delete('/{templateDokumen}/fields/{field}', [\App\Http\Controllers\Admin\TemplateDokumenController::class, 'destroyField'])->name('destroy-field');
+            Route::get('/{templateDokumen}/preview', [\App\Http\Controllers\Admin\TemplateDokumenController::class, 'preview'])->name('preview');
+            Route::post('/{templateDokumen}/duplicate', [\App\Http\Controllers\Admin\TemplateDokumenController::class, 'duplicate'])->name('duplicate');
         });
         
         // Master Data - Fakultas
@@ -204,6 +248,7 @@ Route::middleware(['auth'])->group(function () {
         
         // Manajemen Mahasiswa
         Route::post('/mahasiswa/generate-nim', [MahasiswaController::class, 'generateNim'])->name('mahasiswa.generate-nim');
+        Route::post('/mahasiswa/{mahasiswa}/reset-password', [MahasiswaController::class, 'resetPassword'])->name('mahasiswa.reset-password');
         Route::resource('mahasiswa', MahasiswaController::class);
         
         // Manajemen Dosen
@@ -215,6 +260,9 @@ Route::middleware(['auth'])->group(function () {
         
         // Dashboard Kepegawaian
         Route::get('/kepegawaian', [KepegawaianController::class, 'dashboard'])->name('kepegawaian.dashboard');
+        
+        // Data Pegawai (Dosen + Tendik combined)
+        Route::get('kepegawaian/data-pegawai', [\App\Http\Controllers\Admin\DataPegawaiController::class, 'index'])->name('kepegawaian.data-pegawai.index');
         
         // Manajemen Pegawai (Tendik)
         Route::resource('kepegawaian/pegawai', PegawaiController::class)->names([
@@ -334,6 +382,160 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/{pensiun}', [\App\Http\Controllers\Admin\PensiunController::class, 'destroy'])->name('destroy');
             Route::post('/{pensiun}/proses', [\App\Http\Controllers\Admin\PensiunController::class, 'proses'])->name('proses');
             Route::post('/{pensiun}/selesaikan', [\App\Http\Controllers\Admin\PensiunController::class, 'selesaikan'])->name('selesaikan');
+        });
+
+        // Kontrak Kerja
+        Route::prefix('kepegawaian/kontrak')->name('kepegawaian.kontrak.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\KontrakKerjaController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\KontrakKerjaController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\KontrakKerjaController::class, 'store'])->name('store');
+            Route::get('/{kontrak}', [\App\Http\Controllers\Admin\KontrakKerjaController::class, 'show'])->name('show');
+            Route::get('/{kontrak}/edit', [\App\Http\Controllers\Admin\KontrakKerjaController::class, 'edit'])->name('edit');
+            Route::put('/{kontrak}', [\App\Http\Controllers\Admin\KontrakKerjaController::class, 'update'])->name('update');
+            Route::delete('/{kontrak}', [\App\Http\Controllers\Admin\KontrakKerjaController::class, 'destroy'])->name('destroy');
+            Route::post('/{kontrak}/aktivasi', [\App\Http\Controllers\Admin\KontrakKerjaController::class, 'aktivasi'])->name('aktivasi');
+            Route::post('/{kontrak}/perpanjang', [\App\Http\Controllers\Admin\KontrakKerjaController::class, 'perpanjang'])->name('perpanjang');
+        });
+
+        // Evaluasi Kinerja
+        Route::prefix('kepegawaian/evaluasi')->name('kepegawaian.evaluasi.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'store'])->name('store');
+            Route::get('/{evaluasi}', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'show'])->name('show');
+            Route::get('/{evaluasi}/edit', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'edit'])->name('edit');
+            Route::put('/{evaluasi}', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'update'])->name('update');
+            Route::delete('/{evaluasi}', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'destroy'])->name('destroy');
+            Route::post('/{evaluasi}/ajukan', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'ajukan'])->name('ajukan');
+            Route::post('/{evaluasi}/approve', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'approve'])->name('approve');
+            Route::post('/{evaluasi}/reject', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'reject'])->name('reject');
+            // Periode Evaluasi
+            Route::get('/periode/index', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'periodeIndex'])->name('periode.index');
+            Route::post('/periode', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'periodeStore'])->name('periode.store');
+            Route::put('/periode/{periode}', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'periodeUpdate'])->name('periode.update');
+            Route::delete('/periode/{periode}', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'periodeDestroy'])->name('periode.destroy');
+            // Kriteria Evaluasi
+            Route::get('/kriteria/index', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'kriteriaIndex'])->name('kriteria.index');
+            Route::post('/kriteria', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'kriteriaStore'])->name('kriteria.store');
+            Route::put('/kriteria/{kriteria}', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'kriteriaUpdate'])->name('kriteria.update');
+            Route::delete('/kriteria/{kriteria}', [\App\Http\Controllers\Admin\EvaluasiKinerjaController::class, 'kriteriaDestroy'])->name('kriteria.destroy');
+        });
+
+        // Sertifikasi Dosen
+        Route::prefix('kepegawaian/sertifikasi')->name('kepegawaian.sertifikasi.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\SertifikasiDosenController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\SertifikasiDosenController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\SertifikasiDosenController::class, 'store'])->name('store');
+            Route::get('/{sertifikasi}', [\App\Http\Controllers\Admin\SertifikasiDosenController::class, 'show'])->name('show');
+            Route::get('/{sertifikasi}/edit', [\App\Http\Controllers\Admin\SertifikasiDosenController::class, 'edit'])->name('edit');
+            Route::put('/{sertifikasi}', [\App\Http\Controllers\Admin\SertifikasiDosenController::class, 'update'])->name('update');
+            Route::delete('/{sertifikasi}', [\App\Http\Controllers\Admin\SertifikasiDosenController::class, 'destroy'])->name('destroy');
+        });
+
+        // Pelanggaran & Sanksi
+        Route::prefix('kepegawaian/pelanggaran')->name('kepegawaian.pelanggaran.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\PelanggaranController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Admin\PelanggaranController::class, 'store'])->name('store');
+            Route::get('/{pelanggaran}', [\App\Http\Controllers\Admin\PelanggaranController::class, 'show'])->name('show');
+            Route::put('/{pelanggaran}', [\App\Http\Controllers\Admin\PelanggaranController::class, 'update'])->name('update');
+            Route::delete('/{pelanggaran}', [\App\Http\Controllers\Admin\PelanggaranController::class, 'destroy'])->name('destroy');
+            Route::post('/{pelanggaran}/status', [\App\Http\Controllers\Admin\PelanggaranController::class, 'updateStatus'])->name('status');
+            Route::post('/{pelanggaran}/sanksi', [\App\Http\Controllers\Admin\PelanggaranController::class, 'sanksiStore'])->name('sanksi.store');
+            // Jenis Pelanggaran
+            Route::get('/jenis/index', [\App\Http\Controllers\Admin\PelanggaranController::class, 'jenisIndex'])->name('jenis.index');
+            Route::post('/jenis', [\App\Http\Controllers\Admin\PelanggaranController::class, 'jenisStore'])->name('jenis.store');
+            Route::put('/jenis/{jenis}', [\App\Http\Controllers\Admin\PelanggaranController::class, 'jenisUpdate'])->name('jenis.update');
+            Route::delete('/jenis/{jenis}', [\App\Http\Controllers\Admin\PelanggaranController::class, 'jenisDestroy'])->name('jenis.destroy');
+        });
+        // Sanksi (standalone routes)
+        Route::put('kepegawaian/sanksi/{sanksi}', [\App\Http\Controllers\Admin\PelanggaranController::class, 'sanksiUpdate'])->name('kepegawaian.sanksi.update');
+        Route::delete('kepegawaian/sanksi/{sanksi}', [\App\Http\Controllers\Admin\PelanggaranController::class, 'sanksiDestroy'])->name('kepegawaian.sanksi.destroy');
+
+        // Izin Keluar
+        Route::prefix('kepegawaian/izin-keluar')->name('kepegawaian.izin-keluar.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\IzinKeluarController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Admin\IzinKeluarController::class, 'store'])->name('store');
+            Route::get('/{izinKeluar}', [\App\Http\Controllers\Admin\IzinKeluarController::class, 'show'])->name('show');
+            Route::put('/{izinKeluar}', [\App\Http\Controllers\Admin\IzinKeluarController::class, 'update'])->name('update');
+            Route::delete('/{izinKeluar}', [\App\Http\Controllers\Admin\IzinKeluarController::class, 'destroy'])->name('destroy');
+            Route::post('/{izinKeluar}/approve', [\App\Http\Controllers\Admin\IzinKeluarController::class, 'approve'])->name('approve');
+            Route::post('/{izinKeluar}/reject', [\App\Http\Controllers\Admin\IzinKeluarController::class, 'reject'])->name('reject');
+            Route::post('/{izinKeluar}/selesai', [\App\Http\Controllers\Admin\IzinKeluarController::class, 'selesai'])->name('selesai');
+        });
+
+        // Lembur
+        Route::prefix('kepegawaian/lembur')->name('kepegawaian.lembur.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\LemburController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Admin\LemburController::class, 'store'])->name('store');
+            Route::get('/laporan', [\App\Http\Controllers\Admin\LemburController::class, 'laporan'])->name('laporan');
+            Route::get('/{lembur}', [\App\Http\Controllers\Admin\LemburController::class, 'show'])->name('show');
+            Route::put('/{lembur}', [\App\Http\Controllers\Admin\LemburController::class, 'update'])->name('update');
+            Route::delete('/{lembur}', [\App\Http\Controllers\Admin\LemburController::class, 'destroy'])->name('destroy');
+            Route::post('/{lembur}/approve', [\App\Http\Controllers\Admin\LemburController::class, 'approve'])->name('approve');
+            Route::post('/{lembur}/reject', [\App\Http\Controllers\Admin\LemburController::class, 'reject'])->name('reject');
+            Route::post('/{lembur}/selesai', [\App\Http\Controllers\Admin\LemburController::class, 'selesai'])->name('selesai');
+            // Tarif Lembur
+            Route::get('/tarif/index', [\App\Http\Controllers\Admin\LemburController::class, 'tarifIndex'])->name('tarif.index');
+            Route::post('/tarif', [\App\Http\Controllers\Admin\LemburController::class, 'tarifStore'])->name('tarif.store');
+            Route::put('/tarif/{tarif}', [\App\Http\Controllers\Admin\LemburController::class, 'tarifUpdate'])->name('tarif.update');
+            Route::delete('/tarif/{tarif}', [\App\Http\Controllers\Admin\LemburController::class, 'tarifDestroy'])->name('tarif.destroy');
+        });
+
+        // Slip Gaji / Penggajian
+        Route::prefix('kepegawaian/slip-gaji')->name('kepegawaian.slip-gaji.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\SlipGajiController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\SlipGajiController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\SlipGajiController::class, 'store'])->name('store');
+            Route::post('/generate-massal', [\App\Http\Controllers\Admin\SlipGajiController::class, 'generateMassal'])->name('generate-massal');
+            Route::get('/{slipGaji}', [\App\Http\Controllers\Admin\SlipGajiController::class, 'show'])->name('show');
+            Route::get('/{slipGaji}/edit', [\App\Http\Controllers\Admin\SlipGajiController::class, 'edit'])->name('edit');
+            Route::put('/{slipGaji}', [\App\Http\Controllers\Admin\SlipGajiController::class, 'update'])->name('update');
+            Route::delete('/{slipGaji}', [\App\Http\Controllers\Admin\SlipGajiController::class, 'destroy'])->name('destroy');
+            Route::post('/{slipGaji}/process', [\App\Http\Controllers\Admin\SlipGajiController::class, 'process'])->name('process');
+            Route::post('/{slipGaji}/approve', [\App\Http\Controllers\Admin\SlipGajiController::class, 'approve'])->name('approve');
+            Route::post('/{slipGaji}/bayar', [\App\Http\Controllers\Admin\SlipGajiController::class, 'bayar'])->name('bayar');
+            Route::post('/{slipGaji}/sync', [\App\Http\Controllers\Admin\SlipGajiController::class, 'syncFromPengaturan'])->name('sync');
+            Route::get('/{slipGaji}/cetak', [\App\Http\Controllers\Admin\SlipGajiController::class, 'cetak'])->name('cetak');
+            // Komponen Gaji
+            Route::get('/komponen/index', [\App\Http\Controllers\Admin\SlipGajiController::class, 'komponenIndex'])->name('komponen.index');
+            Route::post('/komponen', [\App\Http\Controllers\Admin\SlipGajiController::class, 'komponenStore'])->name('komponen.store');
+            Route::put('/komponen/{komponen}', [\App\Http\Controllers\Admin\SlipGajiController::class, 'komponenUpdate'])->name('komponen.update');
+            Route::delete('/komponen/{komponen}', [\App\Http\Controllers\Admin\SlipGajiController::class, 'komponenDestroy'])->name('komponen.destroy');
+            // Pengaturan Gaji per Pegawai
+            Route::get('/pengaturan/index', [\App\Http\Controllers\Admin\SlipGajiController::class, 'pengaturanIndex'])->name('pengaturan.index');
+            Route::post('/pengaturan', [\App\Http\Controllers\Admin\SlipGajiController::class, 'pengaturanStore'])->name('pengaturan.store');
+            Route::post('/pengaturan/generate-massal', [\App\Http\Controllers\Admin\SlipGajiController::class, 'pengaturanGenerateMassal'])->name('pengaturan.generate-massal');
+            Route::get('/pengaturan/{pengaturan}', [\App\Http\Controllers\Admin\SlipGajiController::class, 'pengaturanShow'])->name('pengaturan.show');
+            Route::put('/pengaturan/{pengaturan}', [\App\Http\Controllers\Admin\SlipGajiController::class, 'pengaturanUpdate'])->name('pengaturan.update');
+            Route::delete('/pengaturan/{pengaturan}', [\App\Http\Controllers\Admin\SlipGajiController::class, 'pengaturanDestroy'])->name('pengaturan.destroy');
+        });
+
+        // SKP Pegawai (Sasaran Kinerja Pegawai)
+        Route::prefix('kepegawaian/skp')->name('kepegawaian.skp.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'store'])->name('store');
+            Route::get('/{skp}', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'show'])->name('show');
+            Route::get('/{skp}/edit', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'edit'])->name('edit');
+            Route::put('/{skp}', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'update'])->name('update');
+            Route::delete('/{skp}', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'destroy'])->name('destroy');
+            Route::post('/{skp}/penilaian', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'penilaian'])->name('penilaian');
+            Route::post('/{skp}/status', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'updateStatus'])->name('status');
+            Route::post('/{skp}/approve', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'approve'])->name('approve');
+            Route::post('/{skp}/revisi', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'revisi'])->name('revisi');
+            Route::post('/{skp}/buka-realisasi', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'bukaRealisasi'])->name('buka-realisasi');
+            Route::post('/{skp}/target', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'storeTarget'])->name('target.store');
+            Route::put('/target/{target}', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'updateTarget'])->name('target.update');
+            Route::delete('/target/{target}', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'destroyTarget'])->name('target.destroy');
+            Route::get('/{skp}/cetak', [\App\Http\Controllers\Admin\SkpPegawaiController::class, 'cetak'])->name('cetak');
+        });
+
+        // Master Uraian Kegiatan SKP
+        Route::prefix('kepegawaian/uraian-kegiatan-skp')->name('kepegawaian.uraian-kegiatan-skp.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\UraianKegiatanSkpController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Admin\UraianKegiatanSkpController::class, 'store'])->name('store');
+            Route::put('/{uraianKegiatanSkp}', [\App\Http\Controllers\Admin\UraianKegiatanSkpController::class, 'update'])->name('update');
+            Route::delete('/{uraianKegiatanSkp}', [\App\Http\Controllers\Admin\UraianKegiatanSkpController::class, 'destroy'])->name('destroy');
+            Route::post('/{uraianKegiatanSkp}/toggle-status', [\App\Http\Controllers\Admin\UraianKegiatanSkpController::class, 'toggleStatus'])->name('toggle-status');
         });
         
         // Kepegawaian Dosen (Riwayat) - HARUS SETELAH route SDM karena {dosen} adalah wildcard
@@ -1088,6 +1290,52 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/portal-dosen/kepegawaian/dokumen/{dokumen}', [DosenPortalController::class, 'updateDokumen'])->name('dosen.kepegawaian.dokumen.update');
         Route::delete('/portal-dosen/kepegawaian/dokumen/{dokumen}', [DosenPortalController::class, 'destroyDokumen'])->name('dosen.kepegawaian.dokumen.destroy');
         
+        // Izin Keluar Dosen (Self-Service)
+        Route::get('/portal-dosen/izin-keluar', [DosenPortalController::class, 'izinKeluarIndex'])->name('dosen.izin-keluar.index');
+        Route::post('/portal-dosen/izin-keluar', [DosenPortalController::class, 'izinKeluarStore'])->name('dosen.izin-keluar.store');
+        Route::get('/portal-dosen/izin-keluar/{izinKeluar}', [DosenPortalController::class, 'izinKeluarShow'])->name('dosen.izin-keluar.show');
+        Route::delete('/portal-dosen/izin-keluar/{izinKeluar}', [DosenPortalController::class, 'izinKeluarDestroy'])->name('dosen.izin-keluar.destroy');
+        
+        // Lembur Dosen (Self-Service)
+        Route::get('/portal-dosen/lembur', [DosenPortalController::class, 'lemburIndex'])->name('dosen.lembur.index');
+        Route::post('/portal-dosen/lembur', [DosenPortalController::class, 'lemburStore'])->name('dosen.lembur.store');
+        Route::get('/portal-dosen/lembur/{pengajuanLembur}', [DosenPortalController::class, 'lemburShow'])->name('dosen.lembur.show');
+        Route::delete('/portal-dosen/lembur/{pengajuanLembur}', [DosenPortalController::class, 'lemburDestroy'])->name('dosen.lembur.destroy');
+        
+        // Cuti Dosen (Self-Service)
+        Route::get('/portal-dosen/cuti', [DosenPortalController::class, 'cutiIndex'])->name('dosen.cuti.index');
+        Route::post('/portal-dosen/cuti', [DosenPortalController::class, 'cutiStore'])->name('dosen.cuti.store');
+        Route::get('/portal-dosen/cuti/saldo', [DosenPortalController::class, 'saldoCuti'])->name('dosen.cuti.saldo');
+        Route::get('/portal-dosen/cuti/{cuti}', [DosenPortalController::class, 'cutiShow'])->name('dosen.cuti.show');
+        Route::delete('/portal-dosen/cuti/{cuti}', [DosenPortalController::class, 'cutiDestroy'])->name('dosen.cuti.destroy');
+        
+        // Slip Gaji Dosen (Self-Service)
+        Route::get('/portal-dosen/slip-gaji', [DosenPortalController::class, 'slipGajiIndex'])->name('dosen.slip-gaji.index');
+        Route::get('/portal-dosen/slip-gaji/{slipGaji}', [DosenPortalController::class, 'slipGajiShow'])->name('dosen.slip-gaji.show');
+        Route::get('/portal-dosen/slip-gaji/{slipGaji}/cetak', [DosenPortalController::class, 'slipGajiCetak'])->name('dosen.slip-gaji.cetak');
+        
+        // EDOM (Evaluasi Dosen Oleh Mahasiswa)
+        Route::get('/portal-dosen/edom', [DosenPortalController::class, 'edomIndex'])->name('dosen.edom.index');
+        Route::get('/portal-dosen/edom/{rekapEdom}', [DosenPortalController::class, 'edomShow'])->name('dosen.edom.show');
+        
+        // SKP / Kinerja Dosen (Full CRUD by Dosen)
+        Route::prefix('portal-dosen/skp')->name('dosen.skp.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Dosen\SkpController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Dosen\SkpController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Dosen\SkpController::class, 'store'])->name('store');
+            Route::get('/uraian-kegiatan', [\App\Http\Controllers\Admin\UraianKegiatanSkpController::class, 'getList'])->name('uraian-kegiatan');
+            Route::get('/{skp}', [\App\Http\Controllers\Dosen\SkpController::class, 'show'])->name('show');
+            Route::get('/{skp}/edit', [\App\Http\Controllers\Dosen\SkpController::class, 'edit'])->name('edit');
+            Route::put('/{skp}', [\App\Http\Controllers\Dosen\SkpController::class, 'update'])->name('update');
+            Route::delete('/{skp}', [\App\Http\Controllers\Dosen\SkpController::class, 'destroy'])->name('destroy');
+            Route::post('/{skp}/ajukan', [\App\Http\Controllers\Dosen\SkpController::class, 'ajukan'])->name('ajukan');
+            Route::post('/{skp}/target', [\App\Http\Controllers\Dosen\SkpController::class, 'storeTarget'])->name('target.store');
+            Route::put('/target/{target}', [\App\Http\Controllers\Dosen\SkpController::class, 'updateTarget'])->name('target.update');
+            Route::delete('/target/{target}', [\App\Http\Controllers\Dosen\SkpController::class, 'destroyTarget'])->name('target.destroy');
+            Route::post('/{skp}/realisasi', [\App\Http\Controllers\Dosen\SkpController::class, 'inputRealisasi'])->name('realisasi');
+            Route::get('/{skp}/cetak', [\App\Http\Controllers\Dosen\SkpController::class, 'cetak'])->name('cetak');
+        });
+        
         // Jadwal Mengajar Dosen
         Route::get('/jadwal-mengajar', [JadwalController::class, 'dosen'])->name('jadwal.dosen');
         
@@ -1174,6 +1422,10 @@ Route::middleware(['auth'])->group(function () {
     // MAHASISWA ROUTES
     // =====================
     Route::middleware(['role:mahasiswa'])->group(function () {
+        // Dashboard Terpisah
+        Route::get('/dashboard/akademik', [\App\Http\Controllers\MahasiswaDashboardController::class, 'akademik'])->name('mahasiswa.dashboard.akademik');
+        Route::get('/dashboard/keuangan', [\App\Http\Controllers\MahasiswaDashboardController::class, 'keuangan'])->name('mahasiswa.dashboard.keuangan');
+        
         // KRS
         Route::get('/krs', [KrsController::class, 'index'])->name('krs.index');
         Route::get('/krs/create', [KrsController::class, 'create'])->name('krs.create');
@@ -1436,6 +1688,25 @@ Route::middleware(['auth'])->group(function () {
         // Export
         Route::get('/export/mahasiswa', [KaprodiController::class, 'exportMahasiswa'])->name('export.mahasiswa');
         Route::get('/export/nilai', [KaprodiController::class, 'exportNilai'])->name('export.nilai');
+        
+        // =====================
+        // APPROVAL KEPEGAWAIAN
+        // =====================
+        Route::prefix('approval')->name('approval.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Kaprodi\ApprovalController::class, 'dashboard'])->name('dashboard');
+            
+            // Izin Keluar
+            Route::get('/izin-keluar', [\App\Http\Controllers\Kaprodi\ApprovalController::class, 'izinKeluarIndex'])->name('izin-keluar.index');
+            Route::get('/izin-keluar/{izinKeluar}', [\App\Http\Controllers\Kaprodi\ApprovalController::class, 'izinKeluarShow'])->name('izin-keluar.show');
+            Route::post('/izin-keluar/{izinKeluar}/approve', [\App\Http\Controllers\Kaprodi\ApprovalController::class, 'izinKeluarApprove'])->name('izin-keluar.approve');
+            Route::post('/izin-keluar/{izinKeluar}/reject', [\App\Http\Controllers\Kaprodi\ApprovalController::class, 'izinKeluarReject'])->name('izin-keluar.reject');
+            
+            // Lembur
+            Route::get('/lembur', [\App\Http\Controllers\Kaprodi\ApprovalController::class, 'lemburIndex'])->name('lembur.index');
+            Route::get('/lembur/{pengajuanLembur}', [\App\Http\Controllers\Kaprodi\ApprovalController::class, 'lemburShow'])->name('lembur.show');
+            Route::post('/lembur/{pengajuanLembur}/approve', [\App\Http\Controllers\Kaprodi\ApprovalController::class, 'lemburApprove'])->name('lembur.approve');
+            Route::post('/lembur/{pengajuanLembur}/reject', [\App\Http\Controllers\Kaprodi\ApprovalController::class, 'lemburReject'])->name('lembur.reject');
+        });
     });
     
     // =====================

@@ -98,11 +98,20 @@
     </style>
 </head>
 <body>
+    @php
+        $pejabat = \App\Models\PejabatPenandatangan::where('kode', 'kaprodi_' . strtolower($mahasiswa->programStudi->kode ?? 'ti'))
+            ->orWhere('kode', 'kepala_baak')
+            ->where('aktif', true)
+            ->first();
+    @endphp
     <div class="header">
-        <h1>Universitas Contoh</h1>
-        <h2>Fakultas Ilmu Komputer</h2>
-        <p>Jl. Contoh No. 123, Kota Contoh 12345</p>
-        <p>Telp: (021) 1234567 | Email: info@univ-contoh.ac.id</p>
+        <h1>{{ setting('institution_name', 'Universitas') }}</h1>
+        <h2>{{ $mahasiswa->programStudi->fakultas->nama ?? 'Fakultas' }}</h2>
+        <p>{{ setting('institution_address', 'Alamat Institusi') }}</p>
+        <p>
+            @if(setting('contact_phone'))Telp: {{ setting('contact_phone') }}@endif
+            @if(setting('contact_email')) | Email: {{ setting('contact_email') }}@endif
+        </p>
     </div>
 
     <div class="title">
@@ -205,11 +214,15 @@
     </div>
 
     <div class="footer">
-        <p>Kota Contoh, {{ now()->format('d F Y') }}</p>
-        <p>Ketua Program Studi</p>
+        <p>{{ setting('kota_institusi', 'Jakarta') }}, {{ now()->translatedFormat('d F Y') }}</p>
+        <p>{{ $pejabat?->jabatan ?? 'Ketua Program Studi' }}</p>
         <div class="ttd">
-            <p><u><strong>Nama Kaprodi, M.Kom</strong></u></p>
-            <p>NIDN. 0123456789</p>
+            <p><u><strong>{{ $pejabat?->nama_lengkap ?? ($mahasiswa->programStudi->kaprodi ?? '_______________') }}</strong></u></p>
+            @if($pejabat?->nip)
+            <p>NIP. {{ $pejabat->nip }}</p>
+            @elseif($pejabat?->nidn)
+            <p>NIDN. {{ $pejabat->nidn }}</p>
+            @endif
         </div>
     </div>
 </body>

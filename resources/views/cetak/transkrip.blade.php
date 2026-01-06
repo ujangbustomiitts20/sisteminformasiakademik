@@ -3,6 +3,21 @@
 <head>
     <meta charset="utf-8">
     <title>Transkrip - {{ $mahasiswa->nim }}</title>
+    @php
+        $pejabat = \App\Models\PejabatPenandatangan::where('kode', 'dekan_' . strtolower($mahasiswa->programStudi->fakultas->kode ?? 'fti'))
+            ->orWhere('kode', 'dekan_fti')
+            ->where('aktif', true)
+            ->first();
+        
+        $logoPath = setting('institution_logo');
+        $logoFullPath = $logoPath ? storage_path('app/public/' . $logoPath) : null;
+        $logoBase64 = null;
+        if ($logoFullPath && file_exists($logoFullPath)) {
+            $logoData = file_get_contents($logoFullPath);
+            $logoMime = mime_content_type($logoFullPath);
+            $logoBase64 = 'data:' . $logoMime . ';base64,' . base64_encode($logoData);
+        }
+    @endphp
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,6 +29,26 @@
             border-bottom: 3px double #000;
             padding-bottom: 10px;
             margin-bottom: 15px;
+        }
+        .header table {
+            width: 100%;
+        }
+        .header .logo {
+            width: 70px;
+            vertical-align: middle;
+        }
+        .header .logo img {
+            max-width: 60px;
+            max-height: 60px;
+        }
+        .header .institusi {
+            text-align: center;
+            vertical-align: middle;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 11px;
+            font-weight: normal;
         }
         .header h2 {
             margin: 0;
@@ -78,13 +113,17 @@
             overflow: hidden;
         }
         .ttd {
-            width: 200px;
+            width: 220px;
             text-align: center;
             float: right;
         }
         .ttd .nama {
             margin-top: 50px;
-            border-bottom: 1px solid #000;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .ttd .nip {
+            font-size: 9px;
         }
         .grade-table {
             width: 150px;
@@ -98,9 +137,29 @@
 </head>
 <body>
     <div class="header">
-        <h2>UNIVERSITAS SIAKAD</h2>
-        <h3>{{ $mahasiswa->programStudi->fakultas->nama }}</h3>
-        <p>Jl. Pendidikan No. 123, Kota Akademik | Telp: (021) 1234567</p>
+        <table>
+            <tr>
+                <td class="logo">
+                    @if($logoBase64)
+                        <img src="{{ $logoBase64 }}" alt="Logo">
+                    @endif
+                </td>
+                <td class="institusi">
+                    @if(setting('institution_yayasan'))
+                    <h1>{{ setting('institution_yayasan') }}</h1>
+                    @endif
+                    <h2>{{ strtoupper(setting('institution_name', 'UNIVERSITAS')) }}</h2>
+                    <h3>{{ $mahasiswa->programStudi->fakultas->nama }}</h3>
+                    <p>{{ setting('institution_address', 'Alamat Institusi') }}</p>
+                    <p>
+                        @if(setting('contact_phone'))Telp: {{ setting('contact_phone') }}@endif
+                        @if(setting('contact_fax')) | Fax: {{ setting('contact_fax') }}@endif
+                        @if(setting('contact_email')) | Email: {{ setting('contact_email') }}@endif
+                    </p>
+                </td>
+                <td class="logo"></td>
+            </tr>
+        </table>
     </div>
 
     <div class="title">TRANSKRIP AKADEMIK</div>
@@ -212,10 +271,15 @@
                 <tr><td>E</td><td>= 0.00</td><td>(0-49)</td></tr>
             </table>
             <div class="ttd">
-                <p>{{ now()->locale('id')->isoFormat('D MMMM Y') }}</p>
-                <p>Dekan,</p>
-                <p class="nama">{{ $mahasiswa->programStudi->fakultas->dekan ?? '_______________' }}</p>
-                <p>NIP. _______________</p>
+                <p>{{ setting('kota_institusi', 'Jakarta') }}, {{ now()->locale('id')->isoFormat('D MMMM Y') }}</p>
+                <p>{{ $pejabat?->jabatan ?? 'Dekan' }},</p>
+                @if($pejabat?->tanda_tangan)
+                    <img src="{{ $pejabat->tanda_tangan_url }}" alt="TTD" style="height: 45px; margin: 5px 0;">
+                @endif
+                <p class="nama">{{ $pejabat?->nama_lengkap ?? $mahasiswa->programStudi->fakultas->dekan ?? '_______________' }}</p>
+                @if($pejabat?->nip)
+                <p class="nip">NIP. {{ $pejabat->nip }}</p>
+                @endif
             </div>
         </div>
     </div>

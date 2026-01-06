@@ -66,6 +66,7 @@
         </div>
 
         <!-- Info Periode -->
+        @if($yudisium->pendaftaranWisuda)
         <div class="card">
             <div class="card-header">
                 <i class="bi bi-mortarboard me-2"></i>Periode Wisuda
@@ -73,13 +74,26 @@
             <div class="card-body">
                 <h6>{{ $yudisium->pendaftaranWisuda->periodeWisuda->nama ?? '-' }}</h6>
                 <p class="text-muted mb-2">
-                    {{ $yudisium->pendaftaranWisuda->periodeWisuda->tanggal_wisuda?->format('d F Y') }}
+                    {{ $yudisium->pendaftaranWisuda->periodeWisuda?->tanggal_wisuda?->format('d F Y') ?? '-' }}
                 </p>
                 <small class="text-muted">
                     No. Pendaftaran: <code>{{ $yudisium->pendaftaranWisuda->no_pendaftaran ?? '-' }}</code>
                 </small>
             </div>
         </div>
+        @else
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i>Info Legacy
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-1">Data hasil migrasi dari sistem lama</p>
+                @if($yudisium->legacy_id)
+                <small>Legacy ID: <code>{{ $yudisium->legacy_id }}</code></small>
+                @endif
+            </div>
+        </div>
+        @endif
     </div>
 
     <div class="col-lg-8">
@@ -117,11 +131,11 @@
                     </tr>
                     <tr>
                         <td class="text-muted">Tanggal Yudisium</td>
-                        <td>{{ $yudisium->tanggal_yudisium->format('d F Y') }}</td>
+                        <td>{{ $yudisium->tanggal_yudisium?->format('d F Y') ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td class="text-muted">Tanggal Masuk</td>
-                        <td>{{ $yudisium->tanggal_masuk->format('d F Y') }}</td>
+                        <td>{{ $yudisium->tanggal_masuk?->format('d F Y') ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td class="text-muted">Tanggal Lulus</td>

@@ -35,12 +35,23 @@ class MahasiswaController extends Controller
         if ($request->angkatan) {
             $query->where('angkatan', $request->angkatan);
         }
+        
+        // Filter semester minimum (untuk dashboard akademik)
+        if ($request->semester_min) {
+            $query->where('semester_aktif', '>=', $request->semester_min);
+        }
 
         $mahasiswa = $query->orderBy('nim')->paginate(15);
         $programStudi = ProgramStudi::all();
         $angkatanList = Mahasiswa::distinct()->pluck('angkatan')->sort()->reverse();
+        
+        // Statistik status mahasiswa
+        $statusStats = Mahasiswa::select('status', DB::raw('COUNT(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
 
-        return view('mahasiswa.index', compact('mahasiswa', 'programStudi', 'angkatanList'));
+        return view('mahasiswa.index', compact('mahasiswa', 'programStudi', 'angkatanList', 'statusStats'));
     }
 
     public function create()
@@ -374,6 +385,29 @@ class MahasiswaController extends Controller
             return redirect()->route('mahasiswa.index')->with('success', 'Data mahasiswa berhasil dihapus!');
         } catch (\Exception $e) {
             DB::rollback();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reset password mahasiswa ke default (NIM)
+     */
+    public function resetPassword(Mahasiswa $mahasiswa)
+    {
+        try {
+            $user = $mahasiswa->user;
+            
+            if (!$user) {
+                return back()->with('error', 'Akun user tidak ditemukan untuk mahasiswa ini.');
+            }
+            
+            // Reset password ke NIM
+            $user->update([
+                'password' => Hash::make($mahasiswa->nim)
+            ]);
+            
+            return back()->with('success', "Password mahasiswa {$mahasiswa->nama} berhasil direset ke NIM ({$mahasiswa->nim})");
+        } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }

@@ -27,7 +27,7 @@
 </head>
 <body>
     <div class="header">
-        <h2>{{ setting('nama_institusi', 'SIAKAD') }}</h2>
+        <h2>{{ setting('institution_name', 'SIAKAD') }}</h2>
         <h3>Laporan Distribusi IPK Mahasiswa</h3>
         <p>Dicetak pada: {{ now()->format('d/m/Y H:i') }}</p>
     </div>
@@ -95,7 +95,7 @@
     </table>
 
     <div class="footer">
-        <p>{{ setting('nama_institusi', 'SIAKAD') }} - Sistem Informasi Akademik</p>
+        <p>{{ setting('institution_name', 'SIAKAD') }} - Sistem Informasi Akademik</p>
     </div>
 </body>
 </html>

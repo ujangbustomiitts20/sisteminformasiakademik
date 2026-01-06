@@ -104,6 +104,7 @@ class Setting extends Model
             'email' => 'Email / Mail Server',
             'academic' => 'Akademik',
             'appearance' => 'Tampilan',
+            'print' => 'Konfigurasi Cetak',
         ];
     }
 }

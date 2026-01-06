@@ -55,6 +55,70 @@
     </div>
 </div>
 
+<!-- Status Mahasiswa Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ route('mahasiswa.index') }}" class="text-decoration-none">
+            <div class="card text-center h-100 {{ !request('status') ? 'border-primary border-2' : '' }}">
+                <div class="card-body py-3">
+                    <div class="fs-3 fw-bold text-primary">{{ array_sum($statusStats ?? []) }}</div>
+                    <div class="small text-muted">Total</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ route('mahasiswa.index', ['status' => 'Aktif']) }}" class="text-decoration-none">
+            <div class="card text-center h-100 {{ request('status') == 'Aktif' ? 'border-success border-2' : '' }}">
+                <div class="card-body py-3">
+                    <div class="fs-3 fw-bold text-success">{{ $statusStats['Aktif'] ?? 0 }}</div>
+                    <div class="small text-muted">Aktif</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ route('mahasiswa.index', ['status' => 'Cuti']) }}" class="text-decoration-none">
+            <div class="card text-center h-100 {{ request('status') == 'Cuti' ? 'border-warning border-2' : '' }}">
+                <div class="card-body py-3">
+                    <div class="fs-3 fw-bold text-warning">{{ $statusStats['Cuti'] ?? 0 }}</div>
+                    <div class="small text-muted">Cuti</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ route('mahasiswa.index', ['status' => 'Non-Aktif']) }}" class="text-decoration-none">
+            <div class="card text-center h-100 {{ request('status') == 'Non-Aktif' ? 'border-secondary border-2' : '' }}">
+                <div class="card-body py-3">
+                    <div class="fs-3 fw-bold text-secondary">{{ $statusStats['Non-Aktif'] ?? 0 }}</div>
+                    <div class="small text-muted">Non-Aktif</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ route('mahasiswa.index', ['status' => 'Lulus']) }}" class="text-decoration-none">
+            <div class="card text-center h-100 {{ request('status') == 'Lulus' ? 'border-info border-2' : '' }}">
+                <div class="card-body py-3">
+                    <div class="fs-3 fw-bold text-info">{{ $statusStats['Lulus'] ?? 0 }}</div>
+                    <div class="small text-muted">Lulus</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ route('mahasiswa.index', ['status' => 'DO']) }}" class="text-decoration-none">
+            <div class="card text-center h-100 {{ request('status') == 'DO' ? 'border-danger border-2' : '' }}">
+                <div class="card-body py-3">
+                    <div class="fs-3 fw-bold text-danger">{{ $statusStats['DO'] ?? 0 }}</div>
+                    <div class="small text-muted">DO</div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
 <!-- Filter -->
 <div class="card mb-4">
     <div class="card-body">
@@ -136,6 +200,10 @@
                                 <a href="{{ route('mahasiswa.edit', $mhs) }}" class="btn btn-outline-primary" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                <button type="button" class="btn btn-outline-warning" title="Reset Password" 
+                                    data-bs-toggle="modal" data-bs-target="#resetPasswordModal{{ $mhs->hashid }}">
+                                    <i class="bi bi-key"></i>
+                                </button>
                                 <form action="{{ route('mahasiswa.destroy', $mhs) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                                     @csrf
                                     @method('DELETE')
@@ -143,6 +211,32 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                            </div>
+                            
+                            <!-- Reset Password Modal -->
+                            <div class="modal fade" id="resetPasswordModal{{ $mhs->hashid }}" tabindex="-1">
+                                <div class="modal-dialog modal-sm">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h6 class="modal-title"><i class="bi bi-key me-2"></i>Reset Password</h6>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <p class="mb-2">Reset password untuk:</p>
+                                            <p><strong>{{ $mhs->nama }}</strong><br><code>{{ $mhs->nim }}</code></p>
+                                            <p class="text-muted small">Password akan direset ke <strong>NIM</strong></p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                            <form action="{{ route('mahasiswa.reset-password', $mhs) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-warning">
+                                                    <i class="bi bi-key me-1"></i>Reset Password
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>

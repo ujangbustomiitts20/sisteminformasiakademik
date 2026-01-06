@@ -63,7 +63,19 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    /**
+     * Check if user is a Dosen (has dosen data attached)
+     * This returns true for any user with dosen data, regardless of their role
+     */
     public function isDosen()
+    {
+        return $this->role === 'dosen' || $this->dosen()->exists();
+    }
+
+    /**
+     * Check if user has 'dosen' as their primary role
+     */
+    public function hasDosenRole()
     {
         return $this->role === 'dosen';
     }
@@ -73,14 +85,76 @@ class User extends Authenticatable
         return $this->role === 'mahasiswa';
     }
 
+    /**
+     * Check if user is Kaprodi (either by role or by being assigned as kaprodi in program_studi)
+     */
     public function isKaprodi()
     {
-        return $this->role === 'kaprodi';
+        if ($this->role === 'kaprodi') {
+            return true;
+        }
+        
+        // Check if this user's dosen is assigned as kaprodi
+        if ($this->dosen) {
+            return ProgramStudi::where('kaprodi', $this->dosen->nama)->exists();
+        }
+        
+        return false;
     }
 
+    /**
+     * Check if user is Dekan (either by role or by being assigned as dekan in fakultas)
+     */
     public function isDekan()
     {
-        return $this->role === 'dekan';
+        if ($this->role === 'dekan') {
+            return true;
+        }
+        
+        // Check if this user's dosen is assigned as dekan
+        if ($this->dosen) {
+            return Fakultas::where('dekan', $this->dosen->nama)->exists();
+        }
+        
+        return false;
+    }
+
+    /**
+     * Get the fakultas where this user is dekan
+     */
+    public function getFakultasDekan()
+    {
+        if (!$this->dosen) {
+            return null;
+        }
+        return Fakultas::where('dekan', $this->dosen->nama)->first();
+    }
+
+    /**
+     * Get the program studi where this user is kaprodi
+     */
+    public function getProdiKaprodi()
+    {
+        if (!$this->dosen) {
+            return null;
+        }
+        return ProgramStudi::where('kaprodi', $this->dosen->nama)->first();
+    }
+
+    /**
+     * Check if user has any additional role (dekan/kaprodi) besides their main role
+     */
+    public function hasAdditionalRoles()
+    {
+        return $this->isDekan() || $this->isKaprodi();
+    }
+
+    /**
+     * Check if user can access dosen features (is dosen or has dosen data)
+     */
+    public function canAccessDosenFeatures()
+    {
+        return $this->dosen()->exists();
     }
 
     public function notifications()

@@ -66,7 +66,7 @@ class JadwalController extends Controller
     /**
      * Jadwal mengajar dosen
      */
-    public function dosen()
+    public function dosen(Request $request)
     {
         $user = auth()->user();
         $dosen = $user->dosen;
@@ -75,7 +75,32 @@ class JadwalController extends Controller
             return back()->with('error', 'Data dosen tidak ditemukan');
         }
 
-        $tahunAkademik = TahunAkademik::getAktif();
+        // Get list of tahun akademik yang dosen punya jadwal
+        $tahunAkademikList = TahunAkademik::whereIn('id', function($query) use ($dosen) {
+            $query->select('tahun_akademik_id')
+                ->from('jadwal_kuliah')
+                ->where('dosen_id', $dosen->id)
+                ->distinct();
+        })->orderBy('tahun', 'desc')->orderByRaw("FIELD(semester, 'Ganjil', 'Genap', 'Pendek') DESC")->get();
+
+        // Default ke tahun akademik aktif atau yang terakhir dosen punya jadwal
+        $tahunAkademikAktif = TahunAkademik::getAktif();
+        
+        if ($request->filled('tahun_akademik_id')) {
+            $tahunAkademik = TahunAkademik::find($request->tahun_akademik_id);
+        } else {
+            // Cek apakah dosen punya jadwal di tahun aktif
+            $hasJadwalAktif = JadwalKuliah::where('dosen_id', $dosen->id)
+                ->where('tahun_akademik_id', $tahunAkademikAktif?->id)
+                ->exists();
+            
+            if ($hasJadwalAktif) {
+                $tahunAkademik = $tahunAkademikAktif;
+            } else {
+                // Gunakan tahun akademik terakhir yang punya jadwal
+                $tahunAkademik = $tahunAkademikList->first() ?? $tahunAkademikAktif;
+            }
+        }
         
         $jadwal = JadwalKuliah::with(['mataKuliah', 'ruangan', 'krs'])
             ->where('dosen_id', $dosen->id)
@@ -86,6 +111,6 @@ class JadwalController extends Controller
                 return ($hariOrder[$j->hari] ?? 7) . $j->jam_mulai;
             });
 
-        return view('jadwal.dosen', compact('jadwal', 'tahunAkademik', 'dosen'));
+        return view('jadwal.dosen', compact('jadwal', 'tahunAkademik', 'dosen', 'tahunAkademikList'));
     }
 }

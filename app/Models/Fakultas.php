@@ -15,11 +15,41 @@ class Fakultas extends Model
     protected $fillable = [
         'kode',
         'nama',
+        'singkatan',
         'dekan',
+        'alamat',
+        'telepon',
+        'email',
+        'website',
+        'akreditasi',
+        'tanggal_akreditasi',
+        'tanggal_berdiri',
+        'sk_pendirian',
+        'visi',
+        'misi',
+        'logo',
+    ];
+
+    protected $casts = [
+        'tanggal_akreditasi' => 'date',
+        'tanggal_berdiri' => 'date',
     ];
 
     public function programStudi()
     {
         return $this->hasMany(ProgramStudi::class);
+    }
+
+    /**
+     * Get akreditasi badge color
+     */
+    public function getAkreditasiBadgeAttribute()
+    {
+        return match($this->akreditasi) {
+            'A', 'Unggul' => 'success',
+            'B', 'Baik Sekali' => 'primary',
+            'C', 'Baik' => 'warning',
+            default => 'secondary'
+        };
     }
 }

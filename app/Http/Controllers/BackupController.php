@@ -31,39 +31,22 @@ class BackupController extends Controller
     {
         try {
             $filename = 'backup_' . date('Y-m-d_H-i-s') . '.sql';
-            $filepath = storage_path('app/' . $this->backupPath . '/' . $filename);
+            $backupDir = storage_path('app/' . $this->backupPath);
+            $filepath = $backupDir . '/' . $filename;
 
             // Ensure backup directory exists
-            if (!Storage::exists($this->backupPath)) {
-                Storage::makeDirectory($this->backupPath);
+            if (!is_dir($backupDir)) {
+                mkdir($backupDir, 0755, true);
             }
 
-            // Get database credentials
-            $host = config('database.connections.mysql.host');
-            $port = config('database.connections.mysql.port', 3306);
-            $database = config('database.connections.mysql.database');
-            $username = config('database.connections.mysql.username');
-            $password = config('database.connections.mysql.password');
-
-            // Build mysqldump command
-            $command = sprintf(
-                'mysqldump --host=%s --port=%s --user=%s --password=%s %s > %s',
-                escapeshellarg($host),
-                escapeshellarg($port),
-                escapeshellarg($username),
-                escapeshellarg($password),
-                escapeshellarg($database),
-                escapeshellarg($filepath)
-            );
-
-            // Execute backup
-            $process = Process::fromShellCommandline($command);
-            $process->setTimeout(300); // 5 minutes timeout
-            $process->run();
-
-            if (!$process->isSuccessful()) {
-                // Try alternative method using PHP
-                $this->backupWithPHP($filepath);
+            $connection = config('database.default');
+            
+            // Handle SQLite
+            if ($connection === 'sqlite') {
+                $this->backupSQLite($filepath);
+            } else {
+                // MySQL backup
+                $this->backupMySQL($filepath);
             }
 
             // Check if file was created
@@ -86,36 +69,102 @@ class BackupController extends Controller
             throw new \Exception('Backup file tidak valid atau kosong');
 
         } catch (\Exception $e) {
+            \Log::error('Backup failed: ' . $e->getMessage());
             return redirect()->route('backup.index')
                 ->with('error', 'Gagal membuat backup: ' . $e->getMessage());
         }
     }
 
     /**
-     * Alternative backup method using PHP
+     * Backup MySQL database
      */
-    protected function backupWithPHP($filepath)
+    protected function backupMySQL($filepath)
     {
-        $tables = DB::select('SHOW TABLES');
+        // Get database credentials
+        $host = config('database.connections.mysql.host');
+        $port = config('database.connections.mysql.port', 3306);
         $database = config('database.connections.mysql.database');
-        $tableKey = 'Tables_in_' . $database;
+        $username = config('database.connections.mysql.username');
+        $password = config('database.connections.mysql.password');
 
-        $sql = "-- SIAKAD Database Backup\n";
-        $sql .= "-- Generated: " . date('Y-m-d H:i:s') . "\n";
-        $sql .= "-- Database: " . $database . "\n\n";
-        $sql .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
-
-        foreach ($tables as $table) {
-            $tableArray = (array) $table;
-            $tableName = $tableArray[$tableKey] ?? null;
+        // Try mysqldump first (only if not remote and versions match)
+        $mysqldumpSuccess = false;
+        $isLocalHost = in_array($host, ['localhost', '127.0.0.1', '::1']);
+        
+        // Skip mysqldump for remote databases due to version mismatch issues
+        // between local MariaDB client and remote MySQL/MariaDB server
+        if ($isLocalHost) {
+            // Check if mysqldump is available
+            $checkCommand = 'which mysqldump 2>/dev/null || where mysqldump 2>nul';
+            $checkProcess = Process::fromShellCommandline($checkCommand);
+            $checkProcess->run();
             
-            if (empty($tableName)) continue;
+            if ($checkProcess->isSuccessful() && !empty(trim($checkProcess->getOutput()))) {
+                // Create temp file for password to avoid command line exposure
+                $cnfFile = tempnam(sys_get_temp_dir(), 'mysql_');
+                file_put_contents($cnfFile, "[client]\npassword=\"{$password}\"\n");
+                chmod($cnfFile, 0600);
+                
+                try {
+                    // Build mysqldump command with defaults-extra-file
+                    // Use --skip-ssl for MariaDB client compatibility
+                    $command = sprintf(
+                        'mysqldump --defaults-extra-file=%s --host=%s --port=%s --user=%s --skip-ssl --single-transaction --routines --triggers %s 2>/dev/null > %s',
+                        escapeshellarg($cnfFile),
+                        escapeshellarg($host),
+                        escapeshellarg($port),
+                        escapeshellarg($username),
+                        escapeshellarg($database),
+                        escapeshellarg($filepath)
+                    );
+
+                    $process = Process::fromShellCommandline($command);
+                    $process->setTimeout(300);
+                    $process->run();
+
+                    if (file_exists($filepath) && filesize($filepath) > 100) {
+                        $mysqldumpSuccess = true;
+                    }
+                } finally {
+                    // Always delete temp config file
+                    @unlink($cnfFile);
+                }
+            }
+        }
+
+        // Fallback to PHP method if mysqldump failed
+        if (!$mysqldumpSuccess) {
+            \Log::info('mysqldump not available or failed, using PHP backup method');
+            $this->backupWithPHP($filepath);
+        }
+    }
+
+    /**
+     * Backup SQLite database
+     */
+    protected function backupSQLite($filepath)
+    {
+        $sqliteFile = config('database.connections.sqlite.database');
+        
+        if (!file_exists($sqliteFile)) {
+            throw new \Exception('SQLite database file not found');
+        }
+
+        // For SQLite, we can just copy the file or export as SQL
+        $sql = "-- SIAKAD SQLite Database Backup\n";
+        $sql .= "-- Generated: " . date('Y-m-d H:i:s') . "\n\n";
+
+        // Get all tables
+        $tables = DB::select("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
+        
+        foreach ($tables as $table) {
+            $tableName = $table->name;
             
             // Get create table statement
-            $createTable = DB::select("SHOW CREATE TABLE `{$tableName}`");
+            $createSql = DB::selectOne("SELECT sql FROM sqlite_master WHERE type='table' AND name=?", [$tableName]);
             $sql .= "-- Table: {$tableName}\n";
             $sql .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
-            $sql .= $createTable[0]->{'Create Table'} . ";\n\n";
+            $sql .= $createSql->sql . ";\n\n";
 
             // Get table data
             $rows = DB::table($tableName)->get();
@@ -143,9 +192,84 @@ class BackupController extends Controller
             }
         }
 
-        $sql .= "SET FOREIGN_KEY_CHECKS=1;\n";
-
         file_put_contents($filepath, $sql);
+    }
+
+    /**
+     * Alternative backup method using PHP (streaming to file)
+     */
+    protected function backupWithPHP($filepath)
+    {
+        $tables = DB::select('SHOW TABLES');
+        $database = config('database.connections.mysql.database');
+        $tableKey = 'Tables_in_' . $database;
+
+        // Open file for writing
+        $handle = fopen($filepath, 'w');
+        if (!$handle) {
+            throw new \Exception('Cannot create backup file');
+        }
+
+        fwrite($handle, "-- SIAKAD Database Backup\n");
+        fwrite($handle, "-- Generated: " . date('Y-m-d H:i:s') . "\n");
+        fwrite($handle, "-- Database: " . $database . "\n\n");
+        fwrite($handle, "SET FOREIGN_KEY_CHECKS=0;\n\n");
+
+        foreach ($tables as $table) {
+            $tableArray = (array) $table;
+            $tableName = $tableArray[$tableKey] ?? null;
+            
+            if (empty($tableName)) continue;
+            
+            // Get create table statement
+            $createTable = DB::select("SHOW CREATE TABLE `{$tableName}`");
+            fwrite($handle, "-- Table: {$tableName}\n");
+            fwrite($handle, "DROP TABLE IF EXISTS `{$tableName}`;\n");
+            fwrite($handle, $createTable[0]->{'Create Table'} . ";\n\n");
+
+            // Get row count first
+            $count = DB::table($tableName)->count();
+            
+            if ($count > 0) {
+                // Get columns from first row
+                $firstRow = DB::table($tableName)->first();
+                $columns = array_keys((array)$firstRow);
+                $columnList = '`' . implode('`, `', $columns) . '`';
+                
+                // Process in chunks to save memory
+                $chunkSize = 500;
+                $offset = 0;
+                
+                while ($offset < $count) {
+                    $rows = DB::table($tableName)->skip($offset)->take($chunkSize)->get();
+                    
+                    if ($rows->count() > 0) {
+                        $values = [];
+                        foreach ($rows as $row) {
+                            $rowValues = [];
+                            foreach ((array)$row as $value) {
+                                if (is_null($value)) {
+                                    $rowValues[] = 'NULL';
+                                } else {
+                                    $rowValues[] = "'" . addslashes((string)$value) . "'";
+                                }
+                            }
+                            $values[] = '(' . implode(', ', $rowValues) . ')';
+                        }
+                        fwrite($handle, "INSERT INTO `{$tableName}` ({$columnList}) VALUES\n" . implode(",\n", $values) . ";\n");
+                    }
+                    
+                    $offset += $chunkSize;
+                    
+                    // Free memory
+                    unset($rows, $values);
+                }
+                fwrite($handle, "\n");
+            }
+        }
+
+        fwrite($handle, "SET FOREIGN_KEY_CHECKS=1;\n");
+        fclose($handle);
     }
 
     /**
@@ -181,14 +305,14 @@ class BackupController extends Controller
      */
     public function destroy($filename)
     {
-        $filepath = $this->backupPath . '/' . $filename;
+        $filepath = storage_path('app/' . $this->backupPath . '/' . $filename);
 
-        if (!Storage::exists($filepath)) {
+        if (!file_exists($filepath)) {
             return redirect()->route('backup.index')
                 ->with('error', 'File backup tidak ditemukan.');
         }
 
-        Storage::delete($filepath);
+        unlink($filepath);
 
         // Log activity
         if (class_exists(\App\Models\ActivityLog::class)) {
@@ -218,32 +342,63 @@ class BackupController extends Controller
         }
 
         try {
-            // Get database credentials
-            $host = config('database.connections.mysql.host');
-            $port = config('database.connections.mysql.port', 3306);
-            $database = config('database.connections.mysql.database');
-            $username = config('database.connections.mysql.username');
-            $password = config('database.connections.mysql.password');
+            $connection = config('database.default');
+            $restoreSuccess = false;
 
-            // Build mysql restore command
-            $command = sprintf(
-                'mysql --host=%s --port=%s --user=%s --password=%s %s < %s',
-                escapeshellarg($host),
-                escapeshellarg($port),
-                escapeshellarg($username),
-                escapeshellarg($password),
-                escapeshellarg($database),
-                escapeshellarg($filepath)
-            );
-
-            // Execute restore
-            $process = Process::fromShellCommandline($command);
-            $process->setTimeout(600); // 10 minutes timeout
-            $process->run();
-
-            if (!$process->isSuccessful()) {
-                // Try alternative method using PHP
+            if ($connection === 'sqlite') {
+                // For SQLite, use PHP restore
                 $this->restoreWithPHP($filepath);
+                $restoreSuccess = true;
+            } else {
+                // MySQL restore
+                $host = config('database.connections.mysql.host');
+                $port = config('database.connections.mysql.port', 3306);
+                $database = config('database.connections.mysql.database');
+                $username = config('database.connections.mysql.username');
+                $password = config('database.connections.mysql.password');
+
+                // Check if mysql client is available
+                $checkCommand = 'which mysql 2>/dev/null || where mysql 2>nul';
+                $checkProcess = Process::fromShellCommandline($checkCommand);
+                $checkProcess->run();
+
+                if ($checkProcess->isSuccessful() && !empty(trim($checkProcess->getOutput()))) {
+                    // Create temp file for password to avoid command line exposure
+                    $cnfFile = tempnam(sys_get_temp_dir(), 'mysql_');
+                    file_put_contents($cnfFile, "[client]\npassword=\"{$password}\"\n");
+                    chmod($cnfFile, 0600);
+
+                    try {
+                        // Build mysql restore command with defaults-extra-file
+                        // Use --skip-ssl for MariaDB client compatibility
+                        $command = sprintf(
+                            'mysql --defaults-extra-file=%s --host=%s --port=%s --user=%s --skip-ssl %s < %s 2>&1',
+                            escapeshellarg($cnfFile),
+                            escapeshellarg($host),
+                            escapeshellarg($port),
+                            escapeshellarg($username),
+                            escapeshellarg($database),
+                            escapeshellarg($filepath)
+                        );
+
+                        $process = Process::fromShellCommandline($command);
+                        $process->setTimeout(600);
+                        $process->run();
+
+                        if ($process->isSuccessful()) {
+                            $restoreSuccess = true;
+                        }
+                    } finally {
+                        @unlink($cnfFile);
+                    }
+                }
+
+                // Fallback to PHP method
+                if (!$restoreSuccess) {
+                    \Log::info('mysql client not available or failed, using PHP restore method');
+                    $this->restoreWithPHP($filepath);
+                    $restoreSuccess = true;
+                }
             }
 
             // Log activity
@@ -261,6 +416,7 @@ class BackupController extends Controller
                 ->with('success', 'Database berhasil di-restore dari: ' . $filename);
 
         } catch (\Exception $e) {
+            \Log::error('Restore failed: ' . $e->getMessage());
             return redirect()->route('backup.index')
                 ->with('error', 'Gagal restore database: ' . $e->getMessage());
         }
@@ -300,21 +456,24 @@ class BackupController extends Controller
      */
     protected function getBackupFiles()
     {
-        if (!Storage::exists($this->backupPath)) {
-            Storage::makeDirectory($this->backupPath);
+        $backupDir = storage_path('app/' . $this->backupPath);
+        
+        // Ensure directory exists
+        if (!is_dir($backupDir)) {
+            mkdir($backupDir, 0755, true);
             return collect([]);
         }
 
-        $files = Storage::files($this->backupPath);
+        // Use glob to get SQL files directly
+        $files = glob($backupDir . '/*.sql');
         
-        return collect($files)->map(function ($file) {
-            $filepath = storage_path('app/' . $file);
+        return collect($files)->map(function ($filepath) {
             return [
-                'name' => basename($file),
-                'size' => file_exists($filepath) ? filesize($filepath) : 0,
-                'size_formatted' => file_exists($filepath) ? $this->formatBytes(filesize($filepath)) : '0 B',
-                'date' => file_exists($filepath) ? date('Y-m-d H:i:s', filemtime($filepath)) : null,
-                'date_formatted' => file_exists($filepath) ? \Carbon\Carbon::createFromTimestamp(filemtime($filepath))->diffForHumans() : null,
+                'name' => basename($filepath),
+                'size' => filesize($filepath),
+                'size_formatted' => $this->formatBytes(filesize($filepath)),
+                'date' => date('Y-m-d H:i:s', filemtime($filepath)),
+                'date_formatted' => \Carbon\Carbon::createFromTimestamp(filemtime($filepath))->diffForHumans(),
             ];
         })->sortByDesc('date')->values();
     }
@@ -375,8 +534,11 @@ class BackupController extends Controller
         if ($backups->count() > $keep) {
             $toDelete = $backups->slice($keep);
             foreach ($toDelete as $backup) {
-                Storage::delete($this->backupPath . '/' . $backup['name']);
-                $deleted++;
+                $filepath = storage_path('app/' . $this->backupPath . '/' . $backup['name']);
+                if (file_exists($filepath)) {
+                    unlink($filepath);
+                    $deleted++;
+                }
             }
         }
 

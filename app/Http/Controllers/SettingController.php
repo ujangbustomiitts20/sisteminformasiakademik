@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Models\KonfigurasiCetak;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
@@ -17,8 +18,9 @@ class SettingController extends Controller
     {
         $groupedSettings = Setting::getGrouped();
         $groupLabels = Setting::getGroupLabels();
+        $konfigurasiCetak = KonfigurasiCetak::orderBy('nama')->get();
         
-        return view('settings.index', compact('groupedSettings', 'groupLabels'));
+        return view('settings.index', compact('groupedSettings', 'groupLabels', 'konfigurasiCetak'));
     }
 
     /**

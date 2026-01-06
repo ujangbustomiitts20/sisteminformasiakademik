@@ -76,23 +76,17 @@
                                 @foreach($mahasiswa as $index => $krs)
                                 @php
                                     $absensi = $krs->absensi->first();
-                                    $currentStatus = $absensi?->status ?? 'Hadir';
                                 @endphp
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $krs->mahasiswa->nim }}</td>
-                                    <td>
-                                        {{ $krs->mahasiswa->nama }}
-                                        @if(!$absensi)
-                                            <span class="badge bg-warning text-dark ms-1" title="Belum ada data absensi">Baru</span>
-                                        @endif
-                                    </td>
+                                    <td>{{ $krs->mahasiswa->nama }}</td>
                                     <td>
                                         <select name="absensi[{{ $krs->id }}][status]" class="form-select form-select-sm" required>
-                                            <option value="Hadir" {{ $currentStatus == 'Hadir' ? 'selected' : '' }}>Hadir</option>
-                                            <option value="Izin" {{ $currentStatus == 'Izin' ? 'selected' : '' }}>Izin</option>
-                                            <option value="Sakit" {{ $currentStatus == 'Sakit' ? 'selected' : '' }}>Sakit</option>
-                                            <option value="Alpha" {{ $currentStatus == 'Alpha' ? 'selected' : '' }}>Alpha</option>
+                                            <option value="Hadir" {{ $absensi?->status == 'Hadir' ? 'selected' : '' }}>Hadir</option>
+                                            <option value="Izin" {{ $absensi?->status == 'Izin' ? 'selected' : '' }}>Izin</option>
+                                            <option value="Sakit" {{ $absensi?->status == 'Sakit' ? 'selected' : '' }}>Sakit</option>
+                                            <option value="Alpha" {{ $absensi?->status == 'Alpha' ? 'selected' : '' }}>Alpha</option>
                                         </select>
                                     </td>
                                     <td>

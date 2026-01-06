@@ -90,3 +90,29 @@ if (!function_exists('format_tanggal')) {
         return strtr($formatted, $bulan);
     }
 }
+
+if (!function_exists('pejabat')) {
+    /**
+     * Get pejabat penandatangan by kode
+     *
+     * @param string $kode
+     * @return \App\Models\PejabatPenandatangan|null
+     */
+    function pejabat(string $kode): ?\App\Models\PejabatPenandatangan
+    {
+        return \App\Models\PejabatPenandatangan::getByKode($kode);
+    }
+}
+
+if (!function_exists('pejabat_for_dokumen')) {
+    /**
+     * Get pejabat penandatangan untuk dokumen tertentu
+     *
+     * @param string $dokumenKode
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    function pejabat_for_dokumen(string $dokumenKode)
+    {
+        return \App\Models\PejabatPenandatangan::getForDokumen($dokumenKode);
+    }
+}

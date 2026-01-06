@@ -136,11 +136,21 @@
         🖨️ Cetak Surat
     </button>
 
+    @php
+        $pejabatDekan = \App\Models\PejabatPenandatangan::where('kode', 'dekan_' . strtolower($cuti->mahasiswa->programStudi->fakultas->kode ?? 'fti'))
+            ->orWhere('kode', 'dekan_fti')
+            ->where('aktif', true)
+            ->first();
+        $pejabatKaprodi = \App\Models\PejabatPenandatangan::where('kode', 'kaprodi_' . strtolower($cuti->mahasiswa->programStudi->kode ?? 'ti'))
+            ->where('aktif', true)
+            ->first();
+    @endphp
+
     <div class="header">
-        <h2>UNIVERSITAS CONTOH</h2>
+        <h2>{{ strtoupper(setting('institution_name', 'UNIVERSITAS')) }}</h2>
         <h3>FAKULTAS {{ strtoupper($cuti->mahasiswa->programStudi->fakultas->nama ?? 'TEKNOLOGI INFORMASI') }}</h3>
-        <p>Jl. Pendidikan No. 123, Kota Contoh, 12345</p>
-        <p>Telp: (021) 1234567 | Email: info@univ-contoh.ac.id</p>
+        <p>{{ setting('institution_address', 'Alamat Institusi') }}</p>
+        <p>Telp: {{ setting('contact_phone', '-') }} | Email: {{ setting('contact_email', '-') }}</p>
     </div>
 
     <div class="title">
@@ -149,7 +159,7 @@
     </div>
 
     <div class="content">
-        <p>Yang bertanda tangan di bawah ini, Dekan {{ $cuti->mahasiswa->programStudi->fakultas->nama ?? 'Fakultas' }} Universitas Contoh, menerangkan bahwa:</p>
+        <p>Yang bertanda tangan di bawah ini, {{ $pejabatDekan?->jabatan ?? ('Dekan ' . ($cuti->mahasiswa->programStudi->fakultas->nama ?? 'Fakultas')) }} {{ setting('institution_name', 'Universitas') }}, menerangkan bahwa:</p>
         
         <table class="data-table">
             <tr>
@@ -210,17 +220,17 @@
     <div class="signature">
         <div class="signature-box">
             <p>Mengetahui,</p>
-            <p>Ketua Program Studi</p>
+            <p>{{ $pejabatKaprodi?->jabatan ?? 'Ketua Program Studi' }}</p>
             <div class="signature-space"></div>
-            <p><u>{{ $cuti->disetujuiKaprodiOleh->name ?? '.........................' }}</u></p>
-            <p>NIP. {{ $cuti->disetujuiKaprodiOleh->nip ?? '.........................' }}</p>
+            <p><u>{{ $pejabatKaprodi?->nama_lengkap ?? $cuti->disetujuiKaprodiOleh->name ?? '.........................' }}</u></p>
+            <p>NIP. {{ $pejabatKaprodi?->nip ?? $cuti->disetujuiKaprodiOleh->nip ?? '.........................' }}</p>
         </div>
         <div class="signature-box">
-            <p>Kota Contoh, {{ $cuti->tanggal_persetujuan_dekan?->format('d F Y') ?? now()->format('d F Y') }}</p>
-            <p>Dekan</p>
+            <p>{{ setting('kota_institusi', 'Jakarta') }}, {{ $cuti->tanggal_persetujuan_dekan?->translatedFormat('d F Y') ?? now()->translatedFormat('d F Y') }}</p>
+            <p>{{ $pejabatDekan?->jabatan ?? 'Dekan' }}</p>
             <div class="signature-space"></div>
-            <p><u>{{ $cuti->disetujuiDekanOleh->name ?? '.........................' }}</u></p>
-            <p>NIP. {{ $cuti->disetujuiDekanOleh->nip ?? '.........................' }}</p>
+            <p><u>{{ $pejabatDekan?->nama_lengkap ?? $cuti->disetujuiDekanOleh->name ?? '.........................' }}</u></p>
+            <p>NIP. {{ $pejabatDekan?->nip ?? $cuti->disetujuiDekanOleh->nip ?? '.........................' }}</p>
         </div>
     </div>
 

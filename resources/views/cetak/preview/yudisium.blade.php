@@ -17,7 +17,7 @@
     </div>
 
     <div style="text-align: justify; line-height: 1.8;">
-        <p style="margin-bottom: 15px;">Yang bertanda tangan di bawah ini, {{ $config->jabatan_ttd ?? 'Rektor' }} {{ setting('nama_institusi', 'Universitas') }}, dengan ini menerangkan bahwa:</p>
+        <p style="margin-bottom: 15px;">Yang bertanda tangan di bawah ini, {{ $config->jabatan_ttd ?? 'Rektor' }} {{ setting('institution_name', 'Universitas') }}, dengan ini menerangkan bahwa:</p>
 
         <table class="info-table" style="margin: 20px 0;">
             <tr>

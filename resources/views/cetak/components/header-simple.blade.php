@@ -3,7 +3,7 @@
     Usage: @include('cetak.components.header-simple', ['title' => 'Judul', 'subtitle' => 'Sub Judul'])
 --}}
 <div class="header-simple">
-    <h2>{{ setting('nama_institusi', 'SIAKAD') }}</h2>
+    <h2>{{ setting('institution_name', 'SIAKAD') }}</h2>
     <h3>{{ $title ?? 'Dokumen' }}</h3>
     @if(isset($subtitle))
         <p>{{ $subtitle }}</p>

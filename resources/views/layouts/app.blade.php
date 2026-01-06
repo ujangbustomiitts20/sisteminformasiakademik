@@ -98,6 +98,45 @@
             width: 24px;
         }
         
+        /* Collapsible Menu */
+        .sidebar-menu .menu-collapse-toggle {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1.5rem;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-menu .menu-collapse-toggle:hover {
+            color: #cbd5e1;
+            background: rgba(255,255,255,0.03);
+        }
+        
+        .sidebar-menu .menu-collapse-toggle i.bi-chevron-down {
+            font-size: 0.65rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-menu .menu-collapse-toggle[aria-expanded="true"] i.bi-chevron-down {
+            transform: rotate(180deg);
+        }
+        
+        .sidebar-menu .submenu {
+            overflow: hidden;
+        }
+        
+        .sidebar-menu .submenu .nav-link {
+            padding-left: 2.5rem;
+            font-size: 0.875rem;
+        }
+        
         /* Main Content */
         .main-content {
             margin-left: var(--sidebar-width);
@@ -251,8 +290,14 @@
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            @if(setting('institution_logo'))
-            <img src="{{ Storage::url(setting('institution_logo')) }}" alt="Logo" style="max-height: 40px;" class="mb-2">
+            @php
+                // Prioritas: logo_sidebar > logo_wide > institution_logo
+                $sidebarLogo = setting('institution_logo_sidebar') 
+                    ?? setting('institution_logo_wide') 
+                    ?? setting('institution_logo');
+            @endphp
+            @if($sidebarLogo)
+            <img src="{{ Storage::url($sidebarLogo) }}" alt="Logo" style="max-height: 60px; max-width: 180px;" class="mb-2">
             @else
             <i class="bi bi-mortarboard-fill me-2"></i>
             @endif
@@ -277,314 +322,446 @@
                 <i class="bi bi-person-badge"></i>
                 <span>Pejabat Akademik</span>
             </a>
+            <a href="{{ route('admin.nama-jabatan.index') }}" class="nav-link {{ request()->routeIs('admin.nama-jabatan.*') ? 'active' : '' }}">
+                <i class="bi bi-briefcase"></i>
+                <span>Nama Jabatan</span>
+            </a>
+            <a href="{{ route('admin.pejabat-penandatangan.index') }}" class="nav-link {{ request()->routeIs('admin.pejabat-penandatangan.*') ? 'active' : '' }}">
+                <i class="bi bi-pen"></i>
+                <span>Pejabat Penandatangan</span>
+            </a>
+            <a href="{{ route('admin.template-dokumen.index') }}" class="nav-link {{ request()->routeIs('admin.template-dokumen.*') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-text"></i>
+                <span>Template Dokumen</span>
+            </a>
             
             <div class="menu-header">Master Data</div>
-            <a href="{{ route('fakultas.index') }}" class="nav-link {{ request()->routeIs('fakultas.*') ? 'active' : '' }}">
-                <i class="bi bi-building"></i>
-                <span>Fakultas</span>
-            </a>
-            <a href="{{ route('program-studi.index') }}" class="nav-link {{ request()->routeIs('program-studi.*') ? 'active' : '' }}">
-                <i class="bi bi-diagram-3"></i>
-                <span>Program Studi</span>
-            </a>
-            <a href="{{ route('ruangan.index') }}" class="nav-link {{ request()->routeIs('ruangan.*') ? 'active' : '' }}">
-                <i class="bi bi-door-open"></i>
-                <span>Ruangan</span>
-            </a>
-            <a href="{{ route('tahun-akademik.index') }}" class="nav-link {{ request()->routeIs('tahun-akademik.*') ? 'active' : '' }}">
-                <i class="bi bi-calendar3"></i>
-                <span>Tahun Akademik</span>
-            </a>
-            <a href="{{ route('sekolah.index') }}" class="nav-link {{ request()->routeIs('sekolah.*') ? 'active' : '' }}">
-                <i class="bi bi-mortarboard"></i>
-                <span>Sekolah Asal</span>
-            </a>
+            <div class="menu-collapse-toggle" data-bs-toggle="collapse" data-bs-target="#menuMaster" aria-expanded="{{ request()->routeIs('fakultas.*') || request()->routeIs('program-studi.*') || request()->routeIs('ruangan.*') || request()->routeIs('tahun-akademik.*') || request()->routeIs('sekolah.*') ? 'true' : 'false' }}">
+                <span><i class="bi bi-database me-2"></i>Master Data</span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="collapse submenu {{ request()->routeIs('fakultas.*') || request()->routeIs('program-studi.*') || request()->routeIs('ruangan.*') || request()->routeIs('tahun-akademik.*') || request()->routeIs('sekolah.*') ? 'show' : '' }}" id="menuMaster">
+                <a href="{{ route('fakultas.index') }}" class="nav-link {{ request()->routeIs('fakultas.*') ? 'active' : '' }}">
+                    <i class="bi bi-building"></i>
+                    <span>Fakultas</span>
+                </a>
+                <a href="{{ route('program-studi.index') }}" class="nav-link {{ request()->routeIs('program-studi.*') ? 'active' : '' }}">
+                    <i class="bi bi-diagram-3"></i>
+                    <span>Program Studi</span>
+                </a>
+                <a href="{{ route('ruangan.index') }}" class="nav-link {{ request()->routeIs('ruangan.*') ? 'active' : '' }}">
+                    <i class="bi bi-door-open"></i>
+                    <span>Ruangan</span>
+                </a>
+                <a href="{{ route('tahun-akademik.index') }}" class="nav-link {{ request()->routeIs('tahun-akademik.*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar3"></i>
+                    <span>Tahun Akademik</span>
+                </a>
+                <a href="{{ route('sekolah.index') }}" class="nav-link {{ request()->routeIs('sekolah.*') ? 'active' : '' }}">
+                    <i class="bi bi-mortarboard"></i>
+                    <span>Sekolah Asal</span>
+                </a>
+            </div>
             
             <div class="menu-header">PMB</div>
-            <a href="{{ route('pmb.dashboard') }}" class="nav-link {{ request()->routeIs('pmb.dashboard') ? 'active' : '' }}">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard PMB</span>
-            </a>
-            <a href="{{ route('pmb.periode.index') }}" class="nav-link {{ request()->routeIs('pmb.periode.*') ? 'active' : '' }}">
-                <i class="bi bi-calendar-range"></i>
-                <span>Periode PMB</span>
-            </a>
-            <a href="{{ route('pmb.gelombang.index') }}" class="nav-link {{ request()->routeIs('pmb.gelombang.*') ? 'active' : '' }}">
-                <i class="bi bi-layers"></i>
-                <span>Gelombang PMB</span>
-            </a>
-            <a href="{{ route('pmb.jalur-seleksi.index') }}" class="nav-link {{ request()->routeIs('pmb.jalur-seleksi.*') ? 'active' : '' }}">
-                <i class="bi bi-signpost-split"></i>
-                <span>Jalur Seleksi</span>
-            </a>
-            <a href="{{ route('pmb.biaya-pendaftaran.index') }}" class="nav-link {{ request()->routeIs('pmb.biaya-pendaftaran.*') ? 'active' : '' }}">
-                <i class="bi bi-cash-coin"></i>
-                <span>Biaya Pendaftaran</span>
-            </a>
-            <a href="{{ route('pmb.kuota.index') }}" class="nav-link {{ request()->routeIs('pmb.kuota.*') ? 'active' : '' }}">
-                <i class="bi bi-bar-chart"></i>
-                <span>Kuota PMB</span>
-            </a>
-            <a href="{{ route('pmb.calon-mahasiswa.index') }}" class="nav-link {{ request()->routeIs('pmb.calon-mahasiswa.*') ? 'active' : '' }}">
-                <i class="bi bi-person-plus"></i>
-                <span>Calon Mahasiswa</span>
-            </a>
-            <a href="{{ route('pmb.seleksi.index') }}" class="nav-link {{ request()->routeIs('pmb.seleksi.*') ? 'active' : '' }}">
-                <i class="bi bi-clipboard-check"></i>
-                <span>Seleksi</span>
-            </a>
-            <a href="{{ route('pmb.daftar-ulang.index') }}" class="nav-link {{ request()->routeIs('pmb.daftar-ulang.*') ? 'active' : '' }}">
-                <i class="bi bi-person-check"></i>
-                <span>Daftar Ulang</span>
-            </a>
-            <a href="{{ route('pmb.konten-pmb.pengaturan') }}" class="nav-link {{ request()->routeIs('pmb.konten-pmb.*') ? 'active' : '' }}">
-                <i class="bi bi-globe"></i>
-                <span>Konten Portal PMB</span>
-            </a>
+            <div class="menu-collapse-toggle" data-bs-toggle="collapse" data-bs-target="#menuPmb" aria-expanded="{{ request()->routeIs('pmb.*') ? 'true' : 'false' }}">
+                <span><i class="bi bi-person-plus me-2"></i>Penerimaan Mahasiswa</span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="collapse submenu {{ request()->routeIs('pmb.*') ? 'show' : '' }}" id="menuPmb">
+                <a href="{{ route('pmb.dashboard') }}" class="nav-link {{ request()->routeIs('pmb.dashboard') ? 'active' : '' }}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard PMB</span>
+                </a>
+                <a href="{{ route('pmb.periode.index') }}" class="nav-link {{ request()->routeIs('pmb.periode.*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-range"></i>
+                    <span>Periode PMB</span>
+                </a>
+                <a href="{{ route('pmb.gelombang.index') }}" class="nav-link {{ request()->routeIs('pmb.gelombang.*') ? 'active' : '' }}">
+                    <i class="bi bi-layers"></i>
+                    <span>Gelombang PMB</span>
+                </a>
+                <a href="{{ route('pmb.jalur-seleksi.index') }}" class="nav-link {{ request()->routeIs('pmb.jalur-seleksi.*') ? 'active' : '' }}">
+                    <i class="bi bi-signpost-split"></i>
+                    <span>Jalur Seleksi</span>
+                </a>
+                <a href="{{ route('pmb.biaya-pendaftaran.index') }}" class="nav-link {{ request()->routeIs('pmb.biaya-pendaftaran.*') ? 'active' : '' }}">
+                    <i class="bi bi-cash-coin"></i>
+                    <span>Biaya Pendaftaran</span>
+                </a>
+                <a href="{{ route('pmb.kuota.index') }}" class="nav-link {{ request()->routeIs('pmb.kuota.*') ? 'active' : '' }}">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>Kuota PMB</span>
+                </a>
+                <a href="{{ route('pmb.calon-mahasiswa.index') }}" class="nav-link {{ request()->routeIs('pmb.calon-mahasiswa.*') ? 'active' : '' }}">
+                    <i class="bi bi-person-plus"></i>
+                    <span>Calon Mahasiswa</span>
+                </a>
+                <a href="{{ route('pmb.seleksi.index') }}" class="nav-link {{ request()->routeIs('pmb.seleksi.*') ? 'active' : '' }}">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Seleksi</span>
+                </a>
+                <a href="{{ route('pmb.daftar-ulang.index') }}" class="nav-link {{ request()->routeIs('pmb.daftar-ulang.*') ? 'active' : '' }}">
+                    <i class="bi bi-person-check"></i>
+                    <span>Daftar Ulang</span>
+                </a>
+                <a href="{{ route('pmb.konten-pmb.pengaturan') }}" class="nav-link {{ request()->routeIs('pmb.konten-pmb.*') ? 'active' : '' }}">
+                    <i class="bi bi-globe"></i>
+                    <span>Konten Portal PMB</span>
+                </a>
+            </div>
             
             <div class="menu-header">Akademik</div>
-            <a href="{{ route('mahasiswa.index') }}" class="nav-link {{ request()->routeIs('mahasiswa.*') ? 'active' : '' }}">
-                <i class="bi bi-people"></i>
-                <span>Mahasiswa</span>
-            </a>
-            <a href="{{ route('dosen.index') }}" class="nav-link {{ request()->routeIs('dosen.*') ? 'active' : '' }}">
-                <i class="bi bi-person-workspace"></i>
-                <span>Dosen</span>
-            </a>
-            <a href="{{ route('mata-kuliah.index') }}" class="nav-link {{ request()->routeIs('mata-kuliah.*') ? 'active' : '' }}">
-                <i class="bi bi-book"></i>
-                <span>Mata Kuliah</span>
-            </a>
-            <a href="{{ route('prasyarat.index') }}" class="nav-link {{ request()->routeIs('prasyarat.*') ? 'active' : '' }}">
-                <i class="bi bi-diagram-3"></i>
-                <span>Prasyarat MK</span>
-            </a>
-            <a href="{{ route('kurikulum.index') }}" class="nav-link {{ request()->routeIs('kurikulum.*') ? 'active' : '' }}">
-                <i class="bi bi-grid-3x3"></i>
-                <span>Kurikulum</span>
-            </a>
-            <a href="{{ route('bimbingan.index') }}" class="nav-link {{ request()->routeIs('bimbingan.index') || request()->routeIs('bimbingan.show') ? 'active' : '' }}">
-                <i class="bi bi-chat-dots"></i>
-                <span>Bimbingan Akademik</span>
-            </a>
-            <a href="{{ route('cuti.index') }}" class="nav-link {{ request()->routeIs('cuti.index') || request()->routeIs('cuti.show') || request()->routeIs('cuti.history') ? 'active' : '' }}">
-                <i class="bi bi-calendar-x"></i>
-                <span>Cuti Akademik</span>
-            </a>
-            <a href="{{ route('jadwal-kuliah.index') }}" class="nav-link {{ request()->routeIs('jadwal-kuliah.*') ? 'active' : '' }}">
-                <i class="bi bi-calendar-week"></i>
-                <span>Jadwal Kuliah</span>
-            </a>
-            <a href="{{ route('pertemuan.approval') }}" class="nav-link {{ request()->routeIs('pertemuan.approval') || request()->routeIs('pertemuan.admin.*') ? 'active' : '' }}">
-                <i class="bi bi-calendar-check"></i>
-                <span>Jadwal Pertemuan</span>
-            </a>
-            <a href="{{ route('nilai.index') }}" class="nav-link {{ request()->routeIs('nilai.*') ? 'active' : '' }}">
-                <i class="bi bi-clipboard-data"></i>
-                <span>Input Nilai</span>
-            </a>
-            <a href="{{ route('absensi.index') }}" class="nav-link {{ request()->routeIs('absensi.*') ? 'active' : '' }}">
-                <i class="bi bi-clipboard-check"></i>
-                <span>Absensi</span>
-            </a>
-            <a href="{{ route('jadwal-pengganti.index') }}" class="nav-link {{ request()->routeIs('jadwal-pengganti.*') ? 'active' : '' }}">
-                <i class="bi bi-calendar-range"></i>
-                <span>Jadwal Pengganti</span>
-            </a>
-            <a href="{{ route('wisuda.index') }}" class="nav-link {{ request()->routeIs('wisuda.*') ? 'active' : '' }}">
-                <i class="bi bi-mortarboard-fill"></i>
-                <span>Wisuda</span>
-            </a>
-            <a href="{{ route('yudisium.index') }}" class="nav-link {{ request()->routeIs('yudisium.*') ? 'active' : '' }}">
-                <i class="bi bi-award-fill"></i>
-                <span>Yudisium</span>
-            </a>
-            <a href="{{ route('admin.edom.index') }}" class="nav-link {{ request()->routeIs('admin.edom.*') ? 'active' : '' }}">
-                <i class="bi bi-clipboard2-pulse"></i>
-                <span>EDOM</span>
-            </a>
-            <a href="{{ route('admin.periode-ujian.index') }}" class="nav-link {{ request()->routeIs('admin.periode-ujian.*') || request()->routeIs('admin.kartu-ujian.*') ? 'active' : '' }}">
-                <i class="bi bi-card-checklist"></i>
-                <span>Kartu Peserta Ujian</span>
-            </a>
+            <div class="menu-collapse-toggle" data-bs-toggle="collapse" data-bs-target="#menuAkademik" aria-expanded="{{ request()->routeIs('akademik.*') || request()->routeIs('mahasiswa.*') || request()->routeIs('dosen.*') || request()->routeIs('mata-kuliah.*') || request()->routeIs('kurikulum.*') || request()->routeIs('jadwal-kuliah.*') || request()->routeIs('nilai.*') || request()->routeIs('absensi.*') || request()->routeIs('wisuda.*') || request()->routeIs('yudisium.*') ? 'true' : 'false' }}">
+                <span><i class="bi bi-mortarboard me-2"></i>Data Akademik</span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="collapse submenu {{ request()->routeIs('akademik.*') || request()->routeIs('mahasiswa.*') || request()->routeIs('dosen.*') || request()->routeIs('mata-kuliah.*') || request()->routeIs('kurikulum.*') || request()->routeIs('jadwal-kuliah.*') || request()->routeIs('nilai.*') || request()->routeIs('absensi.*') || request()->routeIs('wisuda.*') || request()->routeIs('yudisium.*') || request()->routeIs('prasyarat.*') || request()->routeIs('bimbingan.*') || request()->routeIs('cuti.*') || request()->routeIs('pertemuan.*') || request()->routeIs('jadwal-pengganti.*') || request()->routeIs('admin.edom.*') || request()->routeIs('admin.periode-ujian.*') || request()->routeIs('admin.kartu-ujian.*') ? 'show' : '' }}" id="menuAkademik">
+                <a href="{{ route('akademik.dashboard') }}" class="nav-link {{ request()->routeIs('akademik.dashboard') ? 'active' : '' }}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard Akademik</span>
+                </a>
+                <a href="{{ route('mahasiswa.index') }}" class="nav-link {{ request()->routeIs('mahasiswa.*') ? 'active' : '' }}">
+                    <i class="bi bi-people"></i>
+                    <span>Mahasiswa</span>
+                </a>
+                <a href="{{ route('dosen.index') }}" class="nav-link {{ request()->routeIs('dosen.*') ? 'active' : '' }}">
+                    <i class="bi bi-person-workspace"></i>
+                    <span>Dosen</span>
+                </a>
+                <a href="{{ route('mata-kuliah.index') }}" class="nav-link {{ request()->routeIs('mata-kuliah.*') ? 'active' : '' }}">
+                    <i class="bi bi-book"></i>
+                    <span>Mata Kuliah</span>
+                </a>
+                <a href="{{ route('prasyarat.index') }}" class="nav-link {{ request()->routeIs('prasyarat.*') ? 'active' : '' }}">
+                    <i class="bi bi-diagram-3"></i>
+                    <span>Prasyarat MK</span>
+                </a>
+                <a href="{{ route('kurikulum.index') }}" class="nav-link {{ request()->routeIs('kurikulum.*') ? 'active' : '' }}">
+                    <i class="bi bi-grid-3x3"></i>
+                    <span>Kurikulum</span>
+                </a>
+                <a href="{{ route('bimbingan.index') }}" class="nav-link {{ request()->routeIs('bimbingan.index') || request()->routeIs('bimbingan.show') ? 'active' : '' }}">
+                    <i class="bi bi-chat-dots"></i>
+                    <span>Bimbingan Akademik</span>
+                </a>
+                <a href="{{ route('cuti.index') }}" class="nav-link {{ request()->routeIs('cuti.index') || request()->routeIs('cuti.show') || request()->routeIs('cuti.history') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-x"></i>
+                    <span>Cuti Akademik</span>
+                </a>
+                <a href="{{ route('jadwal-kuliah.index') }}" class="nav-link {{ request()->routeIs('jadwal-kuliah.*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-week"></i>
+                    <span>Jadwal Kuliah</span>
+                </a>
+                <a href="{{ route('pertemuan.approval') }}" class="nav-link {{ request()->routeIs('pertemuan.approval') || request()->routeIs('pertemuan.admin.*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Jadwal Pertemuan</span>
+                </a>
+                <a href="{{ route('nilai.index') }}" class="nav-link {{ request()->routeIs('nilai.*') ? 'active' : '' }}">
+                    <i class="bi bi-clipboard-data"></i>
+                    <span>Input Nilai</span>
+                </a>
+                <a href="{{ route('absensi.index') }}" class="nav-link {{ request()->routeIs('absensi.*') ? 'active' : '' }}">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Absensi</span>
+                </a>
+                <a href="{{ route('jadwal-pengganti.index') }}" class="nav-link {{ request()->routeIs('jadwal-pengganti.*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-range"></i>
+                    <span>Jadwal Pengganti</span>
+                </a>
+                <a href="{{ route('wisuda.index') }}" class="nav-link {{ request()->routeIs('wisuda.*') ? 'active' : '' }}">
+                    <i class="bi bi-mortarboard-fill"></i>
+                    <span>Wisuda</span>
+                </a>
+                <a href="{{ route('yudisium.index') }}" class="nav-link {{ request()->routeIs('yudisium.*') ? 'active' : '' }}">
+                    <i class="bi bi-award-fill"></i>
+                    <span>Yudisium</span>
+                </a>
+                <a href="{{ route('admin.edom.index') }}" class="nav-link {{ request()->routeIs('admin.edom.*') ? 'active' : '' }}">
+                    <i class="bi bi-clipboard2-pulse"></i>
+                    <span>EDOM</span>
+                </a>
+                <a href="{{ route('admin.periode-ujian.index') }}" class="nav-link {{ request()->routeIs('admin.periode-ujian.*') || request()->routeIs('admin.kartu-ujian.*') ? 'active' : '' }}">
+                    <i class="bi bi-card-checklist"></i>
+                    <span>Kartu Peserta Ujian</span>
+                </a>
+            </div>
             
             <div class="menu-header">Tugas Akhir & Magang</div>
-            <a href="{{ route('admin.konversi-nilai.index') }}" class="nav-link {{ request()->routeIs('admin.konversi-nilai.*') ? 'active' : '' }}">
-                <i class="bi bi-arrow-left-right"></i>
-                <span>Konversi Nilai</span>
-            </a>
-            <a href="{{ route('admin.konversi-kegiatan.index') }}" class="nav-link {{ request()->routeIs('admin.konversi-kegiatan.*') ? 'active' : '' }}">
-                <i class="bi bi-award"></i>
-                <span>Konversi Kegiatan</span>
-            </a>
-            <a href="{{ route('admin.kegiatan-lapangan.jenis.index') }}" class="nav-link {{ request()->routeIs('admin.kegiatan-lapangan.jenis.*') ? 'active' : '' }}">
-                <i class="bi bi-list-ul"></i>
-                <span>Jenis PKL/Magang/KKN</span>
-            </a>
-            <a href="{{ route('admin.kegiatan-lapangan.mitra.index') }}" class="nav-link {{ request()->routeIs('admin.kegiatan-lapangan.mitra.*') ? 'active' : '' }}">
-                <i class="bi bi-building"></i>
-                <span>Mitra Kegiatan</span>
-            </a>
-            <a href="{{ route('admin.kegiatan-lapangan.periode.index') }}" class="nav-link {{ request()->routeIs('admin.kegiatan-lapangan.periode.*') ? 'active' : '' }}">
-                <i class="bi bi-calendar3"></i>
-                <span>Periode Kegiatan</span>
-            </a>
-            <a href="{{ route('admin.kegiatan-lapangan.pendaftaran.index') }}" class="nav-link {{ request()->routeIs('admin.kegiatan-lapangan.pendaftaran.*') ? 'active' : '' }}">
-                <i class="bi bi-people"></i>
-                <span>Pendaftaran PKL/Magang</span>
-            </a>
-            <a href="{{ route('admin.tugas-akhir.index') }}" class="nav-link {{ request()->routeIs('admin.tugas-akhir.*') ? 'active' : '' }}">
-                <i class="bi bi-journal-bookmark-fill"></i>
-                <span>Tugas Akhir</span>
-            </a>
-            <a href="{{ route('admin.tugas-akhir.seminar.index') }}" class="nav-link {{ request()->routeIs('admin.tugas-akhir.seminar.*') ? 'active' : '' }}">
-                <i class="bi bi-easel"></i>
-                <span>Seminar Proposal</span>
-            </a>
-            <a href="{{ route('admin.tugas-akhir.sidang.index') }}" class="nav-link {{ request()->routeIs('admin.tugas-akhir.sidang.*') ? 'active' : '' }}">
-                <i class="bi bi-mortarboard"></i>
-                <span>Sidang TA</span>
-            </a>
+            <div class="menu-collapse-toggle" data-bs-toggle="collapse" data-bs-target="#menuTA" aria-expanded="{{ request()->routeIs('admin.konversi-nilai.*') || request()->routeIs('admin.konversi-kegiatan.*') || request()->routeIs('admin.kegiatan-lapangan.*') || request()->routeIs('admin.tugas-akhir.*') ? 'true' : 'false' }}">
+                <span><i class="bi bi-journal-bookmark me-2"></i>TA/PKL/Magang</span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="collapse submenu {{ request()->routeIs('admin.konversi-nilai.*') || request()->routeIs('admin.konversi-kegiatan.*') || request()->routeIs('admin.kegiatan-lapangan.*') || request()->routeIs('admin.tugas-akhir.*') ? 'show' : '' }}" id="menuTA">
+                <a href="{{ route('admin.konversi-nilai.index') }}" class="nav-link {{ request()->routeIs('admin.konversi-nilai.*') ? 'active' : '' }}">
+                    <i class="bi bi-arrow-left-right"></i>
+                    <span>Konversi Nilai</span>
+                </a>
+                <a href="{{ route('admin.konversi-kegiatan.index') }}" class="nav-link {{ request()->routeIs('admin.konversi-kegiatan.*') ? 'active' : '' }}">
+                    <i class="bi bi-award"></i>
+                    <span>Konversi Kegiatan</span>
+                </a>
+                <a href="{{ route('admin.kegiatan-lapangan.jenis.index') }}" class="nav-link {{ request()->routeIs('admin.kegiatan-lapangan.jenis.*') ? 'active' : '' }}">
+                    <i class="bi bi-list-ul"></i>
+                    <span>Jenis PKL/Magang/KKN</span>
+                </a>
+                <a href="{{ route('admin.kegiatan-lapangan.mitra.index') }}" class="nav-link {{ request()->routeIs('admin.kegiatan-lapangan.mitra.*') ? 'active' : '' }}">
+                    <i class="bi bi-building"></i>
+                    <span>Mitra Kegiatan</span>
+                </a>
+                <a href="{{ route('admin.kegiatan-lapangan.periode.index') }}" class="nav-link {{ request()->routeIs('admin.kegiatan-lapangan.periode.*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar3"></i>
+                    <span>Periode Kegiatan</span>
+                </a>
+                <a href="{{ route('admin.kegiatan-lapangan.pendaftaran.index') }}" class="nav-link {{ request()->routeIs('admin.kegiatan-lapangan.pendaftaran.*') ? 'active' : '' }}">
+                    <i class="bi bi-people"></i>
+                    <span>Pendaftaran PKL/Magang</span>
+                </a>
+                <a href="{{ route('admin.tugas-akhir.index') }}" class="nav-link {{ request()->routeIs('admin.tugas-akhir.index') || request()->routeIs('admin.tugas-akhir.show') || request()->routeIs('admin.tugas-akhir.edit') ? 'active' : '' }}">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                    <span>Tugas Akhir</span>
+                </a>
+                <a href="{{ route('admin.tugas-akhir.seminar.index') }}" class="nav-link {{ request()->routeIs('admin.tugas-akhir.seminar.*') ? 'active' : '' }}">
+                    <i class="bi bi-easel"></i>
+                    <span>Seminar Proposal</span>
+                </a>
+                <a href="{{ route('admin.tugas-akhir.sidang.index') }}" class="nav-link {{ request()->routeIs('admin.tugas-akhir.sidang.*') ? 'active' : '' }}">
+                    <i class="bi bi-mortarboard"></i>
+                    <span>Sidang TA</span>
+                </a>
+            </div>
             
             <div class="menu-header">Kepegawaian</div>
-            <a href="{{ route('kepegawaian.dashboard') }}" class="nav-link {{ request()->routeIs('kepegawaian.dashboard') ? 'active' : '' }}">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="{{ route('kepegawaian.pegawai.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.pegawai.*') ? 'active' : '' }}">
-                <i class="bi bi-person-badge"></i>
-                <span>Tenaga Kependidikan</span>
-            </a>
-            <a href="{{ route('kepegawaian.unit-kerja.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.unit-kerja.*') ? 'active' : '' }}">
-                <i class="bi bi-building"></i>
-                <span>Unit Kerja</span>
-            </a>
-            <a href="{{ route('kepegawaian.cuti.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.cuti.*') ? 'active' : '' }}">
-                <i class="bi bi-calendar-x"></i>
-                <span>Cuti Pegawai</span>
-            </a>
-            <a href="{{ route('kepegawaian.presensi.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.presensi.*') ? 'active' : '' }}">
-                <i class="bi bi-calendar-check"></i>
-                <span>Presensi/Kehadiran</span>
-            </a>
-            <a href="{{ route('kepegawaian.penugasan.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.penugasan.*') ? 'active' : '' }}">
-                <i class="bi bi-arrow-left-right"></i>
-                <span>Penugasan/Mutasi</span>
-            </a>
-            <a href="{{ route('kepegawaian.kgb.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.kgb.*') ? 'active' : '' }}">
-                <i class="bi bi-cash-coin"></i>
-                <span>Kenaikan Gaji Berkala</span>
-            </a>
-            <a href="{{ route('kepegawaian.kenaikan-pangkat.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.kenaikan-pangkat.*') ? 'active' : '' }}">
-                <i class="bi bi-graph-up-arrow"></i>
-                <span>Kenaikan Pangkat</span>
-            </a>
-            <a href="{{ route('kepegawaian.pensiun.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.pensiun.*') ? 'active' : '' }}">
-                <i class="bi bi-person-check"></i>
-                <span>Pensiun</span>
-            </a>
+            <div class="menu-collapse-toggle" data-bs-toggle="collapse" data-bs-target="#menuKepegawaian" aria-expanded="{{ request()->routeIs('kepegawaian.*') ? 'true' : 'false' }}">
+                <span><i class="bi bi-person-badge me-2"></i>SDM & Pegawai</span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="collapse submenu {{ request()->routeIs('kepegawaian.*') ? 'show' : '' }}" id="menuKepegawaian">
+                <a href="{{ route('kepegawaian.dashboard') }}" class="nav-link {{ request()->routeIs('kepegawaian.dashboard') ? 'active' : '' }}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ route('kepegawaian.data-pegawai.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.data-pegawai.*') ? 'active' : '' }}">
+                    <i class="bi bi-people"></i>
+                    <span>Data Pegawai</span>
+                </a>
+                <a href="{{ route('kepegawaian.unit-kerja.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.unit-kerja.*') ? 'active' : '' }}">
+                    <i class="bi bi-building"></i>
+                    <span>Unit Kerja</span>
+                </a>
+                <a href="{{ route('kepegawaian.cuti.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.cuti.*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-x"></i>
+                    <span>Cuti Pegawai</span>
+                </a>
+                <a href="{{ route('kepegawaian.presensi.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.presensi.*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Presensi/Kehadiran</span>
+                </a>
+                <a href="{{ route('kepegawaian.penugasan.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.penugasan.*') ? 'active' : '' }}">
+                    <i class="bi bi-arrow-left-right"></i>
+                    <span>Penugasan/Mutasi</span>
+                </a>
+                <a href="{{ route('kepegawaian.kgb.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.kgb.*') ? 'active' : '' }}">
+                    <i class="bi bi-cash-coin"></i>
+                    <span>Kenaikan Gaji Berkala</span>
+                </a>
+                <a href="{{ route('kepegawaian.kenaikan-pangkat.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.kenaikan-pangkat.*') ? 'active' : '' }}">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Kenaikan Pangkat</span>
+                </a>
+                <a href="{{ route('kepegawaian.pensiun.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.pensiun.*') ? 'active' : '' }}">
+                    <i class="bi bi-person-check"></i>
+                    <span>Pensiun</span>
+                </a>
+                <a href="{{ route('kepegawaian.kontrak.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.kontrak.*') ? 'active' : '' }}">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <span>Kontrak Kerja</span>
+                </a>
+                <a href="{{ route('kepegawaian.evaluasi.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.evaluasi.*') ? 'active' : '' }}">
+                    <i class="bi bi-clipboard-data"></i>
+                    <span>Evaluasi Kinerja</span>
+                </a>
+                <a href="{{ route('kepegawaian.sertifikasi.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.sertifikasi.*') ? 'active' : '' }}">
+                    <i class="bi bi-award"></i>
+                    <span>Sertifikasi Dosen</span>
+                </a>
+                <a href="{{ route('kepegawaian.pelanggaran.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.pelanggaran.*') ? 'active' : '' }}">
+                    <i class="bi bi-exclamation-octagon"></i>
+                    <span>Pelanggaran & Sanksi</span>
+                </a>
+                <a href="{{ route('kepegawaian.izin-keluar.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.izin-keluar.*') ? 'active' : '' }}">
+                    <i class="bi bi-door-open"></i>
+                    <span>Izin Keluar</span>
+                </a>
+                <a href="{{ route('kepegawaian.lembur.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.lembur.*') ? 'active' : '' }}">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Lembur</span>
+                </a>
+                <a href="{{ route('kepegawaian.slip-gaji.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.slip-gaji.*') ? 'active' : '' }}">
+                    <i class="bi bi-receipt"></i>
+                    <span>Slip Gaji</span>
+                </a>
+                <a href="{{ route('kepegawaian.skp.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.skp.*') ? 'active' : '' }}">
+                    <i class="bi bi-file-earmark-check"></i>
+                    <span>SKP Pegawai</span>
+                </a>
+            </div>
             
             <div class="menu-header">Keuangan</div>
-            <a href="{{ route('keuangan.dashboard') }}" class="nav-link {{ request()->routeIs('keuangan.dashboard') ? 'active' : '' }}">
-                <i class="bi bi-graph-up-arrow"></i>
-                <span>Dashboard Keuangan</span>
-            </a>
-            <a href="{{ route('pmb.pembayaran.index') }}" class="nav-link {{ request()->routeIs('pmb.pembayaran.*') ? 'active' : '' }}">
-                <i class="bi bi-credit-card-2-front"></i>
-                <span>Pembayaran PMB</span>
-            </a>
-            <a href="{{ route('tarif.index') }}" class="nav-link {{ request()->routeIs('tarif.*') ? 'active' : '' }}">
-                <i class="bi bi-tags"></i>
-                <span>Tarif</span>
-            </a>
-            <a href="{{ route('tagihan.index') }}" class="nav-link {{ request()->routeIs('tagihan.*') ? 'active' : '' }}">
-                <i class="bi bi-receipt"></i>
-                <span>Tagihan</span>
-            </a>
-            <a href="{{ route('transaksi-pembayaran.index') }}" class="nav-link {{ request()->routeIs('transaksi-pembayaran.*') ? 'active' : '' }}">
-                <i class="bi bi-cash-stack"></i>
-                <span>Transaksi</span>
-            </a>
-            <a href="{{ route('beasiswa.index') }}" class="nav-link {{ request()->routeIs('beasiswa.*') && !request()->routeIs('beasiswa.available') && !request()->routeIs('beasiswa.ajukan') ? 'active' : '' }}">
-                <i class="bi bi-award"></i>
-                <span>Beasiswa</span>
-            </a>
-            <a href="{{ route('beasiswa.penerima.index') }}" class="nav-link {{ request()->routeIs('beasiswa.penerima.*') ? 'active' : '' }}">
-                <i class="bi bi-people"></i>
-                <span>Penerima Beasiswa</span>
-            </a>
-            <a href="{{ route('pengaturan-denda.index') }}" class="nav-link {{ request()->routeIs('pengaturan-denda.*') ? 'active' : '' }}">
-                <i class="bi bi-exclamation-triangle"></i>
-                <span>Pengaturan Denda</span>
-            </a>
-            <a href="{{ route('skema-cicilan.index') }}" class="nav-link {{ request()->routeIs('skema-cicilan.*') ? 'active' : '' }}">
-                <i class="bi bi-calendar3-range"></i>
-                <span>Skema Cicilan</span>
-            </a>
-            <a href="{{ route('cicilan.index') }}" class="nav-link {{ request()->routeIs('cicilan.*') ? 'active' : '' }}">
-                <i class="bi bi-list-check"></i>
-                <span>Manajemen Cicilan</span>
-            </a>
-            <a href="{{ route('notifikasi.index') }}" class="nav-link {{ request()->routeIs('notifikasi.*') ? 'active' : '' }}">
-                <i class="bi bi-bell"></i>
-                <span>Notifikasi Keuangan</span>
-            </a>
+            <div class="menu-collapse-toggle" data-bs-toggle="collapse" data-bs-target="#menuKeuangan" aria-expanded="{{ request()->routeIs('keuangan.*') || request()->routeIs('tarif.*') || request()->routeIs('tagihan.*') || request()->routeIs('transaksi-pembayaran.*') || request()->routeIs('beasiswa.*') || request()->routeIs('pengaturan-denda.*') || request()->routeIs('skema-cicilan.*') || request()->routeIs('cicilan.*') || request()->routeIs('notifikasi.*') || request()->routeIs('pmb.pembayaran.*') ? 'true' : 'false' }}">
+                <span><i class="bi bi-wallet2 me-2"></i>Keuangan</span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="collapse submenu {{ request()->routeIs('keuangan.*') || request()->routeIs('tarif.*') || request()->routeIs('tagihan.*') || request()->routeIs('transaksi-pembayaran.*') || request()->routeIs('beasiswa.*') || request()->routeIs('pengaturan-denda.*') || request()->routeIs('skema-cicilan.*') || request()->routeIs('cicilan.*') || request()->routeIs('notifikasi.*') || request()->routeIs('pmb.pembayaran.*') ? 'show' : '' }}" id="menuKeuangan">
+                <a href="{{ route('keuangan.dashboard') }}" class="nav-link {{ request()->routeIs('keuangan.dashboard') ? 'active' : '' }}">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Dashboard Keuangan</span>
+                </a>
+                <a href="{{ route('pmb.pembayaran.index') }}" class="nav-link {{ request()->routeIs('pmb.pembayaran.*') ? 'active' : '' }}">
+                    <i class="bi bi-credit-card-2-front"></i>
+                    <span>Pembayaran PMB</span>
+                </a>
+                <a href="{{ route('tarif.index') }}" class="nav-link {{ request()->routeIs('tarif.*') ? 'active' : '' }}">
+                    <i class="bi bi-tags"></i>
+                    <span>Tarif</span>
+                </a>
+                <a href="{{ route('tagihan.index') }}" class="nav-link {{ request()->routeIs('tagihan.*') ? 'active' : '' }}">
+                    <i class="bi bi-receipt"></i>
+                    <span>Tagihan</span>
+                </a>
+                <a href="{{ route('transaksi-pembayaran.index') }}" class="nav-link {{ request()->routeIs('transaksi-pembayaran.*') ? 'active' : '' }}">
+                    <i class="bi bi-cash-stack"></i>
+                    <span>Transaksi</span>
+                </a>
+                <a href="{{ route('beasiswa.index') }}" class="nav-link {{ request()->routeIs('beasiswa.*') && !request()->routeIs('beasiswa.available') && !request()->routeIs('beasiswa.ajukan') ? 'active' : '' }}">
+                    <i class="bi bi-award"></i>
+                    <span>Beasiswa</span>
+                </a>
+                <a href="{{ route('beasiswa.penerima.index') }}" class="nav-link {{ request()->routeIs('beasiswa.penerima.*') ? 'active' : '' }}">
+                    <i class="bi bi-people"></i>
+                    <span>Penerima Beasiswa</span>
+                </a>
+                <a href="{{ route('pengaturan-denda.index') }}" class="nav-link {{ request()->routeIs('pengaturan-denda.*') ? 'active' : '' }}">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>Pengaturan Denda</span>
+                </a>
+                <a href="{{ route('skema-cicilan.index') }}" class="nav-link {{ request()->routeIs('skema-cicilan.*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar3-range"></i>
+                    <span>Skema Cicilan</span>
+                </a>
+                <a href="{{ route('cicilan.index') }}" class="nav-link {{ request()->routeIs('cicilan.*') ? 'active' : '' }}">
+                    <i class="bi bi-list-check"></i>
+                    <span>Manajemen Cicilan</span>
+                </a>
+                <a href="{{ route('notifikasi.index') }}" class="nav-link {{ request()->routeIs('notifikasi.*') ? 'active' : '' }}">
+                    <i class="bi bi-bell"></i>
+                    <span>Notifikasi Keuangan</span>
+                </a>
+            </div>
             
-            <div class="menu-header">Rekonsiliasi Bank</div>
-            <a href="{{ route('akun-bank.index') }}" class="nav-link {{ request()->routeIs('akun-bank.*') ? 'active' : '' }}">
-                <i class="bi bi-bank"></i>
-                <span>Akun Bank</span>
-            </a>
-            <a href="{{ route('mutasi-bank.index') }}" class="nav-link {{ request()->routeIs('mutasi-bank.*') ? 'active' : '' }}">
-                <i class="bi bi-arrow-left-right"></i>
-                <span>Mutasi Bank</span>
-            </a>
-            <a href="{{ route('rekonsiliasi.index') }}" class="nav-link {{ request()->routeIs('rekonsiliasi.*') ? 'active' : '' }}">
-                <i class="bi bi-clipboard-check"></i>
-                <span>Rekonsiliasi</span>
-            </a>
-            <a href="{{ route('keuangan.refund.index') }}" class="nav-link {{ request()->routeIs('keuangan.refund.*') ? 'active' : '' }}">
-                <i class="bi bi-arrow-return-left"></i>
-                <span>Refund</span>
-            </a>
+            <div class="menu-collapse-toggle" data-bs-toggle="collapse" data-bs-target="#menuBank" aria-expanded="{{ request()->routeIs('akun-bank.*') || request()->routeIs('mutasi-bank.*') || request()->routeIs('rekonsiliasi.*') || request()->routeIs('keuangan.refund.*') ? 'true' : 'false' }}">
+                <span><i class="bi bi-bank me-2"></i>Rekonsiliasi Bank</span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="collapse submenu {{ request()->routeIs('akun-bank.*') || request()->routeIs('mutasi-bank.*') || request()->routeIs('rekonsiliasi.*') || request()->routeIs('keuangan.refund.*') ? 'show' : '' }}" id="menuBank">
+                <a href="{{ route('akun-bank.index') }}" class="nav-link {{ request()->routeIs('akun-bank.*') ? 'active' : '' }}">
+                    <i class="bi bi-bank"></i>
+                    <span>Akun Bank</span>
+                </a>
+                <a href="{{ route('mutasi-bank.index') }}" class="nav-link {{ request()->routeIs('mutasi-bank.*') ? 'active' : '' }}">
+                    <i class="bi bi-arrow-left-right"></i>
+                    <span>Mutasi Bank</span>
+                </a>
+                <a href="{{ route('rekonsiliasi.index') }}" class="nav-link {{ request()->routeIs('rekonsiliasi.*') ? 'active' : '' }}">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Rekonsiliasi</span>
+                </a>
+                <a href="{{ route('keuangan.refund.index') }}" class="nav-link {{ request()->routeIs('keuangan.refund.*') ? 'active' : '' }}">
+                    <i class="bi bi-arrow-return-left"></i>
+                    <span>Refund</span>
+                </a>
+            </div>
             
-            <div class="menu-header">Potongan & Diskon</div>
-            <a href="{{ route('jenis-potongan.index') }}" class="nav-link {{ request()->routeIs('jenis-potongan.*') ? 'active' : '' }}">
-                <i class="bi bi-tags"></i>
-                <span>Jenis Potongan</span>
-            </a>
-            <a href="{{ route('periode-diskon.index') }}" class="nav-link {{ request()->routeIs('periode-diskon.*') ? 'active' : '' }}">
-                <i class="bi bi-calendar-event"></i>
-                <span>Periode Diskon</span>
-            </a>
-            <a href="{{ route('potongan-mahasiswa.index') }}" class="nav-link {{ request()->routeIs('potongan-mahasiswa.*') ? 'active' : '' }}">
-                <i class="bi bi-person-badge"></i>
-                <span>Potongan Mahasiswa</span>
-            </a>
+            <div class="menu-collapse-toggle" data-bs-toggle="collapse" data-bs-target="#menuPotongan" aria-expanded="{{ request()->routeIs('jenis-potongan.*') || request()->routeIs('periode-diskon.*') || request()->routeIs('potongan-mahasiswa.*') ? 'true' : 'false' }}">
+                <span><i class="bi bi-percent me-2"></i>Potongan & Diskon</span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="collapse submenu {{ request()->routeIs('jenis-potongan.*') || request()->routeIs('periode-diskon.*') || request()->routeIs('potongan-mahasiswa.*') ? 'show' : '' }}" id="menuPotongan">
+                <a href="{{ route('jenis-potongan.index') }}" class="nav-link {{ request()->routeIs('jenis-potongan.*') ? 'active' : '' }}">
+                    <i class="bi bi-tags"></i>
+                    <span>Jenis Potongan</span>
+                </a>
+                <a href="{{ route('periode-diskon.index') }}" class="nav-link {{ request()->routeIs('periode-diskon.*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Periode Diskon</span>
+                </a>
+                <a href="{{ route('potongan-mahasiswa.index') }}" class="nav-link {{ request()->routeIs('potongan-mahasiswa.*') ? 'active' : '' }}">
+                    <i class="bi bi-person-badge"></i>
+                    <span>Potongan Mahasiswa</span>
+                </a>
+            </div>
             
-            <div class="menu-header">Laporan Keuangan</div>
-            <a href="{{ route('laporan.pendapatan') }}" class="nav-link {{ request()->routeIs('laporan.pendapatan*') ? 'active' : '' }}">
-                <i class="bi bi-graph-up-arrow"></i>
-                <span>Lap. Pendapatan</span>
-            </a>
-            <a href="{{ route('laporan.tunggakan') }}" class="nav-link {{ request()->routeIs('laporan.tunggakan*') ? 'active' : '' }}">
-                <i class="bi bi-exclamation-circle"></i>
-                <span>Lap. Tunggakan</span>
-            </a>
-            <a href="{{ route('laporan.beasiswa') }}" class="nav-link {{ request()->routeIs('laporan.beasiswa*') ? 'active' : '' }}">
-                <i class="bi bi-mortarboard"></i>
-                <span>Lap. Beasiswa</span>
-            </a>
+            <div class="menu-collapse-toggle" data-bs-toggle="collapse" data-bs-target="#menuLaporanKeuangan" aria-expanded="{{ request()->routeIs('laporan.pendapatan*') || request()->routeIs('laporan.tunggakan*') || request()->routeIs('laporan.beasiswa*') ? 'true' : 'false' }}">
+                <span><i class="bi bi-file-earmark-bar-graph me-2"></i>Laporan Keuangan</span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="collapse submenu {{ request()->routeIs('laporan.pendapatan*') || request()->routeIs('laporan.tunggakan*') || request()->routeIs('laporan.beasiswa*') ? 'show' : '' }}" id="menuLaporanKeuangan">
+                <a href="{{ route('laporan.pendapatan') }}" class="nav-link {{ request()->routeIs('laporan.pendapatan*') ? 'active' : '' }}">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Lap. Pendapatan</span>
+                </a>
+                <a href="{{ route('laporan.tunggakan') }}" class="nav-link {{ request()->routeIs('laporan.tunggakan*') ? 'active' : '' }}">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span>Lap. Tunggakan</span>
+                </a>
+                <a href="{{ route('laporan.beasiswa') }}" class="nav-link {{ request()->routeIs('laporan.beasiswa*') ? 'active' : '' }}">
+                    <i class="bi bi-mortarboard"></i>
+                    <span>Lap. Beasiswa</span>
+                </a>
+            </div>
             
             <div class="menu-header">Laporan Akademik</div>
             <a href="{{ route('laporan.index') }}" class="nav-link {{ request()->routeIs('laporan.index') || request()->routeIs('laporan.mahasiswa') || request()->routeIs('laporan.nilai') || request()->routeIs('laporan.absensi') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-bar-graph"></i>
                 <span>Laporan & Statistik</span>
             </a>
+            
+            <div class="menu-header">Tools</div>
+            <div class="menu-collapse-toggle" data-bs-toggle="collapse" data-bs-target="#menuTools" aria-expanded="{{ request()->routeIs('import.*') || request()->routeIs('activity-log.*') || request()->routeIs('backup.*') || request()->routeIs('konfigurasi-cetak.*') || request()->routeIs('settings.*') ? 'true' : 'false' }}">
+                <span><i class="bi bi-gear me-2"></i>Tools & Pengaturan</span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="collapse submenu {{ request()->routeIs('import.*') || request()->routeIs('activity-log.*') || request()->routeIs('backup.*') || request()->routeIs('konfigurasi-cetak.*') || request()->routeIs('settings.*') ? 'show' : '' }}" id="menuTools">
+                <a href="{{ route('import.index') }}" class="nav-link {{ request()->routeIs('import.*') ? 'active' : '' }}">
+                    <i class="bi bi-upload"></i>
+                    <span>Import Data</span>
+                </a>
+                <a href="{{ route('activity-log.index') }}" class="nav-link {{ request()->routeIs('activity-log.*') ? 'active' : '' }}">
+                    <i class="bi bi-journal-text"></i>
+                    <span>Activity Log</span>
+                </a>
+                <a href="{{ route('backup.index') }}" class="nav-link {{ request()->routeIs('backup.*') ? 'active' : '' }}">
+                    <i class="bi bi-database-down"></i>
+                    <span>Backup Database</span>
+                </a>
+                <a href="{{ route('konfigurasi-cetak.index') }}" class="nav-link {{ request()->routeIs('konfigurasi-cetak.*') ? 'active' : '' }}">
+                    <i class="bi bi-printer"></i>
+                    <span>Konfigurasi Cetak</span>
+                </a>
+                <a href="{{ route('settings.index') }}" class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                    <i class="bi bi-gear"></i>
+                    <span>Pengaturan</span>
+                </a>
+            </div>
             @endif
             
             @if(auth()->check() && auth()->user()->isDosen())
             <!-- Menu Dosen -->
+            @if(auth()->user()->role !== 'dosen' && auth()->user()->dosen)
+            <div class="menu-header">
+                <span class="badge bg-success">Portal Dosen</span>
+            </div>
+            @endif
             <a href="{{ route('dosen.dashboard') }}" class="nav-link {{ request()->routeIs('dosen.dashboard') ? 'active' : '' }}">
                 <i class="bi bi-grid-1x2-fill"></i>
                 <span>Dashboard</span>
@@ -602,6 +779,30 @@
             <a href="{{ route('dosen.presensi.index') }}" class="nav-link {{ request()->routeIs('dosen.presensi.*') ? 'active' : '' }}">
                 <i class="bi bi-fingerprint"></i>
                 <span>Presensi Dosen</span>
+            </a>
+            <a href="{{ route('dosen.izin-keluar.index') }}" class="nav-link {{ request()->routeIs('dosen.izin-keluar.*') ? 'active' : '' }}">
+                <i class="bi bi-door-open"></i>
+                <span>Izin Keluar</span>
+            </a>
+            <a href="{{ route('dosen.lembur.index') }}" class="nav-link {{ request()->routeIs('dosen.lembur.*') ? 'active' : '' }}">
+                <i class="bi bi-clock-history"></i>
+                <span>Pengajuan Lembur</span>
+            </a>
+            <a href="{{ route('dosen.cuti.index') }}" class="nav-link {{ request()->routeIs('dosen.cuti.*') ? 'active' : '' }}">
+                <i class="bi bi-calendar-x"></i>
+                <span>Pengajuan Cuti</span>
+            </a>
+            <a href="{{ route('dosen.cuti.saldo') }}" class="nav-link {{ request()->routeIs('dosen.cuti.saldo') ? 'active' : '' }}">
+                <i class="bi bi-calendar-check"></i>
+                <span>Saldo Cuti</span>
+            </a>
+            <a href="{{ route('dosen.slip-gaji.index') }}" class="nav-link {{ request()->routeIs('dosen.slip-gaji.*') ? 'active' : '' }}">
+                <i class="bi bi-receipt"></i>
+                <span>Slip Gaji</span>
+            </a>
+            <a href="{{ route('dosen.skp.index') }}" class="nav-link {{ request()->routeIs('dosen.skp.*') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-check"></i>
+                <span>SKP / Kinerja</span>
             </a>
             
             <div class="menu-header">Akademik</div>
@@ -638,6 +839,10 @@
             <a href="{{ route('dosen.mahasiswa-wali') }}" class="nav-link {{ request()->routeIs('dosen.mahasiswa-wali*') ? 'active' : '' }}">
                 <i class="bi bi-people"></i>
                 <span>Mahasiswa Perwalian</span>
+            </a>
+            <a href="{{ route('dosen.edom.index') }}" class="nav-link {{ request()->routeIs('dosen.edom.*') ? 'active' : '' }}">
+                <i class="bi bi-bar-chart-line"></i>
+                <span>Hasil EDOM</span>
             </a>
             
             <div class="menu-header">Tugas Akhir</div>
@@ -679,6 +884,14 @@
             <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <i class="bi bi-grid-1x2-fill"></i>
                 <span>Dashboard</span>
+            </a>
+            <a href="{{ route('mahasiswa.dashboard.akademik') }}" class="nav-link {{ request()->routeIs('mahasiswa.dashboard.akademik') ? 'active' : '' }}">
+                <i class="bi bi-mortarboard"></i>
+                <span>Dashboard Akademik</span>
+            </a>
+            <a href="{{ route('mahasiswa.dashboard.keuangan') }}" class="nav-link {{ request()->routeIs('mahasiswa.dashboard.keuangan') ? 'active' : '' }}">
+                <i class="bi bi-wallet2"></i>
+                <span>Dashboard Keuangan</span>
             </a>
             
             <div class="menu-header">Profil & Dokumen</div>
@@ -800,6 +1013,15 @@
 
             @if(auth()->check() && auth()->user()->isKaprodi())
             <!-- Menu Ketua Prodi -->
+            @if(auth()->user()->role === 'dosen' && auth()->user()->dosen)
+            <div class="menu-header">
+                <span class="badge bg-info">Kaprodi</span>
+                @php $prodiKaprodi = auth()->user()->getProdiKaprodi(); @endphp
+                @if($prodiKaprodi)
+                <small class="text-muted d-block">{{ $prodiKaprodi->nama }}</small>
+                @endif
+            </div>
+            @endif
             <a href="{{ route('kaprodi.dashboard') }}" class="nav-link {{ request()->routeIs('kaprodi.dashboard') ? 'active' : '' }}">
                 <i class="bi bi-grid-1x2-fill"></i>
                 <span>Dashboard</span>
@@ -832,6 +1054,10 @@
             </a>
             
             <div class="menu-header">Approval & Monitoring</div>
+            <a href="{{ route('kaprodi.approval.dashboard') }}" class="nav-link {{ request()->routeIs('kaprodi.approval.*') ? 'active' : '' }}">
+                <i class="bi bi-clipboard-check"></i>
+                <span>Approval Kepegawaian</span>
+            </a>
             <a href="{{ route('kaprodi.krs.index') }}" class="nav-link {{ request()->routeIs('kaprodi.krs.*') ? 'active' : '' }}">
                 <i class="bi bi-check2-square"></i>
                 <span>Persetujuan KRS</span>
@@ -900,6 +1126,15 @@
 
             @if(auth()->check() && auth()->user()->isDekan())
             <!-- Menu Dekan -->
+            @if(auth()->user()->role === 'dosen' && auth()->user()->dosen)
+            <div class="menu-header">
+                <span class="badge bg-warning text-dark">Dekan</span>
+                @php $fakultasDekan = auth()->user()->getFakultasDekan(); @endphp
+                @if($fakultasDekan)
+                <small class="text-muted d-block">{{ $fakultasDekan->nama }}</small>
+                @endif
+            </div>
+            @endif
             <a href="{{ route('dekan.dashboard') }}" class="nav-link {{ request()->routeIs('dekan.dashboard') ? 'active' : '' }}">
                 <i class="bi bi-grid-1x2-fill"></i>
                 <span>Dashboard</span>
@@ -1021,30 +1256,6 @@
                 <i class="bi bi-calendar-event"></i>
                 <span>Kalender Akademik</span>
             </a>
-            
-            @if(auth()->check() && auth()->user()->isAdmin())
-            <div class="menu-header">Tools</div>
-            <a href="{{ route('import.index') }}" class="nav-link {{ request()->routeIs('import.*') ? 'active' : '' }}">
-                <i class="bi bi-upload"></i>
-                <span>Import Data</span>
-            </a>
-            <a href="{{ route('activity-log.index') }}" class="nav-link {{ request()->routeIs('activity-log.*') ? 'active' : '' }}">
-                <i class="bi bi-journal-text"></i>
-                <span>Activity Log</span>
-            </a>
-            <a href="{{ route('backup.index') }}" class="nav-link {{ request()->routeIs('backup.*') ? 'active' : '' }}">
-                <i class="bi bi-database-down"></i>
-                <span>Backup Database</span>
-            </a>
-            <a href="{{ route('konfigurasi-cetak.index') }}" class="nav-link {{ request()->routeIs('konfigurasi-cetak.*') ? 'active' : '' }}">
-                <i class="bi bi-printer"></i>
-                <span>Konfigurasi Cetak</span>
-            </a>
-            <a href="{{ route('settings.index') }}" class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
-                <i class="bi bi-gear"></i>
-                <span>Pengaturan</span>
-            </a>
-            @endif
         </div>
     </nav>
     

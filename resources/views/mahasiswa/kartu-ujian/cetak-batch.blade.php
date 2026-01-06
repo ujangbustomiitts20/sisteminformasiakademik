@@ -101,11 +101,16 @@
     </style>
 </head>
 <body>
+    @php
+        $pejabat = \App\Models\PejabatPenandatangan::where('kode', 'kepala_baak')
+            ->where('aktif', true)
+            ->first();
+    @endphp
     @foreach($kartuList as $kartuUjian)
     <div class="header">
-        <h2>UNIVERSITAS CONTOH</h2>
+        <h2>{{ strtoupper(setting('institution_name', 'UNIVERSITAS')) }}</h2>
         <h3>{{ $kartuUjian->mahasiswa->programStudi->fakultas->nama ?? 'FAKULTAS' }}</h3>
-        <p>Jl. Contoh No. 123, Kota</p>
+        <p>{{ setting('institution_address', 'Alamat Institusi') }}</p>
     </div>
 
     <div class="title">
@@ -172,10 +177,10 @@
     </table>
 
     <div class="signature">
-        <p>{{ now()->format('d F Y') }}</p>
-        <p>Ka. Bag. Akademik</p>
+        <p>{{ setting('kota_institusi', 'Jakarta') }}, {{ now()->translatedFormat('d F Y') }}</p>
+        <p>{{ $pejabat?->jabatan ?? 'Ka. Bag. Akademik' }}</p>
         <div class="line"></div>
-        <p>(....................)</p>
+        <p>({{ $pejabat?->nama_lengkap ?? '....................' }})</p>
     </div>
 
     <div class="clear"></div>

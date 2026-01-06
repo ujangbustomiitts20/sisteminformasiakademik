@@ -3,6 +3,20 @@
 <head>
     <meta charset="utf-8">
     <title>KRS - {{ $mahasiswa->nim }}</title>
+    @php
+        $pejabat = \App\Models\PejabatPenandatangan::where('kode', 'kepala_baak')
+            ->where('aktif', true)
+            ->first();
+        
+        $logoPath = setting('institution_logo');
+        $logoFullPath = $logoPath ? storage_path('app/public/' . $logoPath) : null;
+        $logoBase64 = null;
+        if ($logoFullPath && file_exists($logoFullPath)) {
+            $logoData = file_get_contents($logoFullPath);
+            $logoMime = mime_content_type($logoFullPath);
+            $logoBase64 = 'data:' . $logoMime . ';base64,' . base64_encode($logoData);
+        }
+    @endphp
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,6 +28,26 @@
             border-bottom: 3px double #000;
             padding-bottom: 10px;
             margin-bottom: 20px;
+        }
+        .header table {
+            width: 100%;
+        }
+        .header .logo {
+            width: 80px;
+            vertical-align: middle;
+        }
+        .header .logo img {
+            max-width: 70px;
+            max-height: 70px;
+        }
+        .header .institusi {
+            text-align: center;
+            vertical-align: middle;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 12px;
+            font-weight: normal;
         }
         .header h2 {
             margin: 0;
@@ -66,20 +100,44 @@
         }
         .ttd {
             float: right;
-            width: 200px;
+            width: 220px;
             text-align: center;
         }
         .ttd .nama {
             margin-top: 60px;
-            border-bottom: 1px solid #000;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .ttd .nip {
+            font-size: 10px;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h2>UNIVERSITAS SIAKAD</h2>
-        <h3>{{ $mahasiswa->programStudi->fakultas->nama }}</h3>
-        <p>Jl. Pendidikan No. 123, Kota Akademik | Telp: (021) 1234567</p>
+        <table>
+            <tr>
+                <td class="logo">
+                    @if($logoBase64)
+                        <img src="{{ $logoBase64 }}" alt="Logo">
+                    @endif
+                </td>
+                <td class="institusi">
+                    @if(setting('institution_yayasan'))
+                    <h1>{{ setting('institution_yayasan') }}</h1>
+                    @endif
+                    <h2>{{ strtoupper(setting('institution_name', 'UNIVERSITAS')) }}</h2>
+                    <h3>{{ $mahasiswa->programStudi->fakultas->nama }}</h3>
+                    <p>{{ setting('institution_address', 'Alamat Institusi') }}</p>
+                    <p>
+                        @if(setting('contact_phone'))Telp: {{ setting('contact_phone') }}@endif
+                        @if(setting('contact_fax')) | Fax: {{ setting('contact_fax') }}@endif
+                        @if(setting('contact_email')) | Email: {{ setting('contact_email') }}@endif
+                    </p>
+                </td>
+                <td class="logo"></td>
+            </tr>
+        </table>
     </div>
 
     <div class="title">KARTU RENCANA STUDI (KRS)</div>
@@ -141,10 +199,17 @@
 
     <div class="footer">
         <div class="ttd">
-            <p>{{ now()->locale('id')->isoFormat('D MMMM Y') }}</p>
-            <p>Dosen Pembimbing Akademik</p>
-            <p class="nama">{{ $mahasiswa->dosenWali->nama ?? '_______________' }}</p>
-            <p>NIDN. {{ $mahasiswa->dosenWali->nidn ?? '-' }}</p>
+            <p>{{ setting('kota_institusi', 'Jakarta') }}, {{ now()->locale('id')->isoFormat('D MMMM Y') }}</p>
+            <p>{{ $pejabat?->jabatan ?? 'Dosen Pembimbing Akademik' }}</p>
+            @if($pejabat?->tanda_tangan)
+                <img src="{{ $pejabat->tanda_tangan_url }}" alt="TTD" style="height: 50px; margin: 5px 0;">
+            @endif
+            <p class="nama">{{ $pejabat?->nama_lengkap ?? $mahasiswa->dosenWali->nama ?? '_______________' }}</p>
+            @if($pejabat?->nip)
+            <p class="nip">NIP. {{ $pejabat->nip }}</p>
+            @elseif($mahasiswa->dosenWali?->nidn)
+            <p class="nip">NIDN. {{ $mahasiswa->dosenWali->nidn }}</p>
+            @endif
         </div>
     </div>
 </body>
