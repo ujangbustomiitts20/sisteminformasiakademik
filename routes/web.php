@@ -537,6 +537,18 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/{uraianKegiatanSkp}', [\App\Http\Controllers\Admin\UraianKegiatanSkpController::class, 'destroy'])->name('destroy');
             Route::post('/{uraianKegiatanSkp}/toggle-status', [\App\Http\Controllers\Admin\UraianKegiatanSkpController::class, 'toggleStatus'])->name('toggle-status');
         });
+
+        // Aktivitas Harian (Admin)
+        Route::prefix('kepegawaian/aktivitas-harian')->name('kepegawaian.aktivitas-harian.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\AktivitasHarianController::class, 'index'])->name('index');
+            Route::get('/rekap', [\App\Http\Controllers\Admin\AktivitasHarianController::class, 'rekap'])->name('rekap');
+            Route::get('/rekap/{dosen}', [\App\Http\Controllers\Admin\AktivitasHarianController::class, 'rekapDetail'])->name('rekap-detail');
+            Route::get('/{aktivitasHarian}', [\App\Http\Controllers\Admin\AktivitasHarianController::class, 'show'])->name('show');
+            Route::post('/{aktivitasHarian}/approve', [\App\Http\Controllers\Admin\AktivitasHarianController::class, 'approve'])->name('approve');
+            Route::post('/{aktivitasHarian}/reject', [\App\Http\Controllers\Admin\AktivitasHarianController::class, 'reject'])->name('reject');
+            Route::post('/bulk-approve', [\App\Http\Controllers\Admin\AktivitasHarianController::class, 'bulkApprove'])->name('bulk-approve');
+            Route::delete('/{aktivitasHarian}', [\App\Http\Controllers\Admin\AktivitasHarianController::class, 'destroy'])->name('destroy');
+        });
         
         // Kepegawaian Dosen (Riwayat) - HARUS SETELAH route SDM karena {dosen} adalah wildcard
         Route::prefix('kepegawaian/{dosen}')->name('kepegawaian.')->group(function () {
@@ -1334,6 +1346,17 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/target/{target}', [\App\Http\Controllers\Dosen\SkpController::class, 'destroyTarget'])->name('target.destroy');
             Route::post('/{skp}/realisasi', [\App\Http\Controllers\Dosen\SkpController::class, 'inputRealisasi'])->name('realisasi');
             Route::get('/{skp}/cetak', [\App\Http\Controllers\Dosen\SkpController::class, 'cetak'])->name('cetak');
+        });
+
+        // Aktivitas Harian Dosen
+        Route::prefix('portal-dosen/aktivitas-harian')->name('dosen.aktivitas-harian.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Dosen\AktivitasHarianController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Dosen\AktivitasHarianController::class, 'store'])->name('store');
+            Route::put('/{aktivitasHarian}', [\App\Http\Controllers\Dosen\AktivitasHarianController::class, 'update'])->name('update');
+            Route::delete('/{aktivitasHarian}', [\App\Http\Controllers\Dosen\AktivitasHarianController::class, 'destroy'])->name('destroy');
+            Route::post('/ajukan', [\App\Http\Controllers\Dosen\AktivitasHarianController::class, 'ajukan'])->name('ajukan');
+            Route::post('/ajukan-semua', [\App\Http\Controllers\Dosen\AktivitasHarianController::class, 'ajukanSemua'])->name('ajukan-semua');
+            Route::get('/rekap', [\App\Http\Controllers\Dosen\AktivitasHarianController::class, 'rekap'])->name('rekap');
         });
         
         // Jadwal Mengajar Dosen

@@ -122,10 +122,17 @@
                 </div>
                 @endif
 
-                @if($cuti->status == 'ditolak' && $cuti->alasan_penolakan)
+                @if($cuti->status == 'ditolak' && $cuti->catatan_admin)
                 <div class="alert alert-danger">
                     <h6 class="alert-heading"><i class="bi bi-x-circle me-1"></i>Alasan Penolakan:</h6>
-                    <p class="mb-0">{{ $cuti->alasan_penolakan }}</p>
+                    <p class="mb-0">{{ $cuti->catatan_admin }}</p>
+                </div>
+                @endif
+
+                @if($cuti->status == 'disetujui' && $cuti->catatan_admin)
+                <div class="alert alert-success">
+                    <h6 class="alert-heading"><i class="bi bi-check-circle me-1"></i>Catatan Persetujuan:</h6>
+                    <p class="mb-0">{{ $cuti->catatan_admin }}</p>
                 </div>
                 @endif
             </div>
@@ -159,13 +166,13 @@
                     </div>
                     @endif
                     
-                    @if($cuti->disetujui_pada)
+                    @if($cuti->tanggal_disetujui)
                     <div class="timeline-item">
                         <div class="timeline-marker bg-success"></div>
                         <div class="timeline-content">
-                            <p class="mb-0 small text-muted">{{ \Carbon\Carbon::parse($cuti->disetujui_pada)->format('d/m/Y H:i') }}</p>
+                            <p class="mb-0 small text-muted">{{ \Carbon\Carbon::parse($cuti->tanggal_disetujui)->format('d/m/Y H:i') }}</p>
                             <strong>Disetujui</strong>
-                            <p class="small text-muted mb-0">Oleh: {{ $cuti->disetujuiOlehUser->name ?? '-' }}</p>
+                            <p class="small text-muted mb-0">Oleh: {{ $cuti->disetujuiOleh->name ?? '-' }}</p>
                         </div>
                     </div>
                     @endif
@@ -183,7 +190,7 @@
             </div>
         </div>
 
-        @if($cuti->status == 'pending' || $cuti->status == 'disetujui_atasan')
+        @if($cuti->status == 'diajukan' || $cuti->status == 'disetujui_atasan')
         <div class="card mt-3">
             <div class="card-header">
                 <i class="bi bi-hand-thumbs-up me-2"></i>Aksi
@@ -209,7 +216,7 @@
     </div>
 </div>
 
-@if($cuti->status == 'pending' || $cuti->status == 'disetujui_atasan')
+@if($cuti->status == 'diajukan' || $cuti->status == 'disetujui_atasan')
 <!-- Modal Approve -->
 <div class="modal fade" id="approveModal" tabindex="-1">
     <div class="modal-dialog">
@@ -224,7 +231,7 @@
                     <p>Anda yakin ingin menyetujui pengajuan cuti ini?</p>
                     <div class="mb-3">
                         <label class="form-label">Catatan (Opsional)</label>
-                        <textarea name="catatan" class="form-control" rows="3"></textarea>
+                        <textarea name="catatan_admin" class="form-control" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -252,7 +259,7 @@
                     <p>Anda yakin ingin menolak pengajuan cuti ini?</p>
                     <div class="mb-3">
                         <label class="form-label">Alasan Penolakan <span class="text-danger">*</span></label>
-                        <textarea name="alasan" class="form-control" rows="3" required placeholder="Masukkan alasan penolakan..."></textarea>
+                        <textarea name="catatan_admin" class="form-control" rows="3" required placeholder="Masukkan alasan penolakan..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">

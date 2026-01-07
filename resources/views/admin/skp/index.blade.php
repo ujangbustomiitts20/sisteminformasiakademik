@@ -191,10 +191,15 @@
                                 <a href="{{ route('kepegawaian.skp.show', $skp) }}" class="btn btn-outline-primary" title="Detail">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                @if($skp->status !== 'final')
                                 <a href="{{ route('kepegawaian.skp.edit', $skp) }}" class="btn btn-outline-warning" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                @if($skp->status === 'final')
+                                <button type="button" class="btn btn-outline-danger" 
+                                        onclick="confirmDeleteFinal('{{ route('kepegawaian.skp.destroy', $skp) }}', '{{ $skp->no_skp }}', '{{ $skp->nama_pegawai }}')" title="Hapus SKP Final">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                @else
                                 <button type="button" class="btn btn-outline-danger" 
                                         onclick="confirmDelete('{{ route('kepegawaian.skp.destroy', $skp) }}')" title="Hapus">
                                     <i class="bi bi-trash"></i>
@@ -303,6 +308,46 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Delete Final SKP Confirmation -->
+<div class="modal fade" id="modalDeleteFinal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="deleteFinalForm" method="POST">
+                @csrf
+                @method('DELETE')
+                <input type="hidden" name="force" value="true">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Hapus SKP Final</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger mb-3">
+                        <i class="bi bi-exclamation-octagon me-2"></i>
+                        <strong>PERINGATAN!</strong> Anda akan menghapus SKP yang sudah berstatus <strong>FINAL</strong>.
+                    </div>
+                    <div class="bg-light p-3 rounded mb-3">
+                        <p class="mb-2"><strong>Data yang akan dihapus:</strong></p>
+                        <ul class="mb-0 small">
+                            <li>No. SKP: <strong id="delete_no_skp"></strong></li>
+                            <li>Pegawai: <strong id="delete_nama_pegawai"></strong></li>
+                        </ul>
+                    </div>
+                    <p class="text-danger mb-0 small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Tindakan ini tidak dapat dibatalkan. Data SKP beserta semua target dan realisasi akan dihapus permanen.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Ya, Hapus SKP Final
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -310,6 +355,13 @@
 function confirmDelete(url) {
     document.getElementById('deleteForm').action = url;
     new bootstrap.Modal(document.getElementById('modalDelete')).show();
+}
+
+function confirmDeleteFinal(url, noSkp, namaPegawai) {
+    document.getElementById('deleteFinalForm').action = url;
+    document.getElementById('delete_no_skp').textContent = noSkp;
+    document.getElementById('delete_nama_pegawai').textContent = namaPegawai;
+    new bootstrap.Modal(document.getElementById('modalDeleteFinal')).show();
 }
 </script>
 @endpush

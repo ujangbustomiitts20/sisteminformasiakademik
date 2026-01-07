@@ -45,9 +45,14 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Kode <span class="text-danger">*</span></label>
-                                    <input type="text" name="kode" class="form-control" required value="{{ old('kode', $pejabatPenandatangan->kode) }}">
-                                    <small class="text-muted">Kode unik untuk referensi di sistem</small>
+                                    <label class="form-label">Nama Jabatan <span class="text-danger">*</span></label>
+                                    <select name="nama_jabatan_id" class="form-select" required id="namaJabatanEdit">
+                                        <option value="">-- Pilih Jabatan --</option>
+                                        @foreach($namaJabatans as $jab)
+                                            <option value="{{ $jab->id }}" data-kategori="{{ $jab->kategori }}" data-kode="{{ $jab->kode }}" {{ old('nama_jabatan_id', $pejabatPenandatangan->nama_jabatan_id) == $jab->id ? 'selected' : '' }}>{{ $jab->nama }}</option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted">Kode akan otomatis diambil dari jabatan</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -62,46 +67,19 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div class="mb-3">
-                                    <label class="form-label">Nama Jabatan <span class="text-danger">*</span></label>
-                                    <select name="nama_jabatan_id" class="form-select" id="namaJabatanEdit">
-                                        <option value="">-- Pilih dari Daftar Jabatan --</option>
-                                        @foreach($namaJabatans as $jab)
-                                            <option value="{{ $jab->id }}" data-kategori="{{ $jab->kategori }}" {{ old('nama_jabatan_id', $pejabatPenandatangan->nama_jabatan_id) == $jab->id ? 'selected' : '' }}>{{ $jab->nama }}</option>
-                                        @endforeach
-                                    </select>
-                                    <small class="text-muted">Pilih dari daftar jabatan atau isi manual di bawah</small>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Atau Isi Jabatan Manual</label>
-                                    <input type="text" name="jabatan" class="form-control" id="jabatanManualEdit" value="{{ old('jabatan', $pejabatPenandatangan->jabatan) }}">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Urutan</label>
-                                    <input type="number" name="urutan" class="form-control" value="{{ old('urutan', $pejabatPenandatangan->urutan) }}" min="0">
-                                </div>
-                            </div>
-                        </div>
                         
                         <hr class="my-3">
-                        <h6 class="mb-3"><i class="bi bi-person me-2"></i>Data Pejabat</h6>
+                        <h6 class="mb-3"><i class="bi bi-person me-2"></i>Pilih Pejabat <span class="text-danger">*</span></h6>
+                        <p class="text-muted small">Pilih salah satu: Pegawai atau Dosen</p>
                         
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Pilih dari Pegawai</label>
+                                    <label class="form-label">Pegawai</label>
                                     <select name="pegawai_id" class="form-select" id="pegawaiEdit">
                                         <option value="">-- Pilih Pegawai --</option>
                                         @foreach($pegawais as $pegawai)
-                                            <option value="{{ $pegawai->id }}" 
-                                                data-nama="{{ $pegawai->nama }}" 
-                                                data-nip="{{ $pegawai->nip }}" 
-                                                data-pangkat="{{ $pegawai->pangkat }} ({{ $pegawai->golongan }})"
-                                                {{ old('pegawai_id', $pejabatPenandatangan->pegawai_id) == $pegawai->id ? 'selected' : '' }}>
+                                            <option value="{{ $pegawai->id }}" {{ old('pegawai_id', $pejabatPenandatangan->pegawai_id) == $pegawai->id ? 'selected' : '' }}>
                                                 {{ $pegawai->nama }} - {{ $pegawai->nip ?? 'No NIP' }}
                                             </option>
                                         @endforeach
@@ -110,17 +88,12 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Atau Pilih dari Dosen</label>
+                                    <label class="form-label">Atau Dosen</label>
                                     <select name="dosen_id" class="form-select" id="dosenEdit">
                                         <option value="">-- Pilih Dosen --</option>
                                         @foreach($dosens as $dosen)
-                                            <option value="{{ $dosen->id }}" 
-                                                data-nama="{{ $dosen->nama }}" 
-                                                data-nip="{{ $dosen->nip }}" 
-                                                data-gelar-depan="{{ $dosen->gelar_depan }}" 
-                                                data-gelar-belakang="{{ $dosen->gelar_belakang }}"
-                                                {{ old('dosen_id', $pejabatPenandatangan->dosen_id) == $dosen->id ? 'selected' : '' }}>
-                                                {{ $dosen->nama }} - {{ $dosen->nip ?? 'No NIP' }}
+                                            <option value="{{ $dosen->id }}" {{ old('dosen_id', $pejabatPenandatangan->dosen_id) == $dosen->id ? 'selected' : '' }}>
+                                                {{ $dosen->nama }} - {{ $dosen->nip ?? $dosen->nidn ?? 'No NIP' }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -128,48 +101,23 @@
                             </div>
                         </div>
                         
+                        <hr class="my-3">
+                        <h6 class="mb-3"><i class="bi bi-calendar me-2"></i>Masa Berlaku & Urutan</h6>
+                        
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label">Gelar Depan</label>
-                                    <input type="text" name="gelar_depan" class="form-control" id="gelarDepanEdit" value="{{ old('gelar_depan', $pejabatPenandatangan->gelar_depan) }}">
+                                    <label class="form-label">Urutan</label>
+                                    <input type="number" name="urutan" class="form-control" value="{{ old('urutan', $pejabatPenandatangan->urutan ?? 0) }}" min="0">
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Nama <span class="text-danger">*</span></label>
-                                    <input type="text" name="nama" class="form-control" id="namaEdit" value="{{ old('nama', $pejabatPenandatangan->nama) }}" placeholder="Isi jika tidak pilih pegawai/dosen">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Gelar Belakang</label>
-                                    <input type="text" name="gelar_belakang" class="form-control" id="gelarBelakangEdit" value="{{ old('gelar_belakang', $pejabatPenandatangan->gelar_belakang) }}">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">NIP/NIDN</label>
-                                    <input type="text" name="nip" class="form-control" id="nipEdit" value="{{ old('nip', $pejabatPenandatangan->nip) }}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Pangkat/Golongan</label>
-                                    <input type="text" name="pangkat_golongan" class="form-control" id="pangkatEdit" value="{{ old('pangkat_golongan', $pejabatPenandatangan->pangkat_golongan) }}">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Berlaku Mulai</label>
                                     <input type="date" name="berlaku_mulai" class="form-control" value="{{ old('berlaku_mulai', $pejabatPenandatangan->berlaku_mulai?->format('Y-m-d')) }}">
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Berlaku Sampai</label>
                                     <input type="date" name="berlaku_sampai" class="form-control" value="{{ old('berlaku_sampai', $pejabatPenandatangan->berlaku_sampai?->format('Y-m-d')) }}">
@@ -261,49 +209,30 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-fill from Pegawai
     const pegawaiSelect = document.getElementById('pegawaiEdit');
     const dosenSelect = document.getElementById('dosenEdit');
-    const namaInput = document.getElementById('namaEdit');
-    const nipInput = document.getElementById('nipEdit');
-    const gelarDepanInput = document.getElementById('gelarDepanEdit');
-    const gelarBelakangInput = document.getElementById('gelarBelakangEdit');
-    const pangkatInput = document.getElementById('pangkatEdit');
-
-    pegawaiSelect?.addEventListener('change', function() {
-        const selected = this.options[this.selectedIndex];
-        if (this.value) {
-            namaInput.value = selected.dataset.nama || '';
-            nipInput.value = selected.dataset.nip || '';
-            pangkatInput.value = selected.dataset.pangkat || '';
-            dosenSelect.value = ''; // Clear dosen selection
-        }
-    });
-
-    dosenSelect?.addEventListener('change', function() {
-        const selected = this.options[this.selectedIndex];
-        if (this.value) {
-            namaInput.value = selected.dataset.nama || '';
-            nipInput.value = selected.dataset.nip || '';
-            gelarDepanInput.value = selected.dataset.gelarDepan || '';
-            gelarBelakangInput.value = selected.dataset.gelarBelakang || '';
-            pegawaiSelect.value = ''; // Clear pegawai selection
-        }
-    });
-
-    // Auto-fill jabatan from NamaJabatan
     const namaJabatanSelect = document.getElementById('namaJabatanEdit');
-    const jabatanManualInput = document.getElementById('jabatanManualEdit');
     const kategoriSelect = document.getElementById('kategoriEdit');
 
+    // Mutual exclusion: clear dosen when pegawai selected
+    pegawaiSelect?.addEventListener('change', function() {
+        if (this.value) {
+            dosenSelect.value = '';
+        }
+    });
+
+    // Mutual exclusion: clear pegawai when dosen selected
+    dosenSelect?.addEventListener('change', function() {
+        if (this.value) {
+            pegawaiSelect.value = '';
+        }
+    });
+
+    // Auto-set kategori from NamaJabatan
     namaJabatanSelect?.addEventListener('change', function() {
         const selected = this.options[this.selectedIndex];
-        if (this.value) {
-            jabatanManualInput.value = selected.text;
-            // Set kategori based on jabatan
-            if (selected.dataset.kategori && kategoriSelect) {
-                kategoriSelect.value = selected.dataset.kategori;
-            }
+        if (this.value && selected.dataset.kategori && kategoriSelect) {
+            kategoriSelect.value = selected.dataset.kategori;
         }
     });
 });

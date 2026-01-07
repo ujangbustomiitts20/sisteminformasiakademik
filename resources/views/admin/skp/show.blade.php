@@ -21,9 +21,12 @@
         <a href="{{ route('kepegawaian.skp.edit', $skp) }}" class="btn btn-warning btn-sm me-2">
             <i class="bi bi-pencil me-1"></i>Edit
         </a>
-        <a href="{{ route('kepegawaian.skp.cetak', $skp) }}" class="btn btn-primary btn-sm" target="_blank">
+        <a href="{{ route('kepegawaian.skp.cetak', $skp) }}" class="btn btn-primary btn-sm me-2" target="_blank">
             <i class="bi bi-printer me-1"></i>Cetak
         </a>
+        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalDeleteSkp">
+            <i class="bi bi-trash me-1"></i>Hapus
+        </button>
     </div>
 </div>
 
@@ -532,6 +535,69 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete SKP -->
+<div class="modal fade" id="modalDeleteSkp" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('kepegawaian.skp.destroy', $skp) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                @if($skp->status === 'final')
+                <input type="hidden" name="force" value="true">
+                @endif
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Konfirmasi Hapus SKP</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    @if($skp->status === 'final')
+                    <div class="alert alert-danger mb-3">
+                        <i class="bi bi-exclamation-octagon me-2"></i>
+                        <strong>PERINGATAN!</strong> SKP ini sudah berstatus <strong>FINAL</strong>.
+                    </div>
+                    <div class="bg-light p-3 rounded mb-3">
+                        <p class="mb-2"><strong>Data yang akan dihapus:</strong></p>
+                        <ul class="mb-0 small">
+                            <li>No. SKP: <strong>{{ $skp->no_skp }}</strong></li>
+                            <li>Pegawai: <strong>{{ $skp->nama_pegawai }}</strong></li>
+                            <li>Tahun: <strong>{{ $skp->tahun }}</strong></li>
+                            <li>Nilai SKP: <strong>{{ $skp->nilai_skp ? number_format($skp->nilai_skp, 2) : '-' }}</strong></li>
+                            <li>Predikat: <strong>{{ $skp->predikat ?? '-' }}</strong></li>
+                            <li>Total Target: <strong>{{ $skp->targetSkp->count() }} kegiatan</strong></li>
+                        </ul>
+                    </div>
+                    <p class="text-danger mb-0">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Tindakan ini tidak dapat dibatalkan. Data SKP final beserta semua target dan realisasi akan dihapus permanen.
+                    </p>
+                    @else
+                    <p class="mb-3">Apakah Anda yakin ingin menghapus SKP ini?</p>
+                    <div class="bg-light p-3 rounded">
+                        <ul class="mb-0 small">
+                            <li>No. SKP: <strong>{{ $skp->no_skp }}</strong></li>
+                            <li>Pegawai: <strong>{{ $skp->nama_pegawai }}</strong></li>
+                            <li>Tahun: <strong>{{ $skp->tahun }}</strong></li>
+                            <li>Status: <span class="badge bg-{{ $skp->status_badge }}">{{ \App\Models\SkpPegawai::STATUS[$skp->status] ?? $skp->status }}</span></li>
+                        </ul>
+                    </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>
+                        @if($skp->status === 'final')
+                            Ya, Hapus SKP Final
+                        @else
+                            Hapus SKP
+                        @endif
+                    </button>
                 </div>
             </form>
         </div>

@@ -168,6 +168,16 @@ class Dosen extends Model
         return $this->hasMany(DokumenKepegawaian::class)->orderBy('tanggal_terbit', 'desc');
     }
 
+    public function aktivitasHarian()
+    {
+        return $this->hasMany(AktivitasHarian::class);
+    }
+
+    public function skpPegawai()
+    {
+        return $this->hasMany(SkpPegawai::class);
+    }
+
     // Get pendidikan terakhir dari riwayat
     public function getPendidikanTerakhirAttribute($value)
     {

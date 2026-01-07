@@ -209,135 +209,142 @@
 <div class="modal fade" id="addModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form action="{{ route('admin.pejabat-penandatangan.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.pejabat-penandatangan.store') }}" method="POST" enctype="multipart/form-data" id="formTambahPejabat">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Tambah Pejabat Penandatangan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Kode <span class="text-danger">*</span></label>
-                                <input type="text" name="kode" class="form-control" required placeholder="Contoh: rektor, dekan_fti, kepala_keuangan">
-                                <small class="text-muted">Kode unik untuk referensi di sistem</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Kategori <span class="text-danger">*</span></label>
-                                <select name="kategori" class="form-select" required id="kategoriAdd">
-                                    <option value="">Pilih Kategori</option>
-                                    @foreach($kategoris as $key => $label)
-                                        <option value="{{ $key }}">{{ $label }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
+                    <!-- Error Container for AJAX validation -->
+                    <div id="formErrorContainer" class="alert alert-danger d-none"></div>
+                    
+                    @if($errors->any())
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        <ul class="mb-0">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
+                    @endif
+                    
                     <div class="row">
                         <div class="col-md-8">
                             <div class="mb-3">
                                 <label class="form-label">Nama Jabatan <span class="text-danger">*</span></label>
-                                <select name="nama_jabatan_id" class="form-select" id="namaJabatanAdd">
-                                    <option value="">-- Pilih dari Daftar Jabatan --</option>
+                                <select name="nama_jabatan_id" class="form-select @error('nama_jabatan_id') is-invalid @enderror" id="namaJabatanAdd" required>
+                                    <option value="">-- Pilih Jabatan --</option>
                                     @foreach($namaJabatans as $jab)
-                                        <option value="{{ $jab->id }}" data-kategori="{{ $jab->kategori }}">{{ $jab->nama }}</option>
+                                        <option value="{{ $jab->id }}" data-kategori="{{ $jab->kategori }}" data-kode="{{ $jab->kode }}" {{ old('nama_jabatan_id') == $jab->id ? 'selected' : '' }}>{{ $jab->nama }}</option>
                                     @endforeach
                                 </select>
-                                <small class="text-muted">Pilih dari daftar jabatan atau isi manual di bawah</small>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Atau Isi Jabatan Manual</label>
-                                <input type="text" name="jabatan" class="form-control" id="jabatanManualAdd" placeholder="Contoh: Rektor, Dekan Fakultas Teknologi Industri">
+                                @error('nama_jabatan_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">Kode akan di-generate otomatis dari jabatan yang dipilih</small>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label class="form-label">Urutan</label>
-                                <input type="number" name="urutan" class="form-control" value="0" min="0">
+                                <label class="form-label">Kategori <span class="text-danger">*</span></label>
+                                <select name="kategori" class="form-select @error('kategori') is-invalid @enderror" required id="kategoriAdd">
+                                    <option value="">Pilih Kategori</option>
+                                    @foreach($kategoris as $key => $label)
+                                        <option value="{{ $key }}" {{ old('kategori') == $key ? 'selected' : '' }}>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                @error('kategori')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                     </div>
                     
                     <hr class="my-3">
-                    <h6 class="mb-3"><i class="bi bi-person me-2"></i>Data Pejabat</h6>
+                    <h6 class="mb-3"><i class="bi bi-person me-2"></i>Data Pejabat <span class="text-danger">*</span></h6>
+                    
+                    @if($errors->has('pegawai_id') || $errors->has('dosen_id'))
+                    <div class="alert alert-danger py-2 mb-3">
+                        <small><i class="bi bi-exclamation-triangle me-1"></i>Pilih salah satu: Pegawai atau Dosen</small>
+                    </div>
+                    @endif
                     
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Pilih dari Pegawai</label>
-                                <select name="pegawai_id" class="form-select" id="pegawaiAdd">
+                                <label class="form-label">Pilih Pegawai</label>
+                                <select name="pegawai_id" class="form-select @error('pegawai_id') is-invalid @enderror" id="pegawaiAdd">
                                     <option value="">-- Pilih Pegawai --</option>
                                     @foreach($pegawais as $pegawai)
-                                        <option value="{{ $pegawai->id }}" data-nama="{{ $pegawai->nama }}" data-nip="{{ $pegawai->nip }}" data-pangkat="{{ $pegawai->pangkat }} ({{ $pegawai->golongan }})">
+                                        <option value="{{ $pegawai->id }}" 
+                                            data-nama="{{ $pegawai->nama }}" 
+                                            data-nip="{{ $pegawai->nip }}" 
+                                            data-pangkat="{{ $pegawai->pangkat }} ({{ $pegawai->golongan }})"
+                                            {{ old('pegawai_id') == $pegawai->id ? 'selected' : '' }}>
                                             {{ $pegawai->nama }} - {{ $pegawai->nip ?? 'No NIP' }}
                                         </option>
                                     @endforeach
                                 </select>
+                                <small class="text-muted">Data diambil dari menu Pegawai</small>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Atau Pilih dari Dosen</label>
-                                <select name="dosen_id" class="form-select" id="dosenAdd">
+                                <label class="form-label">Atau Pilih Dosen</label>
+                                <select name="dosen_id" class="form-select @error('dosen_id') is-invalid @enderror" id="dosenAdd">
                                     <option value="">-- Pilih Dosen --</option>
                                     @foreach($dosens as $dosen)
-                                        <option value="{{ $dosen->id }}" data-nama="{{ $dosen->nama }}" data-nip="{{ $dosen->nip }}" data-gelar-depan="{{ $dosen->gelar_depan }}" data-gelar-belakang="{{ $dosen->gelar_belakang }}">
-                                            {{ $dosen->nama }} - {{ $dosen->nip ?? 'No NIP' }}
+                                        <option value="{{ $dosen->id }}" 
+                                            data-nama="{{ $dosen->nama }}" 
+                                            data-nip="{{ $dosen->nip }}" 
+                                            data-gelar-depan="{{ $dosen->gelar_depan }}" 
+                                            data-gelar-belakang="{{ $dosen->gelar_belakang }}"
+                                            {{ old('dosen_id') == $dosen->id ? 'selected' : '' }}>
+                                            {{ $dosen->nama }} - {{ $dosen->nidn ?? $dosen->nip ?? 'No ID' }}
                                         </option>
                                     @endforeach
                                 </select>
+                                <small class="text-muted">Data diambil dari menu Dosen</small>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Gelar Depan</label>
-                                <input type="text" name="gelar_depan" class="form-control" id="gelarDepanAdd" placeholder="Prof. Dr.">
+                    <!-- Info Pejabat (Read Only) -->
+                    <div id="infoPejabatAdd" class="alert alert-light d-none">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">Nama:</small>
+                                <div id="displayNamaAdd" class="fw-bold">-</div>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Nama <span class="text-danger">*</span></label>
-                                <input type="text" name="nama" class="form-control" id="namaAdd" placeholder="Isi jika tidak pilih pegawai/dosen">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Gelar Belakang</label>
-                                <input type="text" name="gelar_belakang" class="form-control" id="gelarBelakangAdd" placeholder="M.T., Ph.D.">
+                            <div class="col-md-6">
+                                <small class="text-muted">NIP/NIDN:</small>
+                                <div id="displayNipAdd">-</div>
                             </div>
                         </div>
                     </div>
+                    
+                    <hr class="my-3">
+                    <h6 class="mb-3"><i class="bi bi-calendar me-2"></i>Masa Berlaku & Pengaturan</h6>
+                    
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="mb-3">
-                                <label class="form-label">NIP/NIDN</label>
-                                <input type="text" name="nip" class="form-control" id="nipAdd">
+                                <label class="form-label">Urutan</label>
+                                <input type="number" name="urutan" class="form-control" value="{{ old('urutan', 0) }}" min="0">
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Pangkat/Golongan</label>
-                                <input type="text" name="pangkat_golongan" class="form-control" id="pangkatAdd" placeholder="Pembina Utama Muda (IV/c)">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="mb-3">
                                 <label class="form-label">Berlaku Mulai</label>
-                                <input type="date" name="berlaku_mulai" class="form-control">
+                                <input type="date" name="berlaku_mulai" class="form-control" value="{{ old('berlaku_mulai') }}">
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="mb-3">
                                 <label class="form-label">Berlaku Sampai</label>
-                                <input type="date" name="berlaku_sampai" class="form-control">
+                                <input type="date" name="berlaku_sampai" class="form-control" value="{{ old('berlaku_sampai') }}">
                             </div>
                         </div>
                     </div>
@@ -393,60 +400,140 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Loading state for form
-    const addForm = document.querySelector('#addModal form');
+    const addForm = document.getElementById('formTambahPejabat');
     const btnSimpan = addForm?.querySelector('button[type="submit"]');
+    const errorContainer = document.getElementById('formErrorContainer');
     
+    // Handle form submission with AJAX
     addForm?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Clear previous errors
+        errorContainer.innerHTML = '';
+        errorContainer.classList.add('d-none');
+        addForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        addForm.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+        
+        // Show loading state
         if (btnSimpan) {
             btnSimpan.disabled = true;
             btnSimpan.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Menyimpan...';
         }
+        
+        // Submit via AJAX
+        const formData = new FormData(this);
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.redirected) {
+                // Success - redirect
+                window.location.href = response.url;
+                return;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data) return; // Already redirected
+            
+            if (data.errors) {
+                // Show validation errors
+                let errorHtml = '<ul class="mb-0">';
+                for (const [field, messages] of Object.entries(data.errors)) {
+                    messages.forEach(msg => {
+                        errorHtml += `<li>${msg}</li>`;
+                    });
+                    // Add is-invalid class to field
+                    const input = addForm.querySelector(`[name="${field}"]`);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                    }
+                }
+                errorHtml += '</ul>';
+                errorContainer.innerHTML = errorHtml;
+                errorContainer.classList.remove('d-none');
+                
+                // Scroll to top of modal
+                document.querySelector('#addModal .modal-body').scrollTop = 0;
+            } else if (data.success) {
+                // Success - reload page
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            errorContainer.innerHTML = '<p class="mb-0">Terjadi kesalahan. Silakan coba lagi.</p>';
+            errorContainer.classList.remove('d-none');
+        })
+        .finally(() => {
+            // Reset button state
+            if (btnSimpan) {
+                btnSimpan.disabled = false;
+                btnSimpan.innerHTML = '<i class="bi bi-save me-1"></i> Simpan';
+            }
+        });
     });
 
     // Auto-fill from Pegawai
     const pegawaiSelect = document.getElementById('pegawaiAdd');
     const dosenSelect = document.getElementById('dosenAdd');
-    const namaInput = document.getElementById('namaAdd');
-    const nipInput = document.getElementById('nipAdd');
-    const gelarDepanInput = document.getElementById('gelarDepanAdd');
-    const gelarBelakangInput = document.getElementById('gelarBelakangAdd');
-    const pangkatInput = document.getElementById('pangkatAdd');
+    const infoPejabat = document.getElementById('infoPejabatAdd');
+    const displayNama = document.getElementById('displayNamaAdd');
+    const displayNip = document.getElementById('displayNipAdd');
+
+    function updatePejabatInfo() {
+        let nama = '-';
+        let nip = '-';
+        
+        if (pegawaiSelect.value) {
+            const selected = pegawaiSelect.options[pegawaiSelect.selectedIndex];
+            nama = selected.dataset.nama || '-';
+            nip = selected.dataset.nip || '-';
+        } else if (dosenSelect.value) {
+            const selected = dosenSelect.options[dosenSelect.selectedIndex];
+            const gelarDepan = selected.dataset.gelarDepan || '';
+            const gelarBelakang = selected.dataset.gelarBelakang || '';
+            nama = (gelarDepan ? gelarDepan + ' ' : '') + (selected.dataset.nama || '') + (gelarBelakang ? ', ' + gelarBelakang : '');
+            nip = selected.dataset.nip || '-';
+        }
+        
+        if (pegawaiSelect.value || dosenSelect.value) {
+            infoPejabat.classList.remove('d-none');
+            displayNama.textContent = nama;
+            displayNip.textContent = nip;
+        } else {
+            infoPejabat.classList.add('d-none');
+        }
+    }
 
     pegawaiSelect?.addEventListener('change', function() {
-        const selected = this.options[this.selectedIndex];
         if (this.value) {
-            namaInput.value = selected.dataset.nama || '';
-            nipInput.value = selected.dataset.nip || '';
-            pangkatInput.value = selected.dataset.pangkat || '';
             dosenSelect.value = ''; // Clear dosen selection
         }
+        updatePejabatInfo();
     });
 
     dosenSelect?.addEventListener('change', function() {
-        const selected = this.options[this.selectedIndex];
         if (this.value) {
-            namaInput.value = selected.dataset.nama || '';
-            nipInput.value = selected.dataset.nip || '';
-            gelarDepanInput.value = selected.dataset.gelarDepan || '';
-            gelarBelakangInput.value = selected.dataset.gelarBelakang || '';
             pegawaiSelect.value = ''; // Clear pegawai selection
         }
+        updatePejabatInfo();
     });
 
-    // Auto-fill jabatan from NamaJabatan
+    // Auto-set kategori from NamaJabatan
     const namaJabatanSelect = document.getElementById('namaJabatanAdd');
-    const jabatanManualInput = document.getElementById('jabatanManualAdd');
     const kategoriSelect = document.getElementById('kategoriAdd');
 
     namaJabatanSelect?.addEventListener('change', function() {
         const selected = this.options[this.selectedIndex];
-        if (this.value) {
-            jabatanManualInput.value = selected.text;
-            // Set kategori based on jabatan
-            if (selected.dataset.kategori && kategoriSelect) {
-                kategoriSelect.value = selected.dataset.kategori;
-            }
+        if (this.value && selected.dataset.kategori && kategoriSelect) {
+            kategoriSelect.value = selected.dataset.kategori;
         }
     });
 });

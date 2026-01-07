@@ -14,6 +14,7 @@ class PejabatPenandatangan extends Model
 
     protected $fillable = [
         'kode',
+        'nama_jabatan_id',
         'jabatan',
         'nama',
         'nip',

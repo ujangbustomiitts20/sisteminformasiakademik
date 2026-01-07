@@ -70,17 +70,10 @@ class PejabatPenandatanganController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'kode' => ['required', 'string', 'max:50', 'unique:pejabat_penandatangan,kode'],
-            'nama_jabatan_id' => ['nullable', 'exists:nama_jabatan,id'],
-            'jabatan' => ['required_without:nama_jabatan_id', 'nullable', 'string', 'max:255'],
-            'pegawai_id' => ['nullable', 'exists:pegawai,id'],
-            'dosen_id' => ['nullable', 'exists:dosen,id'],
-            'nama' => ['required_without_all:pegawai_id,dosen_id', 'nullable', 'string', 'max:255'],
-            'nip' => ['nullable', 'string', 'max:50'],
-            'pangkat_golongan' => ['nullable', 'string', 'max:100'],
-            'gelar_depan' => ['nullable', 'string', 'max:50'],
-            'gelar_belakang' => ['nullable', 'string', 'max:100'],
+        $rules = [
+            'nama_jabatan_id' => ['required', 'exists:nama_jabatan,id'],
+            'pegawai_id' => ['nullable', 'exists:pegawai,id', 'required_without:dosen_id'],
+            'dosen_id' => ['nullable', 'exists:dosen,id', 'required_without:pegawai_id'],
             'kategori' => ['required', 'string', Rule::in(array_keys(PejabatPenandatangan::KATEGORI))],
             'dokumen_terkait' => ['nullable', 'array'],
             'berlaku_mulai' => ['nullable', 'date'],
@@ -90,32 +83,58 @@ class PejabatPenandatanganController extends Controller
             'catatan' => ['nullable', 'string'],
             'tanda_tangan' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:1024'],
             'stempel' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:1024'],
-        ]);
-
-        // Get jabatan name from NamaJabatan if selected
-        if (!empty($validated['nama_jabatan_id'])) {
-            $namaJabatan = NamaJabatan::find($validated['nama_jabatan_id']);
-            if ($namaJabatan) {
-                $validated['jabatan'] = $namaJabatan->nama;
+        ];
+        
+        $messages = [
+            'nama_jabatan_id.required' => 'Nama Jabatan wajib dipilih.',
+            'pegawai_id.required_without' => 'Pilih salah satu: Pegawai atau Dosen.',
+            'dosen_id.required_without' => 'Pilih salah satu: Pegawai atau Dosen.',
+            'kategori.required' => 'Kategori wajib dipilih.',
+        ];
+        
+        // Manual validation for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            $validator = \Validator::make($request->all(), $rules, $messages);
+            
+            if ($validator->fails()) {
+                return response()->json([
+                    'errors' => $validator->errors()
+                ], 422);
             }
+            
+            $validated = $validator->validated();
+        } else {
+            $validated = $request->validate($rules, $messages);
         }
 
-        // Get nama from Pegawai or Dosen if selected
+        // Get jabatan data from NamaJabatan
+        $namaJabatan = NamaJabatan::find($validated['nama_jabatan_id']);
+        $validated['jabatan'] = $namaJabatan->nama;
+        
+        // Generate kode from nama jabatan kode + pegawai/dosen identifier
+        $baseKode = $namaJabatan->kode ?? strtolower(str_replace(' ', '_', $namaJabatan->nama));
+        $kodeCounter = 1;
+        $kode = $baseKode;
+        while (PejabatPenandatangan::where('kode', $kode)->exists()) {
+            $kode = $baseKode . '_' . $kodeCounter;
+            $kodeCounter++;
+        }
+        $validated['kode'] = $kode;
+
+        // Get data from Pegawai or Dosen
         if (!empty($validated['pegawai_id'])) {
             $pegawai = Pegawai::find($validated['pegawai_id']);
-            if ($pegawai) {
-                $validated['nama'] = $pegawai->nama;
-                $validated['nip'] = $validated['nip'] ?? $pegawai->nip;
-                $validated['pangkat_golongan'] = $validated['pangkat_golongan'] ?? ($pegawai->pangkat ? $pegawai->pangkat . ' (' . $pegawai->golongan . ')' : null);
-            }
+            $validated['nama'] = $pegawai->nama;
+            $validated['nip'] = $pegawai->nip;
+            $validated['pangkat_golongan'] = $pegawai->pangkat ? $pegawai->pangkat . ' (' . $pegawai->golongan . ')' : null;
+            $validated['dosen_id'] = null; // Clear dosen if pegawai selected
         } elseif (!empty($validated['dosen_id'])) {
             $dosen = Dosen::find($validated['dosen_id']);
-            if ($dosen) {
-                $validated['nama'] = $dosen->nama;
-                $validated['nip'] = $validated['nip'] ?? $dosen->nip;
-                $validated['gelar_depan'] = $validated['gelar_depan'] ?? $dosen->gelar_depan;
-                $validated['gelar_belakang'] = $validated['gelar_belakang'] ?? $dosen->gelar_belakang;
-            }
+            $validated['nama'] = $dosen->nama;
+            $validated['nip'] = $dosen->nip ?? $dosen->nidn;
+            $validated['gelar_depan'] = $dosen->gelar_depan;
+            $validated['gelar_belakang'] = $dosen->gelar_belakang;
+            $validated['pegawai_id'] = null; // Clear pegawai if dosen selected
         }
 
         // Handle file uploads
@@ -131,6 +150,13 @@ class PejabatPenandatanganController extends Controller
         $validated['urutan'] = $validated['urutan'] ?? 0;
 
         PejabatPenandatangan::create($validated);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pejabat penandatangan berhasil ditambahkan.'
+            ]);
+        }
 
         return redirect()->route('admin.pejabat-penandatangan.index')
             ->with('success', 'Pejabat penandatangan berhasil ditambahkan.');
@@ -170,16 +196,9 @@ class PejabatPenandatanganController extends Controller
     public function update(Request $request, PejabatPenandatangan $pejabatPenandatangan)
     {
         $validated = $request->validate([
-            'kode' => ['required', 'string', 'max:50', Rule::unique('pejabat_penandatangan', 'kode')->ignore($pejabatPenandatangan->id)],
-            'nama_jabatan_id' => ['nullable', 'exists:nama_jabatan,id'],
-            'jabatan' => ['required_without:nama_jabatan_id', 'nullable', 'string', 'max:255'],
-            'pegawai_id' => ['nullable', 'exists:pegawai,id'],
-            'dosen_id' => ['nullable', 'exists:dosen,id'],
-            'nama' => ['required_without_all:pegawai_id,dosen_id', 'nullable', 'string', 'max:255'],
-            'nip' => ['nullable', 'string', 'max:50'],
-            'pangkat_golongan' => ['nullable', 'string', 'max:100'],
-            'gelar_depan' => ['nullable', 'string', 'max:50'],
-            'gelar_belakang' => ['nullable', 'string', 'max:100'],
+            'nama_jabatan_id' => ['required', 'exists:nama_jabatan,id'],
+            'pegawai_id' => ['nullable', 'exists:pegawai,id', 'required_without:dosen_id'],
+            'dosen_id' => ['nullable', 'exists:dosen,id', 'required_without:pegawai_id'],
             'kategori' => ['required', 'string', Rule::in(array_keys(PejabatPenandatangan::KATEGORI))],
             'dokumen_terkait' => ['nullable', 'array'],
             'berlaku_mulai' => ['nullable', 'date'],
@@ -189,32 +208,45 @@ class PejabatPenandatanganController extends Controller
             'catatan' => ['nullable', 'string'],
             'tanda_tangan' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:1024'],
             'stempel' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:1024'],
+        ], [
+            'nama_jabatan_id.required' => 'Nama Jabatan wajib dipilih.',
+            'pegawai_id.required_without' => 'Pilih salah satu: Pegawai atau Dosen.',
+            'dosen_id.required_without' => 'Pilih salah satu: Pegawai atau Dosen.',
         ]);
 
-        // Get jabatan name from NamaJabatan if selected
-        if (!empty($validated['nama_jabatan_id'])) {
-            $namaJabatan = NamaJabatan::find($validated['nama_jabatan_id']);
-            if ($namaJabatan) {
-                $validated['jabatan'] = $namaJabatan->nama;
+        // Get jabatan name from NamaJabatan
+        $namaJabatan = NamaJabatan::find($validated['nama_jabatan_id']);
+        $validated['jabatan'] = $namaJabatan->nama;
+        
+        // Re-generate kode if nama_jabatan changed
+        if ($pejabatPenandatangan->nama_jabatan_id != $validated['nama_jabatan_id']) {
+            $baseKode = $namaJabatan->kode ?? strtolower(str_replace(' ', '_', $namaJabatan->nama));
+            $kodeCounter = 1;
+            $kode = $baseKode;
+            while (PejabatPenandatangan::where('kode', $kode)->where('id', '!=', $pejabatPenandatangan->id)->exists()) {
+                $kode = $baseKode . '_' . $kodeCounter;
+                $kodeCounter++;
             }
+            $validated['kode'] = $kode;
         }
 
-        // Get nama from Pegawai or Dosen if selected
+        // Get data from Pegawai or Dosen
         if (!empty($validated['pegawai_id'])) {
             $pegawai = Pegawai::find($validated['pegawai_id']);
-            if ($pegawai) {
-                $validated['nama'] = $pegawai->nama;
-                $validated['nip'] = $validated['nip'] ?? $pegawai->nip;
-                $validated['pangkat_golongan'] = $validated['pangkat_golongan'] ?? ($pegawai->pangkat ? $pegawai->pangkat . ' (' . $pegawai->golongan . ')' : null);
-            }
+            $validated['nama'] = $pegawai->nama;
+            $validated['nip'] = $pegawai->nip;
+            $validated['pangkat_golongan'] = $pegawai->pangkat ? $pegawai->pangkat . ' (' . $pegawai->golongan . ')' : null;
+            $validated['gelar_depan'] = null;
+            $validated['gelar_belakang'] = null;
+            $validated['dosen_id'] = null; // Clear dosen if pegawai selected
         } elseif (!empty($validated['dosen_id'])) {
             $dosen = Dosen::find($validated['dosen_id']);
-            if ($dosen) {
-                $validated['nama'] = $dosen->nama;
-                $validated['nip'] = $validated['nip'] ?? $dosen->nip;
-                $validated['gelar_depan'] = $validated['gelar_depan'] ?? $dosen->gelar_depan;
-                $validated['gelar_belakang'] = $validated['gelar_belakang'] ?? $dosen->gelar_belakang;
-            }
+            $validated['nama'] = $dosen->nama;
+            $validated['nip'] = $dosen->nip ?? $dosen->nidn;
+            $validated['gelar_depan'] = $dosen->gelar_depan;
+            $validated['gelar_belakang'] = $dosen->gelar_belakang;
+            $validated['pangkat_golongan'] = null;
+            $validated['pegawai_id'] = null; // Clear pegawai if dosen selected
         }
 
         // Handle file uploads

@@ -18,6 +18,33 @@
     </button>
 </div>
 
+@if(session('success'))
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
+@if(session('error'))
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
+@if($errors->any())
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    <strong>Terjadi kesalahan:</strong>
+    <ul class="mb-0 mt-2">
+        @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
 <!-- Stats Cards -->
 <div class="row g-3 mb-4">
     <div class="col-md-3">
@@ -86,7 +113,16 @@
 <div class="card shadow-sm mb-4">
     <div class="card-body">
         <form action="" method="GET" class="row g-3">
-            <div class="col-md-3">
+            <div class="col-md-2">
+                <label class="form-label">Tipe Pegawai</label>
+                <select name="tipe_pegawai" class="form-select">
+                    <option value="">Semua Tipe</option>
+                    @foreach(\App\Models\UraianKegiatanSkp::TIPE_PEGAWAI as $key => $label)
+                        <option value="{{ $key }}" {{ request('tipe_pegawai') == $key ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
                 <label class="form-label">Kategori</label>
                 <select name="kategori" class="form-select">
                     <option value="">Semua Kategori</option>
@@ -95,7 +131,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label">Sub Kategori</label>
                 <select name="sub_kategori" class="form-select">
                     <option value="">Semua Sub Kategori</option>
@@ -133,6 +169,7 @@
                 <thead class="table-light">
                     <tr>
                         <th width="80">Kode</th>
+                        <th width="100">Tipe</th>
                         <th width="150">Kategori</th>
                         <th>Uraian Kegiatan</th>
                         <th width="80">Satuan</th>
@@ -146,7 +183,12 @@
                     <tr>
                         <td><code>{{ $item->kode }}</code></td>
                         <td>
-                            <span class="badge bg-{{ $item->kategori == 'tri_dharma' ? 'primary' : ($item->kategori == 'penunjang' ? 'info' : 'secondary') }}">
+                            <span class="badge bg-{{ $item->tipe_pegawai == 'dosen' ? 'primary' : ($item->tipe_pegawai == 'tendik' ? 'success' : 'secondary') }}">
+                                {{ \App\Models\UraianKegiatanSkp::TIPE_PEGAWAI[$item->tipe_pegawai] ?? $item->tipe_pegawai }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ $item->kategori == 'tri_dharma' ? 'info' : ($item->kategori == 'tendik' ? 'warning' : ($item->kategori == 'penunjang' ? 'secondary' : 'dark')) }}">
                                 {{ $item->kategori_label }}
                             </span>
                             @if($item->sub_kategori)
@@ -215,7 +257,18 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Tipe Pegawai <span class="text-danger">*</span></label>
+                                <select name="tipe_pegawai" class="form-select" required>
+                                    <option value="">Pilih Tipe</option>
+                                    @foreach(\App\Models\UraianKegiatanSkp::TIPE_PEGAWAI as $key => $label)
+                                        <option value="{{ $key }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
                             <div class="mb-3">
                                 <label class="form-label">Kategori <span class="text-danger">*</span></label>
                                 <select name="kategori" class="form-select" required>
@@ -226,7 +279,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="mb-3">
                                 <label class="form-label">Sub Kategori</label>
                                 <select name="sub_kategori" class="form-select">
@@ -305,6 +358,16 @@
                             <div class="mb-3">
                                 <label class="form-label">Kode</label>
                                 <input type="text" id="edit_kode" class="form-control" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Tipe Pegawai <span class="text-danger">*</span></label>
+                                <select name="tipe_pegawai" id="edit_tipe_pegawai" class="form-select" required>
+                                    @foreach(\App\Models\UraianKegiatanSkp::TIPE_PEGAWAI as $key => $label)
+                                        <option value="{{ $key }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -409,6 +472,7 @@
 function editItem(item) {
     document.getElementById('formEdit').action = '{{ url("kepegawaian/uraian-kegiatan-skp") }}/' + item.hashid;
     document.getElementById('edit_kode').value = item.kode;
+    document.getElementById('edit_tipe_pegawai').value = item.tipe_pegawai || 'semua';
     document.getElementById('edit_kategori').value = item.kategori;
     document.getElementById('edit_sub_kategori').value = item.sub_kategori || '';
     document.getElementById('edit_uraian_kegiatan').value = item.uraian_kegiatan;

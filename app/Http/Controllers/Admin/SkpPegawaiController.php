@@ -155,17 +155,39 @@ class SkpPegawaiController extends Controller
 
     /**
      * Remove the specified SKP
+     * Admin can force delete final SKP with confirmation
      */
-    public function destroy(SkpPegawai $skp)
+    public function destroy(Request $request, SkpPegawai $skp)
     {
-        if ($skp->status === 'final') {
-            return redirect()->back()->with('error', 'SKP yang sudah final tidak dapat dihapus!');
+        $isFinal = $skp->status === 'final';
+        $forceDelete = $request->has('force') && $request->force === 'true';
+
+        // Jika SKP final dan tidak ada konfirmasi force delete
+        if ($isFinal && !$forceDelete) {
+            return redirect()->back()->with('error', 'SKP yang sudah final memerlukan konfirmasi khusus untuk dihapus!');
         }
 
+        // Log penghapusan SKP final untuk audit
+        if ($isFinal) {
+            \Log::warning('SKP Final dihapus oleh admin', [
+                'skp_id' => $skp->id,
+                'no_skp' => $skp->no_skp,
+                'nama_pegawai' => $skp->nama_pegawai,
+                'tahun' => $skp->tahun,
+                'deleted_by' => auth()->user()->name ?? auth()->id(),
+                'deleted_at' => now()->toDateTimeString(),
+            ]);
+        }
+
+        $noSkp = $skp->no_skp;
         $skp->delete();
 
+        $message = $isFinal 
+            ? "SKP {$noSkp} (FINAL) berhasil dihapus!"
+            : "SKP {$noSkp} berhasil dihapus!";
+
         return redirect()->route('kepegawaian.skp.index')
-            ->with('success', 'SKP berhasil dihapus!');
+            ->with('success', $message);
     }
 
     /**

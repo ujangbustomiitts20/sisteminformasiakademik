@@ -14,6 +14,7 @@ class UraianKegiatanSkp extends Model
 
     protected $fillable = [
         'kode',
+        'tipe_pegawai',
         'kategori',
         'sub_kategori',
         'uraian_kegiatan',
@@ -32,20 +33,37 @@ class UraianKegiatanSkp extends Model
         'urutan' => 'integer',
     ];
 
+    const TIPE_PEGAWAI = [
+        'dosen' => 'Dosen',
+        'tendik' => 'Tenaga Kependidikan',
+        'semua' => 'Semua Pegawai',
+    ];
+
     const KATEGORI = [
         'tri_dharma' => 'Tri Dharma Perguruan Tinggi',
         'penunjang' => 'Penunjang',
         'tambahan' => 'Tugas Tambahan',
+        'tendik' => 'Tenaga Kependidikan',
     ];
 
     const SUB_KATEGORI = [
+        // Dosen
         'pendidikan' => 'Pendidikan & Pengajaran',
         'penelitian' => 'Penelitian',
         'pengabdian' => 'Pengabdian Masyarakat',
         'bimbingan' => 'Bimbingan',
-        'administrasi' => 'Administrasi',
-        'pengembangan' => 'Pengembangan Diri',
         'struktural' => 'Jabatan Struktural',
+        'profesi' => 'Pengembangan Profesi',
+        // Tendik/Pegawai
+        'akademik' => 'Layanan Akademik',
+        'administrasi' => 'Administrasi & Tata Usaha',
+        'keuangan' => 'Keuangan & Kepegawaian',
+        'sarana' => 'Sarana & Prasarana',
+        'layanan' => 'Layanan Umum',
+        'it' => 'Teknologi Informasi',
+        'perpustakaan' => 'Perpustakaan',
+        'laboratorium' => 'Laboratorium',
+        'pengembangan' => 'Pengembangan Diri',
         'lainnya' => 'Lainnya',
     ];
 

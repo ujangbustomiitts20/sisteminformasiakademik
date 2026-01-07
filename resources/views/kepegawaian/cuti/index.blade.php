@@ -105,7 +105,7 @@
                 <div class="col-md-2">
                     <select name="status" class="form-select">
                         <option value="">-- Status --</option>
-                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="diajukan" {{ request('status') == 'diajukan' ? 'selected' : '' }}>Diajukan</option>
                         <option value="disetujui_atasan" {{ request('status') == 'disetujui_atasan' ? 'selected' : '' }}>Disetujui Atasan</option>
                         <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
                         <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
@@ -168,7 +168,7 @@
                                 <a href="{{ route('kepegawaian.cuti.show', $cuti) }}" class="btn btn-outline-info" title="Detail">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                @if($cuti->status == 'pending')
+                                @if($cuti->status == 'diajukan')
                                 <a href="{{ route('kepegawaian.cuti.edit', $cuti) }}" class="btn btn-outline-warning" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
@@ -225,7 +225,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Catatan Persetujuan</label>
-                        <textarea name="catatan" class="form-control" rows="3" placeholder="Catatan tambahan (opsional)"></textarea>
+                        <textarea name="catatan_admin" class="form-control" rows="3" placeholder="Catatan tambahan (opsional)"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -252,7 +252,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Alasan Penolakan <span class="text-danger">*</span></label>
-                        <textarea name="alasan" class="form-control" rows="3" placeholder="Masukkan alasan penolakan..." required></textarea>
+                        <textarea name="catatan_admin" class="form-control" rows="3" placeholder="Masukkan alasan penolakan..." required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -270,12 +270,12 @@
 @push('scripts')
 <script>
 function showApproveModal(id) {
-    document.getElementById('approveForm').action = '{{ url("admin/kepegawaian/cuti") }}/' + id + '/approve';
+    document.getElementById('approveForm').action = '{{ url("kepegawaian/cuti") }}/' + id + '/approve';
     new bootstrap.Modal(document.getElementById('approveModal')).show();
 }
 
 function showRejectModal(id) {
-    document.getElementById('rejectForm').action = '{{ url("admin/kepegawaian/cuti") }}/' + id + '/reject';
+    document.getElementById('rejectForm').action = '{{ url("kepegawaian/cuti") }}/' + id + '/reject';
     new bootstrap.Modal(document.getElementById('rejectModal')).show();
 }
 </script>

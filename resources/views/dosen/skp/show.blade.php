@@ -337,20 +337,36 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
+                        <label class="form-label">Kategori <span class="text-danger">*</span></label>
+                        <select name="kategori" id="add_kategori" class="form-select" required>
+                            <option value="">-- Pilih Kategori --</option>
+                            @foreach(\App\Models\UraianKegiatanSkp::KATEGORI as $key => $label)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Pilih Uraian Kegiatan <span class="text-danger">*</span></label>
+                        <select name="uraian_kegiatan_skp_id" id="add_uraian_kegiatan_select" class="form-select" required disabled>
+                            <option value="">-- Pilih kategori terlebih dahulu --</option>
+                        </select>
+                        <small class="text-muted">Pilih dari daftar uraian kegiatan yang sudah ditetapkan</small>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Uraian Kegiatan <span class="text-danger">*</span></label>
-                        <textarea name="uraian_kegiatan" class="form-control" rows="3" required placeholder="Contoh: Melaksanakan perkuliahan sesuai jadwal"></textarea>
+                        <textarea name="uraian_kegiatan" id="add_uraian_kegiatan" class="form-control" rows="3" required readonly placeholder="Akan terisi otomatis dari pilihan di atas"></textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Target Kuantitas</label>
-                                <input type="number" name="target_kuantitas" class="form-control" step="0.01" min="0" placeholder="Contoh: 10">
+                                <input type="number" name="target_kuantitas" id="add_target_kuantitas" class="form-control" step="0.01" min="0" placeholder="Contoh: 10">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Satuan</label>
-                                <input type="text" name="satuan" class="form-control" placeholder="Contoh: SKS, Kegiatan">
+                                <input type="text" name="satuan" id="add_satuan" class="form-control" readonly placeholder="Terisi dari pilihan">
                             </div>
                         </div>
                     </div>
@@ -499,6 +515,76 @@
 
 @push('scripts')
 <script>
+// Store uraian kegiatan data
+let uraianKegiatanData = [];
+
+// Load uraian kegiatan data on page load (filtered for dosen)
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('{{ route("dosen.skp.uraian-kegiatan") }}?tipe_pegawai=dosen')
+        .then(response => response.json())
+        .then(data => {
+            uraianKegiatanData = data;
+        })
+        .catch(error => console.error('Error loading uraian kegiatan:', error));
+});
+
+// Handle kategori change for add modal
+document.getElementById('add_kategori')?.addEventListener('change', function() {
+    const kategori = this.value;
+    const selectElement = document.getElementById('add_uraian_kegiatan_select');
+    
+    if (!kategori) {
+        selectElement.innerHTML = '<option value="">-- Pilih kategori terlebih dahulu --</option>';
+        selectElement.disabled = true;
+        return;
+    }
+    
+    // Filter uraian kegiatan by kategori
+    const filteredData = uraianKegiatanData.filter(item => item.kategori === kategori);
+    
+    if (filteredData.length === 0) {
+        selectElement.innerHTML = '<option value="">-- Tidak ada data untuk kategori ini --</option>';
+        selectElement.disabled = true;
+        return;
+    }
+    
+    // Group by sub_kategori
+    const grouped = {};
+    filteredData.forEach(item => {
+        const subKat = item.sub_kategori_label || 'Lainnya';
+        if (!grouped[subKat]) grouped[subKat] = [];
+        grouped[subKat].push(item);
+    });
+    
+    // Build options
+    let html = '<option value="">-- Pilih Uraian Kegiatan --</option>';
+    Object.keys(grouped).forEach(subKat => {
+        html += `<optgroup label="${subKat}">`;
+        grouped[subKat].forEach(item => {
+            html += `<option value="${item.id}" data-uraian="${item.uraian_kegiatan}" data-satuan="${item.satuan}" data-target="${item.target_default || ''}">${item.kode} - ${item.uraian_kegiatan}</option>`;
+        });
+        html += '</optgroup>';
+    });
+    
+    selectElement.innerHTML = html;
+    selectElement.disabled = false;
+});
+
+// Handle uraian kegiatan select change for add modal
+document.getElementById('add_uraian_kegiatan_select')?.addEventListener('change', function() {
+    const option = this.options[this.selectedIndex];
+    if (option && option.value) {
+        document.getElementById('add_uraian_kegiatan').value = option.dataset.uraian || '';
+        document.getElementById('add_satuan').value = option.dataset.satuan || '';
+        if (option.dataset.target) {
+            document.getElementById('add_target_kuantitas').value = option.dataset.target;
+        }
+    } else {
+        document.getElementById('add_uraian_kegiatan').value = '';
+        document.getElementById('add_satuan').value = '';
+    }
+});
+
 function editTarget(target) {
     document.getElementById('editTargetForm').action = '{{ url("portal-dosen/skp/target") }}/' + target.hashid;
     document.getElementById('edit_uraian_kegiatan').value = target.uraian_kegiatan || '';

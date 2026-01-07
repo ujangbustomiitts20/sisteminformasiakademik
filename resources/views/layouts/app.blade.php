@@ -605,6 +605,14 @@
                     <i class="bi bi-file-earmark-check"></i>
                     <span>SKP Pegawai</span>
                 </a>
+                <a href="{{ route('kepegawaian.aktivitas-harian.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.aktivitas-harian.*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Aktivitas Harian</span>
+                </a>
+                <a href="{{ route('kepegawaian.uraian-kegiatan-skp.index') }}" class="nav-link {{ request()->routeIs('kepegawaian.uraian-kegiatan-skp.*') ? 'active' : '' }}">
+                    <i class="bi bi-list-check"></i>
+                    <span>Master Uraian SKP</span>
+                </a>
             </div>
             
             <div class="menu-header">Keuangan</div>
@@ -803,6 +811,10 @@
             <a href="{{ route('dosen.skp.index') }}" class="nav-link {{ request()->routeIs('dosen.skp.*') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-check"></i>
                 <span>SKP / Kinerja</span>
+            </a>
+            <a href="{{ route('dosen.aktivitas-harian.index') }}" class="nav-link {{ request()->routeIs('dosen.aktivitas-harian.*') ? 'active' : '' }}">
+                <i class="bi bi-calendar-check"></i>
+                <span>Aktivitas Harian</span>
             </a>
             
             <div class="menu-header">Akademik</div>
