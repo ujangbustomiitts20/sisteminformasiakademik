@@ -112,6 +112,17 @@
                             @else
                             <span class="badge bg-success">Mahasiswa</span>
                             @endif
+                            @if($user->roles->count() > 0)
+                                <br>
+                                <small class="text-muted">
+                                    @foreach($user->roles->take(2) as $role)
+                                        <span class="badge bg-{{ $role->warna }} badge-sm">{{ $role->nama }}</span>
+                                    @endforeach
+                                    @if($user->roles->count() > 2)
+                                        <span class="text-muted">+{{ $user->roles->count() - 2 }}</span>
+                                    @endif
+                                </small>
+                            @endif
                         </td>
                         <td>{{ $user->created_at->format('d/m/Y H:i') }}</td>
                         <td class="text-center">

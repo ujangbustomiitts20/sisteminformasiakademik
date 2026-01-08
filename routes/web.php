@@ -171,6 +171,42 @@ Route::middleware(['auth'])->group(function () {
     // ADMIN ROUTES
     // =====================
     Route::middleware(['role:admin'])->group(function () {
+        // Role & Permission Management
+        Route::prefix('roles')->name('admin.roles.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\RoleController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\RoleController::class, 'store'])->name('store');
+            Route::get('/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'show'])->name('show');
+            Route::get('/{role}/edit', [\App\Http\Controllers\Admin\RoleController::class, 'edit'])->name('edit');
+            Route::put('/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'update'])->name('update');
+            Route::delete('/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])->name('destroy');
+            Route::get('/{role}/duplicate', [\App\Http\Controllers\Admin\RoleController::class, 'duplicate'])->name('duplicate');
+            Route::patch('/{role}/toggle-status', [\App\Http\Controllers\Admin\RoleController::class, 'toggleStatus'])->name('toggle-status');
+        });
+
+        Route::prefix('menus')->name('admin.menus.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\MenuController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\MenuController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\MenuController::class, 'store'])->name('store');
+            Route::get('/{menu}', [\App\Http\Controllers\Admin\MenuController::class, 'show'])->name('show');
+            Route::get('/{menu}/edit', [\App\Http\Controllers\Admin\MenuController::class, 'edit'])->name('edit');
+            Route::put('/{menu}', [\App\Http\Controllers\Admin\MenuController::class, 'update'])->name('update');
+            Route::delete('/{menu}', [\App\Http\Controllers\Admin\MenuController::class, 'destroy'])->name('destroy');
+            Route::patch('/{menu}/toggle-status', [\App\Http\Controllers\Admin\MenuController::class, 'toggleStatus'])->name('toggle-status');
+            Route::post('/reorder', [\App\Http\Controllers\Admin\MenuController::class, 'reorder'])->name('reorder');
+            Route::get('/preview', [\App\Http\Controllers\Admin\MenuController::class, 'preview'])->name('preview');
+        });
+
+        Route::prefix('permissions')->name('admin.permissions.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\PermissionController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\PermissionController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\PermissionController::class, 'store'])->name('store');
+            Route::get('/{permission}/edit', [\App\Http\Controllers\Admin\PermissionController::class, 'edit'])->name('edit');
+            Route::put('/{permission}', [\App\Http\Controllers\Admin\PermissionController::class, 'update'])->name('update');
+            Route::delete('/{permission}', [\App\Http\Controllers\Admin\PermissionController::class, 'destroy'])->name('destroy');
+            Route::post('/generate', [\App\Http\Controllers\Admin\PermissionController::class, 'generateForModule'])->name('generate');
+        });
+
         // Dashboard Akademik
         Route::get('/akademik', [AkademikDashboardController::class, 'index'])->name('akademik.dashboard');
         
@@ -1068,13 +1104,18 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/potongan-mahasiswa/{potonganMahasiswa}/reject', [PotonganMahasiswaController::class, 'reject'])->name('potongan-mahasiswa.reject');
         Route::post('/potongan-mahasiswa/{potonganMahasiswa}/cancel', [PotonganMahasiswaController::class, 'cancel'])->name('potongan-mahasiswa.cancel');
         Route::resource('potongan-mahasiswa', PotonganMahasiswaController::class);
+    });
 
-        // =====================
-        // MODUL PMB (PENERIMAAN MAHASISWA BARU)
-        // =====================
+    // =====================
+    // MODUL PMB (PENERIMAAN MAHASISWA BARU)
+    // Accessible by admin and ppdb roles
+    // =====================
+    Route::middleware(['role:admin,ppdb'])->group(function () {
         Route::prefix('pmb')->name('pmb.')->group(function () {
             // Dashboard PMB
-            Route::get('/', [\App\Http\Controllers\PmbController::class, 'dashboard'])->name('dashboard');
+            Route::get('/', [\App\Http\Controllers\PmbController::class, 'dashboard'])
+                ->middleware('permission:pmb.dashboard')
+                ->name('dashboard');
 
             // Periode PMB
             Route::post('/periode/{periode}/set-active', [\App\Http\Controllers\PeriodePmbController::class, 'setActive'])->name('periode.set-active');
@@ -1088,29 +1129,33 @@ Route::middleware(['auth'])->group(function () {
                 'destroy' => 'periode.destroy',
             ]);
 
-            // Gelombang PMB
-            Route::post('/gelombang/{gelombang}/set-active', [\App\Http\Controllers\GelombangPmbController::class, 'setActive'])->name('gelombang.set-active');
-            Route::resource('gelombang', \App\Http\Controllers\GelombangPmbController::class)->names([
-                'index' => 'gelombang.index',
-                'create' => 'gelombang.create',
-                'store' => 'gelombang.store',
-                'show' => 'gelombang.show',
-                'edit' => 'gelombang.edit',
-                'update' => 'gelombang.update',
-                'destroy' => 'gelombang.destroy',
-            ]);
+            // Gelombang PMB - with permission middleware
+            Route::middleware(['permission:pmb.gelombang'])->group(function () {
+                Route::post('/gelombang/{gelombang}/set-active', [\App\Http\Controllers\GelombangPmbController::class, 'setActive'])->name('gelombang.set-active');
+                Route::resource('gelombang', \App\Http\Controllers\GelombangPmbController::class)->names([
+                    'index' => 'gelombang.index',
+                    'create' => 'gelombang.create',
+                    'store' => 'gelombang.store',
+                    'show' => 'gelombang.show',
+                    'edit' => 'gelombang.edit',
+                    'update' => 'gelombang.update',
+                    'destroy' => 'gelombang.destroy',
+                ]);
+            }); // End gelombang permission group
 
-            // Jalur Seleksi
-            Route::post('/jalur-seleksi/{jalur}/toggle-active', [\App\Http\Controllers\JalurSeleksiController::class, 'toggleActive'])->name('jalur-seleksi.toggle-active');
-            Route::resource('jalur-seleksi', \App\Http\Controllers\JalurSeleksiController::class)->names([
-                'index' => 'jalur-seleksi.index',
-                'create' => 'jalur-seleksi.create',
-                'store' => 'jalur-seleksi.store',
-                'show' => 'jalur-seleksi.show',
-                'edit' => 'jalur-seleksi.edit',
-                'update' => 'jalur-seleksi.update',
-                'destroy' => 'jalur-seleksi.destroy',
-            ]);
+            // Jalur Seleksi - with permission middleware
+            Route::middleware(['permission:pmb.jalur'])->group(function () {
+                Route::post('/jalur-seleksi/{jalur}/toggle-active', [\App\Http\Controllers\JalurSeleksiController::class, 'toggleActive'])->name('jalur-seleksi.toggle-active');
+                Route::resource('jalur-seleksi', \App\Http\Controllers\JalurSeleksiController::class)->names([
+                    'index' => 'jalur-seleksi.index',
+                    'create' => 'jalur-seleksi.create',
+                    'store' => 'jalur-seleksi.store',
+                    'show' => 'jalur-seleksi.show',
+                    'edit' => 'jalur-seleksi.edit',
+                    'update' => 'jalur-seleksi.update',
+                    'destroy' => 'jalur-seleksi.destroy',
+                ]);
+            }); // End jalur permission group
 
             // Biaya Pendaftaran
             Route::post('/biaya-pendaftaran/generate-batch', [\App\Http\Controllers\BiayaPendaftaranController::class, 'generateBatch'])->name('biaya-pendaftaran.generate-batch');

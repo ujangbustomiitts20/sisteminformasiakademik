@@ -41,9 +41,9 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
-                        <select name="role" id="role" class="form-select @error('role') is-invalid @enderror" required>
-                            <option value="">-- Pilih Role --</option>
+                        <label for="role" class="form-label">Role (Legacy)</label>
+                        <select name="role" id="role" class="form-select @error('role') is-invalid @enderror">
+                            <option value="">-- Tidak Menggunakan Legacy Role --</option>
                             <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                             <option value="dosen" {{ old('role') == 'dosen' ? 'selected' : '' }}>Dosen</option>
                             <option value="mahasiswa" {{ old('role') == 'mahasiswa' ? 'selected' : '' }}>Mahasiswa</option>
@@ -53,8 +53,42 @@
                         @error('role')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                        <small class="text-muted">Catatan: Untuk dosen/mahasiswa, sebaiknya tambah melalui modul Dosen/Mahasiswa. Untuk kaprodi/dekan, gunakan menu Pejabat Akademik.</small>
+                        <small class="text-muted">Opsional. Gunakan Role Dinamis untuk manajemen akses yang lebih fleksibel.</small>
                     </div>
+
+                    @if(isset($roles) && $roles->count() > 0)
+                    <div class="mb-3">
+                        <label class="form-label">Role Dinamis</label>
+                        <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                            @foreach($roles as $role)
+                                <div class="form-check">
+                                    <input type="checkbox" name="dynamic_roles[]" value="{{ $role->id }}" 
+                                           class="form-check-input" id="dynamic_role_{{ $role->id }}"
+                                           {{ in_array($role->id, old('dynamic_roles', [])) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="dynamic_role_{{ $role->id }}">
+                                        <span class="badge bg-{{ $role->warna }} me-1">{{ $role->nama }}</span>
+                                        @if($role->is_system)
+                                            <span class="badge bg-secondary">Sistem</span>
+                                        @endif
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Role Utama (Primary)</label>
+                        <select name="primary_role" class="form-select">
+                            <option value="">-- Pilih Role Utama --</option>
+                            @foreach($roles as $role)
+                                <option value="{{ $role->id }}" {{ old('primary_role') == $role->id ? 'selected' : '' }}>
+                                    {{ $role->nama }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Role utama menentukan tampilan default.</small>
+                    </div>
+                    @endif
 
                     <div class="mb-3">
                         <label for="password" class="form-label">Password <span class="text-danger">*</span></label>

@@ -796,6 +796,86 @@
         </div>
         
         <div class="sidebar-menu">
+            {{-- Check if dynamic menu is available --}}
+            @php
+                $useDynamicMenu = false;
+                $userMenus = collect();
+                
+                if (\Illuminate\Support\Facades\Schema::hasTable('menus') && 
+                    \Illuminate\Support\Facades\Schema::hasTable('role_menu') && 
+                    auth()->check()) {
+                    try {
+                        $menuCount = \App\Models\Menu::count();
+                        if ($menuCount > 0) {
+                            $userMenus = auth()->user()->getMenus();
+                            $useDynamicMenu = $userMenus->count() > 0;
+                        }
+                    } catch (\Exception $e) {
+                        $useDynamicMenu = false;
+                    }
+                }
+            @endphp
+
+            @if($useDynamicMenu)
+                {{-- Dynamic Menu --}}
+                @foreach($userMenus as $menu)
+                    @if($menu->is_divider)
+                        <div class="menu-header">{{ $menu->nama }}</div>
+                    @elseif($menu->children->count() > 0)
+                        <div class="menu-collapse-toggle" data-bs-toggle="collapse" data-bs-target="#dynamicMenu{{ $menu->id }}" aria-expanded="{{ $menu->isActive() ? 'true' : 'false' }}">
+                            <span>@if($menu->icon)<i class="{{ $menu->icon }} me-2"></i>@endif{{ $menu->nama }}</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="collapse submenu {{ $menu->isActive() ? 'show' : '' }}" id="dynamicMenu{{ $menu->id }}">
+                            @foreach($menu->children as $child)
+                                <a href="{{ $child->url }}" class="nav-link {{ $child->isActive() ? 'active' : '' }}">
+                                    @if($child->icon)<i class="{{ $child->icon }}"></i>@endif
+                                    <span>{{ $child->nama }}</span>
+                                    @if($child->badge_text)
+                                        <span class="badge bg-{{ $child->badge_color ?? 'primary' }} ms-auto">{{ $child->badge_text }}</span>
+                                    @endif
+                                </a>
+                            @endforeach
+                        </div>
+                    @else
+                        <a href="{{ $menu->url }}" class="nav-link {{ $menu->isActive() ? 'active' : '' }}">
+                            @if($menu->icon)<i class="{{ $menu->icon }}"></i>@endif
+                            <span>{{ $menu->nama }}</span>
+                            @if($menu->badge_text)
+                                <span class="badge bg-{{ $menu->badge_color ?? 'primary' }} ms-auto">{{ $menu->badge_text }}</span>
+                            @endif
+                        </a>
+                    @endif
+                @endforeach
+
+                {{-- Common menus for all users --}}
+                <div class="menu-header">Informasi</div>
+                <a href="{{ route('pengumuman.index') }}" class="nav-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}">
+                    <i class="bi bi-megaphone"></i>
+                    <span>Pengumuman</span>
+                </a>
+                <a href="{{ route('kalender.index') }}" class="nav-link {{ request()->routeIs('kalender.*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Kalender Akademik</span>
+                </a>
+                
+                <div class="menu-header">Pengaturan</div>
+                @if(auth()->user()->isAdmin())
+                <a href="{{ route('admin.roles.index') }}" class="nav-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Role & Permission</span>
+                </a>
+                <a href="{{ route('admin.menus.index') }}" class="nav-link {{ request()->routeIs('admin.menus.*') ? 'active' : '' }}">
+                    <i class="bi bi-list"></i>
+                    <span>Manajemen Menu</span>
+                </a>
+                @endif
+                <a href="{{ route('settings.index') }}" class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                    <i class="bi bi-gear"></i>
+                    <span>Pengaturan</span>
+                </a>
+            @else
+            {{-- Static Menu (Fallback) --}}
             @if(auth()->check() && auth()->user()->isAdmin())
             <!-- Menu Admin -->
             <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
@@ -814,7 +894,7 @@
             </a>
             <a href="{{ route('admin.nama-jabatan.index') }}" class="nav-link {{ request()->routeIs('admin.nama-jabatan.*') ? 'active' : '' }}">
                 <i class="bi bi-briefcase"></i>
-                <span>Nama Jabatan</span>
+                <span>Nama Jabatans</span>
             </a>
             <a href="{{ route('admin.pejabat-penandatangan.index') }}" class="nav-link {{ request()->routeIs('admin.pejabat-penandatangan.*') ? 'active' : '' }}">
                 <i class="bi bi-pen"></i>
@@ -1758,6 +1838,7 @@
                 <i class="bi bi-calendar-event"></i>
                 <span>Kalender Akademik</span>
             </a>
+            @endif {{-- End of static menu fallback --}}
         </div>
     </nav>
     

@@ -14,9 +14,11 @@
                 </ol>
             </nav>
         </div>
+        @can_permission('pmb.gelombang')
         <a href="{{ route('pmb.gelombang.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i> Tambah Gelombang
         </a>
+        @endcan_permission
     </div>
 
     @if(session('success'))
@@ -72,12 +74,16 @@
                                 @if($gelombang->is_active)
                                     <span class="badge bg-success"><i class="bi bi-check-lg"></i></span>
                                 @else
+                                    @can_permission('pmb.gelombang')
                                     <form action="{{ route('pmb.gelombang.set-active', $gelombang->hashid) }}" method="POST" class="d-inline">
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-outline-success" title="Set Aktif">
                                             <i class="bi bi-toggle-off"></i>
                                         </button>
                                     </form>
+                                    @else
+                                    <span class="badge bg-secondary"><i class="bi bi-toggle-off"></i></span>
+                                    @endcan_permission
                                 @endif
                             </td>
                             <td class="text-center">
@@ -85,6 +91,7 @@
                                     <a href="{{ route('pmb.gelombang.show', $gelombang->hashid) }}" class="btn btn-sm btn-info" title="Detail">
                                         <i class="bi bi-eye"></i>
                                     </a>
+                                    @can_permission('pmb.gelombang')
                                     <a href="{{ route('pmb.gelombang.edit', $gelombang->hashid) }}" class="btn btn-sm btn-warning" title="Edit">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
@@ -95,6 +102,7 @@
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
+                                    @endcan_permission
                                 </div>
                             </td>
                         </tr>

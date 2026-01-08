@@ -12,7 +12,8 @@ Laravel 12 academic information system with integrated financial (Keuangan) and 
 | Format date (ID) | `format_tanggal(now())` → "05 Januari 2026" |
 | Get setting | `setting('nama_institusi', 'Default')` |
 | PDF stream | `CetakService::stream('krs', 'cetak.krs', $data)` |
-| Check user role | `$user->isKaprodi()`, `$user->isDekan()`, `$user->canAccessDosenFeatures()` |
+| Check user role | `$user->hasRole('admin')`, `$user->isKaprodi()`, `$user->canAccessDosenFeatures()` |
+| Check permission | `$user->hasPermission('krs.approve')` |
 | Status badge accessor | `$model->status_badge` → Bootstrap badge class (e.g., `success`, `warning`) |
 | Model constants | `Model::STATUS`, `Model::KATEGORI`, `Model::TIPE` → Use in validation & views |
 
@@ -54,7 +55,9 @@ Schema::table('fakultas', function (Blueprint $table) {
 - **PMB (Penerimaan Mahasiswa Baru)**: CalonMahasiswa, GelombangPmb, JalurSeleksi, HasilSeleksi, DaftarUlang
 
 ### User Roles & Route Middleware
-Five roles managed via `app/Http/Middleware/CheckRole.php`. Routes in `routes/web.php` (~1500 lines):
+**Dual Role System**: Legacy string role (`User->role`) + Dynamic roles (`user_role` pivot table).
+
+Routes in `routes/web.php` (~1500 lines) use `CheckRole` middleware:
 ```php
 Route::middleware(['role:admin'])->group(function () { ... });
 Route::middleware(['role:admin,dosen'])->group(function () { ... });  // Multiple roles
@@ -65,7 +68,74 @@ Route::middleware(['role:admin,dosen'])->group(function () { ... });  // Multipl
 - `kaprodi` - Program study head, KRS approval (route prefix: `kaprodi/`)
 - `dekan` - Faculty dean oversight (route prefix: `dekan/`)
 
+**Role/Permission Models** (new dynamic system in `app/Models/`):
+- `Role` - Many-to-many with `Permission`, `Menu`, `User`
+- `Permission` - Grouped by `grup` field (dashboard, akademik, keuangan, etc.)
+- `Menu` - Hierarchical with `parent_id`, supports dynamic sidebar
+
+**User Role Methods**:
+```php
+$user->hasRole('admin')           // Check legacy OR dynamic role
+$user->hasAnyRole(['admin', 'dosen'])
+$user->assignRole('kaprodi', isPrimary: true)
+$user->hasPermission('krs.approve')
+$user->isKaprodi()                // Check role OR dosen assignment in ProgramStudi
+$user->canAccessDosenFeatures()   // Has dosen data attached
+$user->getMenus()                 // Get dynamic menus for sidebar
+```
+
 **Note**: Dosen users can also have kaprodi/dekan privileges checked via `$user->isKaprodi()` and `$user->isDekan()`. The `CheckRole` middleware handles this automatically.
+
+### Dynamic Menu System
+The sidebar uses a dynamic menu system with database-driven menus. Menus are stored in `menus` table and assigned to roles via `role_menu` pivot table.
+
+**Menu Model** (`app/Models/Menu.php`):
+```php
+// Menu fields: parent_id, nama, icon, route_name, url, permission_slug, urutan, is_active
+// URL accessor auto-generates from route_name if url is empty
+public function getUrlAttribute(): ?string {
+    $rawUrl = $this->getRawOriginal('url');
+    if (!empty($rawUrl)) return $rawUrl;
+    if ($this->route_name && \Route::has($this->route_name)) {
+        return route($this->route_name);
+    }
+    return '#';
+}
+```
+
+**Adding New Menu Items** via `RolePermissionSeeder`:
+```php
+// In database/seeders/RolePermissionSeeder.php createMenus() method
+$menus = [
+    ['nama' => 'Dashboard', 'icon' => 'bi-speedometer2', 'route_name' => 'dashboard', 'urutan' => 1],
+    [
+        'nama' => 'Akademik', 'icon' => 'bi-book', 'urutan' => 2,
+        'children' => [
+            ['nama' => 'Mahasiswa', 'icon' => 'bi-people', 'route_name' => 'mahasiswa.index', 'permission_slug' => 'mahasiswa.lihat', 'urutan' => 1],
+        ],
+    ],
+];
+// After adding: php artisan db:seed --class=RolePermissionSeeder
+```
+
+**CRITICAL**: Always verify `route_name` matches actual Laravel route names (check with `php artisan route:list --name=xxx`). Common mistake: using `users.index` when route is `user.index`.
+
+**Sidebar Logic** in `layouts/app.blade.php`:
+```blade
+@php
+    $userMenus = auth()->user()->getMenus();
+    $useDynamicMenu = $userMenus->count() > 0;
+@endphp
+@if($useDynamicMenu)
+    @foreach($userMenus as $menu)
+        <a href="{{ $menu->url }}" class="nav-link {{ $menu->isActive() ? 'active' : '' }}">
+            <i class="{{ $menu->icon }}"></i>{{ $menu->nama }}
+        </a>
+    @endforeach
+@else
+    {{-- Static fallback menu --}}
+@endif
+```
 
 ### File Locations
 | Type | Location |
@@ -334,6 +404,8 @@ public function test_admin_can_access_dashboard() {
 - **User role checks**: Use `$user->canAccessDosenFeatures()` not just `$user->isDosen()` for dosen route access
 - **Foreign keys**: Always use `constrained()->cascadeOnDelete()` or `constrained()->nullOnDelete()` in migrations
 - **Checkbox handling**: In controllers, use `$request->has('field')` for boolean checkbox values
+- **Dynamic Menu route_name**: Must match exact Laravel route name (e.g., `user.index` not `users.index`). Verify with `php artisan route:list --name=xxx`
+- **Menu URL accessor**: Use `$menu->getRawOriginal('url')` to get raw database value, `$menu->url` auto-generates from route_name
 
 ## Indonesian Language Context
 This is an Indonesian academic system. Common terms:

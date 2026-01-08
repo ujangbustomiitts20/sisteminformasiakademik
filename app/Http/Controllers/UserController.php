@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -24,16 +25,19 @@ class UserController extends Controller
             $query->where('role', $request->role);
         }
 
-        $users = $query->with(['dosen', 'mahasiswa'])
+        $users = $query->with(['dosen', 'mahasiswa', 'roles'])
             ->orderBy('name')
             ->paginate(15);
+        
+        $roles = Role::where('is_active', true)->orderBy('urutan')->get();
 
-        return view('user.index', compact('users'));
+        return view('user.index', compact('users', 'roles'));
     }
 
     public function create()
     {
-        return view('user.create');
+        $roles = Role::where('is_active', true)->orderBy('urutan')->get();
+        return view('user.create', compact('roles'));
     }
 
     public function store(Request $request)
@@ -42,28 +46,45 @@ class UserController extends Controller
             'name' => 'required|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6|confirmed',
-            'role' => 'required|in:admin,dosen,mahasiswa,kaprodi,dekan',
+            'role' => 'nullable|in:admin,dosen,mahasiswa,kaprodi,dekan',
+            'dynamic_roles' => 'nullable|array',
+            'dynamic_roles.*' => 'exists:roles,id',
+            'primary_role' => 'nullable|exists:roles,id',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
 
+        // Sync dynamic roles
+        if ($request->has('dynamic_roles')) {
+            $syncData = [];
+            foreach ($request->dynamic_roles as $roleId) {
+                $syncData[$roleId] = ['is_primary' => $roleId == $request->primary_role];
+            }
+            $user->roles()->sync($syncData);
+        }
+
         return redirect()->route('user.index')->with('success', 'User berhasil ditambahkan!');
     }
 
     public function show(User $user)
     {
-        $user->load(['dosen.programStudi.fakultas', 'mahasiswa.programStudi.fakultas']);
+        $user->load(['dosen.programStudi.fakultas', 'mahasiswa.programStudi.fakultas', 'roles']);
         return view('user.show', compact('user'));
     }
 
     public function edit(User $user)
     {
-        return view('user.edit', compact('user'));
+        $user->load('roles');
+        $roles = Role::where('is_active', true)->orderBy('urutan')->get();
+        $userRoles = $user->roles->pluck('id')->toArray();
+        $primaryRoleId = $user->roles()->wherePivot('is_primary', true)->first()?->id;
+        
+        return view('user.edit', compact('user', 'roles', 'userRoles', 'primaryRoleId'));
     }
 
     public function update(Request $request, User $user)
@@ -72,7 +93,10 @@ class UserController extends Controller
             'name' => 'required|max:255',
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|min:6|confirmed',
-            'role' => 'required|in:admin,dosen,mahasiswa,kaprodi,dekan',
+            'role' => 'nullable|in:admin,dosen,mahasiswa,kaprodi,dekan',
+            'dynamic_roles' => 'nullable|array',
+            'dynamic_roles.*' => 'exists:roles,id',
+            'primary_role' => 'nullable|exists:roles,id',
         ]);
 
         $data = [
@@ -86,6 +110,20 @@ class UserController extends Controller
         }
 
         $user->update($data);
+
+        // Sync dynamic roles
+        if ($request->has('dynamic_roles')) {
+            $syncData = [];
+            foreach ($request->dynamic_roles as $roleId) {
+                $syncData[$roleId] = ['is_primary' => $roleId == $request->primary_role];
+            }
+            $user->roles()->sync($syncData);
+        } else {
+            $user->roles()->detach();
+        }
+
+        // Clear permission cache
+        $user->clearPermissionCache();
 
         return redirect()->route('user.index')->with('success', 'User berhasil diupdate!');
     }
