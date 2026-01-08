@@ -8,24 +8,26 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Pengaturan Portal PMB</h5>
+                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Pengaturan Portal PMB</h5>
+                    <a href="{{ route('pmb.konten-pmb.index') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-grid me-1"></i> Kelola Konten
+                    </a>
                 </div>
                 <div class="card-body">
                     @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show">
-                        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                        <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                     @endif
                     
                     <form action="{{ route('pmb.konten-pmb.pengaturan.update') }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        @method('PUT')
                         
                         <!-- Informasi Umum -->
                         <div class="card mb-4">
                             <div class="card-header bg-light">
-                                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informasi Umum</h6>
+                                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informasi Umum</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row g-3">
@@ -59,7 +61,7 @@
                         <!-- Hero Section -->
                         <div class="card mb-4">
                             <div class="card-header bg-light">
-                                <h6 class="mb-0"><i class="fas fa-image me-2"></i>Hero Section</h6>
+                                <h6 class="mb-0"><i class="bi bi-image me-2"></i>Hero Section</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row g-3">
@@ -78,7 +80,7 @@
                         <!-- Statistik -->
                         <div class="card mb-4">
                             <div class="card-header bg-light">
-                                <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Statistik</h6>
+                                <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Statistik</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row g-3">
@@ -106,7 +108,7 @@
                         <!-- SEO -->
                         <div class="card mb-4">
                             <div class="card-header bg-light">
-                                <h6 class="mb-0"><i class="fas fa-search me-2"></i>SEO</h6>
+                                <h6 class="mb-0"><i class="bi bi-search me-2"></i>SEO</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row g-3">
@@ -124,7 +126,7 @@
                         
                         <div class="text-end">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Simpan Pengaturan
+                                <i class="bi bi-save me-2"></i>Simpan Pengaturan
                             </button>
                         </div>
                     </form>

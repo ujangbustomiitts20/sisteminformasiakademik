@@ -21,41 +21,8 @@
         </a>
     </div>
     <div class="card-body">
-        <!-- Filter -->
-        <form method="GET" action="{{ route('dosen.index') }}" class="mb-4">
-            <div class="row g-2">
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="search" class="form-control" placeholder="Cari NIDN atau nama..." value="{{ request('search') }}">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <select name="program_studi" class="form-select">
-                        <option value="">-- Semua Program Studi --</option>
-                        @foreach($programStudi as $ps)
-                        <option value="{{ $ps->id }}" {{ request('program_studi') == $ps->id ? 'selected' : '' }}>{{ $ps->nama }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="status" class="form-select">
-                        <option value="">-- Semua Status --</option>
-                        <option value="Aktif" {{ request('status') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                        <option value="Nonaktif" {{ request('status') == 'Nonaktif' ? 'selected' : '' }}>Non-Aktif</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-outline-primary">
-                        <i class="bi bi-funnel me-1"></i>Filter
-                    </button>
-                    <a href="{{ route('dosen.index') }}" class="btn btn-outline-secondary">Reset</a>
-                </div>
-            </div>
-        </form>
-        
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table id="dosenTable" class="table table-hover table-striped" style="width:100%">
                 <thead class="table-light">
                     <tr>
                         <th width="50">No</th>
@@ -67,9 +34,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($dosen as $index => $d)
+                    @foreach($dosen as $index => $d)
                     <tr>
-                        <td>{{ $dosen->firstItem() + $index }}</td>
+                        <td>{{ $index + 1 }}</td>
                         <td><code>{{ $d->nidn }}</code></td>
                         <td>
                             <strong>{{ $d->nama }}</strong>
@@ -106,26 +73,42 @@
                             </div>
                         </td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="text-center py-4">
-                            <i class="bi bi-person-badge text-muted" style="font-size: 2rem;"></i>
-                            <p class="text-muted mb-0 mt-2">Belum ada data dosen</p>
-                        </td>
-                    </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
-        
-        @if($dosen->hasPages())
-        <div class="d-flex justify-content-between align-items-center mt-3">
-            <div class="text-muted small">
-                Menampilkan {{ $dosen->firstItem() }} - {{ $dosen->lastItem() }} dari {{ $dosen->total() }} data
-            </div>
-            {{ $dosen->withQueryString()->links() }}
-        </div>
-        @endif
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    $('#dosenTable').DataTable({
+        responsive: true,
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json',
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_ data per halaman",
+            info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+            infoEmpty: "Tidak ada data",
+            infoFiltered: "(difilter dari _MAX_ total data)",
+            zeroRecords: "Data tidak ditemukan",
+            paginate: {
+                first: "Pertama",
+                last: "Terakhir",
+                next: "Selanjutnya",
+                previous: "Sebelumnya"
+            }
+        },
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]],
+        order: [[2, 'asc']],
+        columnDefs: [
+            { orderable: false, targets: [0, 5] },
+            { searchable: false, targets: [0, 5] }
+        ]
+    });
+});
+</script>
+@endpush

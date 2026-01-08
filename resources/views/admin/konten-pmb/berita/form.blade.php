@@ -6,13 +6,13 @@
 <div class="container-fluid">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-newspaper me-2"></i>{{ isset($berita) ? 'Edit Berita' : 'Tambah Berita' }}</h5>
+            <h5 class="mb-0"><i class="bi bi-newspaper me-2"></i>{{ isset($berita) ? 'Edit Berita' : 'Tambah Berita' }}</h5>
             <a href="{{ route('pmb.konten-pmb.berita.index') }}" class="btn btn-secondary btn-sm">
-                <i class="fas fa-arrow-left me-1"></i>Kembali
+                <i class="bi bi-arrow-left me-1"></i>Kembali
             </a>
         </div>
         <div class="card-body">
-            <form action="{{ isset($berita) ? route('pmb.konten-pmb.berita.update', $berita->id) : route('pmb.konten-pmb.berita.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ isset($berita) ? route('pmb.konten-pmb.berita.update', $berita->hashid) : route('pmb.konten-pmb.berita.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @if(isset($berita))
                 @method('PUT')
@@ -66,9 +66,9 @@
                                 
                                 <div class="mb-3">
                                     <label class="form-label">Status</label>
-                                    <select name="is_active" class="form-select">
-                                        <option value="1" {{ old('is_active', $berita->is_active ?? 1) == 1 ? 'selected' : '' }}>Publish</option>
-                                        <option value="0" {{ old('is_active', $berita->is_active ?? 1) == 0 ? 'selected' : '' }}>Draft</option>
+                                    <select name="is_published" class="form-select">
+                                        <option value="1" {{ old('is_published', $berita->is_published ?? 1) == 1 ? 'selected' : '' }}>Publish</option>
+                                        <option value="0" {{ old('is_published', $berita->is_published ?? 1) == 0 ? 'selected' : '' }}>Draft</option>
                                     </select>
                                 </div>
                                 
@@ -119,7 +119,7 @@
                 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>Simpan
+                        <i class="bi bi-save me-2"></i>Simpan
                     </button>
                 </div>
             </form>

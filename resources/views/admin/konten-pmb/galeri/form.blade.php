@@ -9,7 +9,7 @@
             <h5 class="mb-0"><i class="fas fa-images me-2"></i>{{ isset($galeri) ? 'Edit Galeri' : 'Tambah Galeri' }}</h5>
         </div>
         <div class="card-body">
-            <form action="{{ isset($galeri) ? route('pmb.konten-pmb.galeri.update', $galeri->id) : route('pmb.konten-pmb.galeri.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ isset($galeri) ? route('pmb.konten-pmb.galeri.update', $galeri->hashid) : route('pmb.konten-pmb.galeri.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @if(isset($galeri))
                 @method('PUT')

@@ -78,38 +78,11 @@
         </button>
     </div>
     <div class="card-body">
-        <!-- Filter -->
-        <form method="GET" class="row g-3 mb-4">
-            <div class="col-md-3">
-                <input type="text" name="search" class="form-control" placeholder="Cari nomor/nama..." value="{{ request('search') }}">
-            </div>
-            <div class="col-md-2">
-                <select name="status" class="form-select">
-                    <option value="">Semua Status</option>
-                    @foreach(\App\Models\KontrakKerja::STATUS as $key => $label)
-                        <option value="{{ $key }}" {{ request('status') == $key ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-2">
-                <select name="jenis_kontrak" class="form-select">
-                    <option value="">Semua Jenis</option>
-                    @foreach(\App\Models\KontrakKerja::JENIS_KONTRAK as $key => $label)
-                        <option value="{{ $key }}" {{ request('jenis_kontrak') == $key ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-outline-primary w-100">
-                    <i class="bi bi-search me-1"></i> Filter
-                </button>
-            </div>
-        </form>
-
         <div class="table-responsive">
-            <table class="table table-striped table-hover">
+            <table id="kontrakTable" class="table table-striped table-hover" style="width:100%">
                 <thead>
                     <tr>
+                        <th width="50">No</th>
                         <th>No. Kontrak</th>
                         <th>Nama Pegawai</th>
                         <th>Jenis</th>
@@ -120,8 +93,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($kontrakList as $kontrak)
+                    @foreach($kontrakList as $index => $kontrak)
                     <tr>
+                        <td>{{ $index + 1 }}</td>
                         <td>{{ $kontrak->nomor_kontrak }}</td>
                         <td>
                             {{ $kontrak->nama_pegawai }}

@@ -35,8 +35,8 @@
                             </div>
                             <div>
                                 <h4 class="fw-bold mb-1">{{ $jalur->nama }}</h4>
-                                @if($jalur->kuota)
-                                <span class="badge bg-primary bg-opacity-10 text-primary">Kuota: {{ $jalur->kuota }} Peserta</span>
+                                @if($jalur->total_kuota)
+                                <span class="badge bg-primary bg-opacity-10 text-primary">Kuota: {{ $jalur->total_kuota }} Peserta</span>
                                 @endif
                             </div>
                         </div>
@@ -63,16 +63,22 @@
                         <!-- Info Tambahan -->
                         <div class="bg-light rounded-3 p-3 mb-4">
                             <div class="row g-3">
-                                @if($jalur->biaya_pendaftaran)
+                                @if($jalur->biaya_pendaftaran_aktif)
                                 <div class="col-6">
                                     <small class="text-muted d-block">Biaya Pendaftaran</small>
-                                    <span class="fw-bold text-primary">Rp {{ number_format($jalur->biaya_pendaftaran, 0, ',', '.') }}</span>
+                                    <span class="fw-bold text-primary">Rp {{ number_format($jalur->biaya_pendaftaran_aktif, 0, ',', '.') }}</span>
                                 </div>
                                 @endif
-                                @if($jalur->tanggal_mulai && $jalur->tanggal_selesai)
+                                @if($jalur->tanggal_mulai_daftar && $jalur->tanggal_selesai_daftar)
                                 <div class="col-6">
                                     <small class="text-muted d-block">Periode Pendaftaran</small>
-                                    <span class="fw-bold">{{ $jalur->tanggal_mulai->format('d M') }} - {{ $jalur->tanggal_selesai->format('d M Y') }}</span>
+                                    <span class="fw-bold">{{ $jalur->tanggal_mulai_daftar->format('d M') }} - {{ $jalur->tanggal_selesai_daftar->format('d M Y') }}</span>
+                                </div>
+                                @endif
+                                @if($jalur->total_kuota)
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Kuota Tersedia</small>
+                                    <span class="fw-bold text-success">{{ $jalur->total_kuota }} Peserta</span>
                                 </div>
                                 @endif
                             </div>
@@ -122,17 +128,17 @@
                         <td class="py-3 px-4">
                             <h6 class="fw-bold mb-0">{{ $jalur->nama }}</h6>
                         </td>
-                        <td class="py-3 px-4 text-center">{{ $jalur->kuota ?? '-' }}</td>
+                        <td class="py-3 px-4 text-center">{{ $jalur->total_kuota ?? '-' }}</td>
                         <td class="py-3 px-4 text-center">
-                            @if($jalur->biaya_pendaftaran)
-                            Rp {{ number_format($jalur->biaya_pendaftaran, 0, ',', '.') }}
+                            @if($jalur->biaya_pendaftaran_aktif)
+                            Rp {{ number_format($jalur->biaya_pendaftaran_aktif, 0, ',', '.') }}
                             @else
                             -
                             @endif
                         </td>
                         <td class="py-3 px-4 text-center">
-                            @if($jalur->tanggal_mulai && $jalur->tanggal_selesai)
-                            {{ $jalur->tanggal_mulai->format('d M') }} - {{ $jalur->tanggal_selesai->format('d M') }}
+                            @if($jalur->tanggal_mulai_daftar && $jalur->tanggal_selesai_daftar)
+                            {{ $jalur->tanggal_mulai_daftar->format('d M') }} - {{ $jalur->tanggal_selesai_daftar->format('d M') }}
                             @else
                             -
                             @endif

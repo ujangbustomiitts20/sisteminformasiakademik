@@ -37,6 +37,6 @@ class TestimoniPmb extends Model
         if ($this->foto && file_exists(public_path('storage/' . $this->foto))) {
             return asset('storage/' . $this->foto);
         }
-        return asset('images/avatar-default.png');
+        return asset('images/testimoni-default.jpg');
     }
 }

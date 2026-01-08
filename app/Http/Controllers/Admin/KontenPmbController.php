@@ -47,7 +47,7 @@ class KontenPmbController extends Controller
 
     public function sliderCreate()
     {
-        return view('admin.konten-pmb.slider.create');
+        return view('admin.konten-pmb.slider.form');
     }
 
     public function sliderStore(Request $request)
@@ -70,13 +70,13 @@ class KontenPmbController extends Controller
 
         SliderPmb::create($data);
 
-        return redirect()->route('admin.konten-pmb.slider.index')
+        return redirect()->route('pmb.konten-pmb.slider.index')
             ->with('success', 'Slider berhasil ditambahkan');
     }
 
     public function sliderEdit(SliderPmb $slider)
     {
-        return view('admin.konten-pmb.slider.edit', compact('slider'));
+        return view('admin.konten-pmb.slider.form', compact('slider'));
     }
 
     public function sliderUpdate(Request $request, SliderPmb $slider)
@@ -102,7 +102,7 @@ class KontenPmbController extends Controller
 
         $slider->update($data);
 
-        return redirect()->route('admin.konten-pmb.slider.index')
+        return redirect()->route('pmb.konten-pmb.slider.index')
             ->with('success', 'Slider berhasil diperbarui');
     }
 
@@ -113,7 +113,7 @@ class KontenPmbController extends Controller
         }
         $slider->delete();
 
-        return redirect()->route('admin.konten-pmb.slider.index')
+        return redirect()->route('pmb.konten-pmb.slider.index')
             ->with('success', 'Slider berhasil dihapus');
     }
 
@@ -129,7 +129,7 @@ class KontenPmbController extends Controller
 
     public function beritaCreate()
     {
-        return view('admin.konten-pmb.berita.create');
+        return view('admin.konten-pmb.berita.form');
     }
 
     public function beritaStore(Request $request)
@@ -137,7 +137,7 @@ class KontenPmbController extends Controller
         $request->validate([
             'judul' => 'required|string|max:255',
             'konten' => 'required|string',
-            'kategori' => 'required|in:berita,pengumuman,info',
+            'kategori' => 'required|in:berita,pengumuman,info,tips',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
@@ -145,10 +145,10 @@ class KontenPmbController extends Controller
         $data['slug'] = Str::slug($request->judul);
         $data['user_id'] = auth()->id();
         $data['is_featured'] = $request->has('is_featured');
-        $data['is_published'] = $request->has('is_published');
+        $data['is_published'] = $request->boolean('is_published');
         
         if ($data['is_published']) {
-            $data['published_at'] = now();
+            $data['published_at'] = $request->published_at ?? now();
         }
 
         if ($request->hasFile('gambar')) {
@@ -157,13 +157,13 @@ class KontenPmbController extends Controller
 
         BeritaPmb::create($data);
 
-        return redirect()->route('admin.konten-pmb.berita.index')
+        return redirect()->route('pmb.konten-pmb.berita.index')
             ->with('success', 'Berita berhasil ditambahkan');
     }
 
     public function beritaEdit(BeritaPmb $berita)
     {
-        return view('admin.konten-pmb.berita.edit', compact('berita'));
+        return view('admin.konten-pmb.berita.form', compact('berita'));
     }
 
     public function beritaUpdate(Request $request, BeritaPmb $berita)
@@ -171,16 +171,18 @@ class KontenPmbController extends Controller
         $request->validate([
             'judul' => 'required|string|max:255',
             'konten' => 'required|string',
-            'kategori' => 'required|in:berita,pengumuman,info',
+            'kategori' => 'required|in:berita,pengumuman,info,tips',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $data = $request->only(['judul', 'konten', 'kategori', 'ringkasan']);
         $data['is_featured'] = $request->has('is_featured');
-        $data['is_published'] = $request->has('is_published');
+        $data['is_published'] = $request->boolean('is_published');
 
         if ($data['is_published'] && !$berita->published_at) {
-            $data['published_at'] = now();
+            $data['published_at'] = $request->published_at ?? now();
+        } elseif ($request->filled('published_at')) {
+            $data['published_at'] = $request->published_at;
         }
 
         if ($request->hasFile('gambar')) {
@@ -192,7 +194,7 @@ class KontenPmbController extends Controller
 
         $berita->update($data);
 
-        return redirect()->route('admin.konten-pmb.berita.index')
+        return redirect()->route('pmb.konten-pmb.berita.index')
             ->with('success', 'Berita berhasil diperbarui');
     }
 
@@ -203,7 +205,7 @@ class KontenPmbController extends Controller
         }
         $berita->delete();
 
-        return redirect()->route('admin.konten-pmb.berita.index')
+        return redirect()->route('pmb.konten-pmb.berita.index')
             ->with('success', 'Berita berhasil dihapus');
     }
 
@@ -213,13 +215,13 @@ class KontenPmbController extends Controller
     public function faqIndex()
     {
         return view('admin.konten-pmb.faq.index', [
-            'faqs' => FaqPmb::orderBy('urutan')->get()
+            'faq' => FaqPmb::orderBy('urutan')->get()
         ]);
     }
 
     public function faqCreate()
     {
-        return view('admin.konten-pmb.faq.create');
+        return view('admin.konten-pmb.faq.form');
     }
 
     public function faqStore(Request $request)
@@ -238,13 +240,13 @@ class KontenPmbController extends Controller
             'is_active' => $request->has('is_active'),
         ]);
 
-        return redirect()->route('admin.konten-pmb.faq.index')
+        return redirect()->route('pmb.konten-pmb.faq.index')
             ->with('success', 'FAQ berhasil ditambahkan');
     }
 
     public function faqEdit(FaqPmb $faq)
     {
-        return view('admin.konten-pmb.faq.edit', compact('faq'));
+        return view('admin.konten-pmb.faq.form', compact('faq'));
     }
 
     public function faqUpdate(Request $request, FaqPmb $faq)
@@ -264,14 +266,14 @@ class KontenPmbController extends Controller
             'is_active' => $request->has('is_active'),
         ]);
 
-        return redirect()->route('admin.konten-pmb.faq.index')
+        return redirect()->route('pmb.konten-pmb.faq.index')
             ->with('success', 'FAQ berhasil diperbarui');
     }
 
     public function faqDestroy(FaqPmb $faq)
     {
         $faq->delete();
-        return redirect()->route('admin.konten-pmb.faq.index')
+        return redirect()->route('pmb.konten-pmb.faq.index')
             ->with('success', 'FAQ berhasil dihapus');
     }
 
@@ -281,13 +283,13 @@ class KontenPmbController extends Controller
     public function testimoniIndex()
     {
         return view('admin.konten-pmb.testimoni.index', [
-            'testimonis' => TestimoniPmb::orderBy('urutan')->get()
+            'testimoni' => TestimoniPmb::orderBy('urutan')->get()
         ]);
     }
 
     public function testimoniCreate()
     {
-        return view('admin.konten-pmb.testimoni.create');
+        return view('admin.konten-pmb.testimoni.form');
     }
 
     public function testimoniStore(Request $request)
@@ -308,13 +310,13 @@ class KontenPmbController extends Controller
 
         TestimoniPmb::create($data);
 
-        return redirect()->route('admin.konten-pmb.testimoni.index')
+        return redirect()->route('pmb.konten-pmb.testimoni.index')
             ->with('success', 'Testimoni berhasil ditambahkan');
     }
 
     public function testimoniEdit(TestimoniPmb $testimoni)
     {
-        return view('admin.konten-pmb.testimoni.edit', compact('testimoni'));
+        return view('admin.konten-pmb.testimoni.form', compact('testimoni'));
     }
 
     public function testimoniUpdate(Request $request, TestimoniPmb $testimoni)
@@ -338,7 +340,7 @@ class KontenPmbController extends Controller
 
         $testimoni->update($data);
 
-        return redirect()->route('admin.konten-pmb.testimoni.index')
+        return redirect()->route('pmb.konten-pmb.testimoni.index')
             ->with('success', 'Testimoni berhasil diperbarui');
     }
 
@@ -349,7 +351,7 @@ class KontenPmbController extends Controller
         }
         $testimoni->delete();
 
-        return redirect()->route('admin.konten-pmb.testimoni.index')
+        return redirect()->route('pmb.konten-pmb.testimoni.index')
             ->with('success', 'Testimoni berhasil dihapus');
     }
 
@@ -359,13 +361,13 @@ class KontenPmbController extends Controller
     public function galeriIndex()
     {
         return view('admin.konten-pmb.galeri.index', [
-            'galeris' => GaleriPmb::orderBy('urutan')->paginate(12)
+            'galeri' => GaleriPmb::orderBy('urutan')->paginate(12)
         ]);
     }
 
     public function galeriCreate()
     {
-        return view('admin.konten-pmb.galeri.create');
+        return view('admin.konten-pmb.galeri.form');
     }
 
     public function galeriStore(Request $request)
@@ -383,13 +385,13 @@ class KontenPmbController extends Controller
 
         GaleriPmb::create($data);
 
-        return redirect()->route('admin.konten-pmb.galeri.index')
+        return redirect()->route('pmb.konten-pmb.galeri.index')
             ->with('success', 'Galeri berhasil ditambahkan');
     }
 
     public function galeriEdit(GaleriPmb $galeri)
     {
-        return view('admin.konten-pmb.galeri.edit', compact('galeri'));
+        return view('admin.konten-pmb.galeri.form', compact('galeri'));
     }
 
     public function galeriUpdate(Request $request, GaleriPmb $galeri)
@@ -413,7 +415,7 @@ class KontenPmbController extends Controller
 
         $galeri->update($data);
 
-        return redirect()->route('admin.konten-pmb.galeri.index')
+        return redirect()->route('pmb.konten-pmb.galeri.index')
             ->with('success', 'Galeri berhasil diperbarui');
     }
 
@@ -424,7 +426,7 @@ class KontenPmbController extends Controller
         }
         $galeri->delete();
 
-        return redirect()->route('admin.konten-pmb.galeri.index')
+        return redirect()->route('pmb.konten-pmb.galeri.index')
             ->with('success', 'Galeri berhasil dihapus');
     }
 
@@ -434,13 +436,13 @@ class KontenPmbController extends Controller
     public function keunggulanIndex()
     {
         return view('admin.konten-pmb.keunggulan.index', [
-            'keunggulans' => KeunggulanPmb::orderBy('urutan')->get()
+            'keunggulan' => KeunggulanPmb::orderBy('urutan')->get()
         ]);
     }
 
     public function keunggulanCreate()
     {
-        return view('admin.konten-pmb.keunggulan.create');
+        return view('admin.konten-pmb.keunggulan.form');
     }
 
     public function keunggulanStore(Request $request)
@@ -462,13 +464,13 @@ class KontenPmbController extends Controller
 
         KeunggulanPmb::create($data);
 
-        return redirect()->route('admin.konten-pmb.keunggulan.index')
+        return redirect()->route('pmb.konten-pmb.keunggulan.index')
             ->with('success', 'Keunggulan berhasil ditambahkan');
     }
 
     public function keunggulanEdit(KeunggulanPmb $keunggulan)
     {
-        return view('admin.konten-pmb.keunggulan.edit', compact('keunggulan'));
+        return view('admin.konten-pmb.keunggulan.form', compact('keunggulan'));
     }
 
     public function keunggulanUpdate(Request $request, KeunggulanPmb $keunggulan)
@@ -493,7 +495,7 @@ class KontenPmbController extends Controller
 
         $keunggulan->update($data);
 
-        return redirect()->route('admin.konten-pmb.keunggulan.index')
+        return redirect()->route('pmb.konten-pmb.keunggulan.index')
             ->with('success', 'Keunggulan berhasil diperbarui');
     }
 
@@ -504,7 +506,7 @@ class KontenPmbController extends Controller
         }
         $keunggulan->delete();
 
-        return redirect()->route('admin.konten-pmb.keunggulan.index')
+        return redirect()->route('pmb.konten-pmb.keunggulan.index')
             ->with('success', 'Keunggulan berhasil dihapus');
     }
 
@@ -514,13 +516,13 @@ class KontenPmbController extends Controller
     public function fasilitasIndex()
     {
         return view('admin.konten-pmb.fasilitas.index', [
-            'fasilitass' => FasilitasPmb::orderBy('urutan')->get()
+            'fasilitas' => FasilitasPmb::orderBy('urutan')->get()
         ]);
     }
 
     public function fasilitasCreate()
     {
-        return view('admin.konten-pmb.fasilitas.create');
+        return view('admin.konten-pmb.fasilitas.form');
     }
 
     public function fasilitasStore(Request $request)
@@ -540,13 +542,13 @@ class KontenPmbController extends Controller
 
         FasilitasPmb::create($data);
 
-        return redirect()->route('admin.konten-pmb.fasilitas.index')
+        return redirect()->route('pmb.konten-pmb.fasilitas.index')
             ->with('success', 'Fasilitas berhasil ditambahkan');
     }
 
     public function fasilitasEdit(FasilitasPmb $fasilitas)
     {
-        return view('admin.konten-pmb.fasilitas.edit', compact('fasilitas'));
+        return view('admin.konten-pmb.fasilitas.form', compact('fasilitas'));
     }
 
     public function fasilitasUpdate(Request $request, FasilitasPmb $fasilitas)
@@ -569,7 +571,7 @@ class KontenPmbController extends Controller
 
         $fasilitas->update($data);
 
-        return redirect()->route('admin.konten-pmb.fasilitas.index')
+        return redirect()->route('pmb.konten-pmb.fasilitas.index')
             ->with('success', 'Fasilitas berhasil diperbarui');
     }
 
@@ -580,7 +582,7 @@ class KontenPmbController extends Controller
         }
         $fasilitas->delete();
 
-        return redirect()->route('admin.konten-pmb.fasilitas.index')
+        return redirect()->route('pmb.konten-pmb.fasilitas.index')
             ->with('success', 'Fasilitas berhasil dihapus');
     }
 
@@ -596,7 +598,8 @@ class KontenPmbController extends Controller
 
     public function kontakCreate()
     {
-        return view('admin.konten-pmb.kontak.create');
+        // Kontak menggunakan modal di index, redirect ke index
+        return redirect()->route('pmb.konten-pmb.kontak.index');
     }
 
     public function kontakStore(Request $request)
@@ -617,13 +620,14 @@ class KontenPmbController extends Controller
             'is_active' => $request->has('is_active'),
         ]);
 
-        return redirect()->route('admin.konten-pmb.kontak.index')
+        return redirect()->route('pmb.konten-pmb.kontak.index')
             ->with('success', 'Kontak berhasil ditambahkan');
     }
 
     public function kontakEdit(KontakPmb $kontak)
     {
-        return view('admin.konten-pmb.kontak.edit', compact('kontak'));
+        // Kontak menggunakan modal di index, redirect ke index
+        return redirect()->route('pmb.konten-pmb.kontak.index');
     }
 
     public function kontakUpdate(Request $request, KontakPmb $kontak)
@@ -645,14 +649,14 @@ class KontenPmbController extends Controller
             'is_active' => $request->has('is_active'),
         ]);
 
-        return redirect()->route('admin.konten-pmb.kontak.index')
+        return redirect()->route('pmb.konten-pmb.kontak.index')
             ->with('success', 'Kontak berhasil diperbarui');
     }
 
     public function kontakDestroy(KontakPmb $kontak)
     {
         $kontak->delete();
-        return redirect()->route('admin.konten-pmb.kontak.index')
+        return redirect()->route('pmb.konten-pmb.kontak.index')
             ->with('success', 'Kontak berhasil dihapus');
     }
 
@@ -668,10 +672,11 @@ class KontenPmbController extends Controller
     public function pengaturanUpdate(Request $request)
     {
         $keys = [
-            'nama_universitas', 'tagline', 'deskripsi_singkat', 'tahun_berdiri',
-            'alamat_lengkap', 'google_maps_embed', 'logo', 'favicon',
+            'nama_institusi', 'singkatan_institusi', 'tagline', 'tahun_berdiri',
+            'total_prodi', 'total_mahasiswa', 'total_dosen',
+            'logo', 'favicon',
             'hero_title', 'hero_subtitle', 'hero_background',
-            'meta_title', 'meta_description', 'meta_keywords',
+            'meta_description', 'meta_keywords',
         ];
 
         foreach ($keys as $key) {

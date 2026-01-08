@@ -35,6 +35,7 @@ class Pegawai extends Model
         'kode_pos',
         'unit_kerja_id',
         'jabatan',
+        'nama_jabatan_id',
         'jenis_pegawai',
         'golongan',
         'pangkat',
@@ -64,6 +65,11 @@ class Pegawai extends Model
     public function unitKerja()
     {
         return $this->belongsTo(UnitKerja::class);
+    }
+
+    public function namaJabatan()
+    {
+        return $this->belongsTo(NamaJabatan::class);
     }
 
     public function provinsi()

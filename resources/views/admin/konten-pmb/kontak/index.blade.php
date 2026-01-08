@@ -6,15 +6,15 @@
 <div class="container-fluid">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-address-book me-2"></i>Kelola Kontak</h5>
+            <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Kelola Kontak</h5>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalKontak">
-                <i class="fas fa-plus me-1"></i>Tambah Kontak
+                <i class="bi bi-plus-lg me-1"></i>Tambah Kontak
             </button>
         </div>
         <div class="card-body">
             @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             @endif
@@ -33,7 +33,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($kontak as $item)
+                        @forelse($kontaks as $item)
                         <tr>
                             <td><i class="bi bi-{{ $item->icon ?? 'circle' }} fs-4 text-primary"></i></td>
                             <td><span class="badge bg-secondary">{{ ucfirst($item->type) }}</span></td>
@@ -57,7 +57,7 @@
                             </td>
                             <td>
                                 <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalKontak"
-                                    data-id="{{ $item->id }}"
+                                    data-id="{{ $item->hashid }}"
                                     data-type="{{ $item->type }}"
                                     data-label="{{ $item->label }}"
                                     data-value="{{ $item->value }}"
@@ -65,13 +65,13 @@
                                     data-link="{{ $item->link }}"
                                     data-urutan="{{ $item->urutan }}"
                                     data-is_active="{{ $item->is_active }}">
-                                    <i class="fas fa-edit"></i>
+                                    <i class="bi bi-pencil"></i>
                                 </button>
-                                <form action="{{ route('pmb.konten-pmb.kontak.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?')">
+                                <form action="{{ route('pmb.konten-pmb.kontak.destroy', $item->hashid) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
                             </td>
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (id) {
             modalTitle.textContent = 'Edit Kontak';
-            form.action = "{{ url('admin/pmb/konten-portal/kontak') }}/" + id;
+            form.action = "{{ url('pmb/konten-portal/kontak') }}/" + id;
             methodField.innerHTML = '@method("PUT")';
             
             document.getElementById('type').value = button.dataset.type;

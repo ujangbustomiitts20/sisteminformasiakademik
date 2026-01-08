@@ -22,53 +22,8 @@
         </a>
     </div>
     <div class="card-body">
-        <!-- Filter -->
-        <form method="GET" action="{{ route('kepegawaian.pegawai.index') }}" class="mb-4">
-            <div class="row g-2">
-                <div class="col-md-3">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="search" class="form-control" placeholder="Cari NIP atau nama..." value="{{ request('search') }}">
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <select name="unit_kerja" class="form-select">
-                        <option value="">-- Semua Unit --</option>
-                        @foreach($unitKerja as $unit)
-                        <option value="{{ $unit->id }}" {{ request('unit_kerja') == $unit->id ? 'selected' : '' }}>{{ $unit->nama }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="jenis_pegawai" class="form-select">
-                        <option value="">-- Semua Jenis --</option>
-                        <option value="PNS" {{ request('jenis_pegawai') == 'PNS' ? 'selected' : '' }}>PNS</option>
-                        <option value="PPPK" {{ request('jenis_pegawai') == 'PPPK' ? 'selected' : '' }}>PPPK</option>
-                        <option value="Honorer" {{ request('jenis_pegawai') == 'Honorer' ? 'selected' : '' }}>Honorer</option>
-                        <option value="Kontrak" {{ request('jenis_pegawai') == 'Kontrak' ? 'selected' : '' }}>Kontrak</option>
-                        <option value="Tetap Yayasan" {{ request('jenis_pegawai') == 'Tetap Yayasan' ? 'selected' : '' }}>Tetap Yayasan</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="status" class="form-select">
-                        <option value="">-- Semua Status --</option>
-                        <option value="Aktif" {{ request('status') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                        <option value="Cuti" {{ request('status') == 'Cuti' ? 'selected' : '' }}>Cuti</option>
-                        <option value="Non-Aktif" {{ request('status') == 'Non-Aktif' ? 'selected' : '' }}>Non-Aktif</option>
-                        <option value="Pensiun" {{ request('status') == 'Pensiun' ? 'selected' : '' }}>Pensiun</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-outline-primary">
-                        <i class="bi bi-funnel me-1"></i>Filter
-                    </button>
-                    <a href="{{ route('kepegawaian.pegawai.index') }}" class="btn btn-outline-secondary">Reset</a>
-                </div>
-            </div>
-        </form>
-        
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table id="pegawaiTable" class="table table-hover table-striped" style="width:100%">
                 <thead class="table-light">
                     <tr>
                         <th width="50">No</th>
@@ -82,9 +37,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($pegawai as $index => $p)
+                    @foreach($pegawai as $index => $p)
                     <tr>
-                        <td>{{ $pegawai->firstItem() + $index }}</td>
+                        <td>{{ $index + 1 }}</td>
                         <td><code>{{ $p->nip ?? '-' }}</code></td>
                         <td>
                             <strong>{{ $p->nama }}</strong>
@@ -93,7 +48,7 @@
                             @endif
                         </td>
                         <td>{{ $p->unitKerja->nama ?? '-' }}</td>
-                        <td>{{ $p->jabatan ?? '-' }}</td>
+                        <td>{{ $p->namaJabatan->nama ?? $p->jabatan ?? '-' }}</td>
                         <td><span class="badge bg-secondary">{{ $p->jenis_pegawai }}</span></td>
                         <td>
                             @if($p->status == 'Aktif')
@@ -124,26 +79,42 @@
                             </div>
                         </td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="8" class="text-center py-4">
-                            <i class="bi bi-people text-muted" style="font-size: 2rem;"></i>
-                            <p class="text-muted mb-0 mt-2">Belum ada data tenaga kependidikan</p>
-                        </td>
-                    </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
-        
-        @if($pegawai->hasPages())
-        <div class="d-flex justify-content-between align-items-center mt-3">
-            <div class="text-muted small">
-                Menampilkan {{ $pegawai->firstItem() }} - {{ $pegawai->lastItem() }} dari {{ $pegawai->total() }} data
-            </div>
-            {{ $pegawai->withQueryString()->links() }}
-        </div>
-        @endif
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    $('#pegawaiTable').DataTable({
+        responsive: true,
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json',
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_ data per halaman",
+            info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+            infoEmpty: "Tidak ada data",
+            infoFiltered: "(difilter dari _MAX_ total data)",
+            zeroRecords: "Data tidak ditemukan",
+            paginate: {
+                first: "Pertama",
+                last: "Terakhir",
+                next: "Selanjutnya",
+                previous: "Sebelumnya"
+            }
+        },
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]],
+        order: [[2, 'asc']],
+        columnDefs: [
+            { orderable: false, targets: [0, 7] },
+            { searchable: false, targets: [0, 7] }
+        ]
+    });
+});
+</script>
+@endpush

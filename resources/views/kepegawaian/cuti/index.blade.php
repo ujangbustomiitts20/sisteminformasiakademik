@@ -82,50 +82,8 @@
         </div>
     </div>
     <div class="card-body">
-        <!-- Filter -->
-        <form method="GET" action="{{ route('kepegawaian.cuti.index') }}" class="mb-4">
-            <div class="row g-2">
-                <div class="col-md-3">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="search" class="form-control" placeholder="Cari NIP atau nama..." value="{{ request('search') }}">
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <select name="jenis_cuti" class="form-select">
-                        <option value="">-- Jenis Cuti --</option>
-                        <option value="tahunan" {{ request('jenis_cuti') == 'tahunan' ? 'selected' : '' }}>Cuti Tahunan</option>
-                        <option value="sakit" {{ request('jenis_cuti') == 'sakit' ? 'selected' : '' }}>Cuti Sakit</option>
-                        <option value="melahirkan" {{ request('jenis_cuti') == 'melahirkan' ? 'selected' : '' }}>Cuti Melahirkan</option>
-                        <option value="besar" {{ request('jenis_cuti') == 'besar' ? 'selected' : '' }}>Cuti Besar</option>
-                        <option value="alasan_penting" {{ request('jenis_cuti') == 'alasan_penting' ? 'selected' : '' }}>Cuti Alasan Penting</option>
-                        <option value="diluar_tanggungan" {{ request('jenis_cuti') == 'diluar_tanggungan' ? 'selected' : '' }}>Cuti Di Luar Tanggungan</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="status" class="form-select">
-                        <option value="">-- Status --</option>
-                        <option value="diajukan" {{ request('status') == 'diajukan' ? 'selected' : '' }}>Diajukan</option>
-                        <option value="disetujui_atasan" {{ request('status') == 'disetujui_atasan' ? 'selected' : '' }}>Disetujui Atasan</option>
-                        <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
-                        <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                        <option value="dibatalkan" {{ request('status') == 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <input type="month" name="bulan" class="form-control" value="{{ request('bulan') }}" placeholder="Bulan">
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-outline-primary">
-                        <i class="bi bi-funnel me-1"></i>Filter
-                    </button>
-                    <a href="{{ route('kepegawaian.cuti.index') }}" class="btn btn-outline-secondary">Reset</a>
-                </div>
-            </div>
-        </form>
-        
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table id="cutiTable" class="table table-hover table-striped" style="width:100%">
                 <thead class="table-light">
                     <tr>
                         <th width="50">No</th>
@@ -139,9 +97,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($cutiPegawai as $index => $cuti)
+                    @foreach($cutiPegawai as $index => $cuti)
                     <tr>
-                        <td>{{ $cutiPegawai->firstItem() + $index }}</td>
+                        <td>{{ $index + 1 }}</td>
                         <td><code>{{ $cuti->no_pengajuan }}</code></td>
                         <td>
                             @if($cuti->dosen)
@@ -189,26 +147,10 @@
                             </div>
                         </td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="8" class="text-center py-4">
-                            <i class="bi bi-calendar-minus text-muted" style="font-size: 2rem;"></i>
-                            <p class="text-muted mb-0 mt-2">Belum ada pengajuan cuti</p>
-                        </td>
-                    </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
-        
-        @if($cutiPegawai->hasPages())
-        <div class="d-flex justify-content-between align-items-center mt-3">
-            <div class="text-muted small">
-                Menampilkan {{ $cutiPegawai->firstItem() }} - {{ $cutiPegawai->lastItem() }} dari {{ $cutiPegawai->total() }} data
-            </div>
-            {{ $cutiPegawai->withQueryString()->links() }}
-        </div>
-        @endif
     </div>
 </div>
 
@@ -269,6 +211,34 @@
 
 @push('scripts')
 <script>
+$(document).ready(function() {
+    $('#cutiTable').DataTable({
+        responsive: true,
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json',
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_ data per halaman",
+            info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+            infoEmpty: "Tidak ada data",
+            infoFiltered: "(difilter dari _MAX_ total data)",
+            zeroRecords: "Data tidak ditemukan",
+            paginate: {
+                first: "Pertama",
+                last: "Terakhir",
+                next: "Selanjutnya",
+                previous: "Sebelumnya"
+            }
+        },
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]],
+        order: [[4, 'desc']],
+        columnDefs: [
+            { orderable: false, targets: [0, 7] },
+            { searchable: false, targets: [0, 7] }
+        ]
+    });
+});
+
 function showApproveModal(id) {
     document.getElementById('approveForm').action = '{{ url("kepegawaian/cuti") }}/' + id + '/approve';
     new bootstrap.Modal(document.getElementById('approveModal')).show();

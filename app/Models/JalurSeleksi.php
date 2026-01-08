@@ -51,4 +51,45 @@ class JalurSeleksi extends Model
     {
         return $this->calonMahasiswa()->count();
     }
+
+    /**
+     * Get biaya pendaftaran dari gelombang aktif
+     */
+    public function getBiayaPendaftaranAktifAttribute()
+    {
+        $gelombangAktif = GelombangPmb::where('is_active', true)->first();
+        if (!$gelombangAktif) return null;
+
+        $biaya = $this->biayaPendaftaran()
+            ->where('gelombang_pmb_id', $gelombangAktif->id)
+            ->first();
+
+        return $biaya?->total_biaya;
+    }
+
+    /**
+     * Get kuota total dari semua prodi untuk jalur ini
+     */
+    public function getTotalKuotaAttribute()
+    {
+        return $this->kuota()->sum('kuota');
+    }
+
+    /**
+     * Get tanggal mulai dari gelombang aktif
+     */
+    public function getTanggalMulaiDaftarAttribute()
+    {
+        $gelombangAktif = GelombangPmb::where('is_active', true)->first();
+        return $gelombangAktif?->tanggal_mulai_daftar;
+    }
+
+    /**
+     * Get tanggal selesai dari gelombang aktif
+     */
+    public function getTanggalSelesaiDaftarAttribute()
+    {
+        $gelombangAktif = GelombangPmb::where('is_active', true)->first();
+        return $gelombangAktif?->tanggal_selesai_daftar;
+    }
 }

@@ -8,13 +8,13 @@
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-image me-2"></i>{{ isset($slider) ? 'Edit Slider' : 'Tambah Slider' }}</h5>
+                    <h5 class="mb-0"><i class="bi bi-image me-2"></i>{{ isset($slider) ? 'Edit Slider' : 'Tambah Slider' }}</h5>
                     <a href="{{ route('pmb.konten-pmb.slider.index') }}" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-arrow-left me-1"></i>Kembali
+                        <i class="bi bi-arrow-left me-1"></i>Kembali
                     </a>
                 </div>
                 <div class="card-body">
-                    <form action="{{ isset($slider) ? route('pmb.konten-pmb.slider.update', $slider->id) : route('pmb.konten-pmb.slider.store') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ isset($slider) ? route('pmb.konten-pmb.slider.update', $slider->hashid) : route('pmb.konten-pmb.slider.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @if(isset($slider))
                         @method('PUT')
@@ -79,7 +79,7 @@
                             
                             <div class="col-12">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Simpan
+                                    <i class="bi bi-save me-2"></i>Simpan
                                 </button>
                             </div>
                         </div>

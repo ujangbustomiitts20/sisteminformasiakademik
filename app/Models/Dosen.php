@@ -15,6 +15,7 @@ class Dosen extends Model
     protected $fillable = [
         'user_id',
         'program_studi_id',
+        'unit_kerja_id',
         'nidn',
         'nama',
         'jenis_kelamin',
@@ -32,6 +33,8 @@ class Dosen extends Model
         'no_hp',
         'email',
         'jabatan_fungsional',
+        'nama_jabatan_id',
+        'jabatan_struktural',
         'golongan',
         'status',
         'foto',
@@ -92,6 +95,16 @@ class Dosen extends Model
     public function programStudi()
     {
         return $this->belongsTo(ProgramStudi::class);
+    }
+
+    public function unitKerja()
+    {
+        return $this->belongsTo(UnitKerja::class);
+    }
+
+    public function namaJabatan()
+    {
+        return $this->belongsTo(NamaJabatan::class);
     }
 
     public function mahasiswaWali()

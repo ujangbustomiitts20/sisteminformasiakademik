@@ -8,6 +8,7 @@ use App\Models\Pegawai;
 use App\Models\ProgramStudi;
 use App\Models\UnitKerja;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class DataPegawaiController extends Controller
 {
@@ -19,6 +20,9 @@ class DataPegawaiController extends Controller
         // Get filter options
         $prodiList = ProgramStudi::orderBy('nama')->get();
         $unitKerjaList = UnitKerja::orderBy('nama')->get();
+        
+        $perPage = 15;
+        $tab = $request->get('tab', 'semua');
         
         // Query Dosen
         $dosenQuery = Dosen::with(['programStudi', 'user']);
@@ -41,8 +45,6 @@ class DataPegawaiController extends Controller
             $dosenQuery->where('status', $request->status);
         }
         
-        $dosens = $dosenQuery->orderBy('nama')->get();
-        
         // Query Pegawai (Tendik)
         $pegawaiQuery = Pegawai::with(['unitKerja', 'user']);
         
@@ -63,10 +65,25 @@ class DataPegawaiController extends Controller
             $pegawaiQuery->where('status', $request->status);
         }
         
-        $pegawais = $pegawaiQuery->orderBy('nama')->get();
+        // Paginated queries for each tab
+        $dosensPaginated = (clone $dosenQuery)->orderBy('nama')->paginate($perPage, ['*'], 'page');
+        $pegawaisPaginated = (clone $pegawaiQuery)->orderBy('nama')->paginate($perPage, ['*'], 'page');
         
-        // Combine data based on tab filter
-        $tab = $request->get('tab', 'semua');
+        // Combined data for "Semua" tab with pagination
+        $allDosens = (clone $dosenQuery)->orderBy('nama')->get();
+        $allPegawais = (clone $pegawaiQuery)->orderBy('nama')->get();
+        
+        $combined = $allDosens->concat($allPegawais)->sortBy('nama');
+        
+        // Manual pagination for combined data
+        $page = $request->get('page', 1);
+        $semuaPaginated = new LengthAwarePaginator(
+            $combined->forPage($page, $perPage),
+            $combined->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
         
         // Stats
         $stats = [
@@ -78,8 +95,9 @@ class DataPegawaiController extends Controller
         ];
         
         return view('kepegawaian.data-pegawai.index', compact(
-            'dosens', 
-            'pegawais', 
+            'dosensPaginated',
+            'pegawaisPaginated',
+            'semuaPaginated',
             'prodiList', 
             'unitKerjaList', 
             'stats',

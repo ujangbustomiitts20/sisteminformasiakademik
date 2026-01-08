@@ -6,15 +6,15 @@
 <div class="container-fluid">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-newspaper me-2"></i>Kelola Berita & Pengumuman</h5>
+            <h5 class="mb-0"><i class="bi bi-newspaper me-2"></i>Kelola Berita & Pengumuman</h5>
             <a href="{{ route('pmb.konten-pmb.berita.create') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus me-1"></i>Tambah Berita
+                <i class="bi bi-plus-lg me-1"></i>Tambah Berita
             </a>
         </div>
         <div class="card-body">
             @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             @endif
@@ -46,21 +46,21 @@
                             <td>{{ $item->published_at ? $item->published_at->format('d M Y') : '-' }}</td>
                             <td>{{ number_format($item->views ?? 0) }}</td>
                             <td>
-                                @if($item->is_active)
+                                @if($item->is_published)
                                 <span class="badge bg-success">Publish</span>
                                 @else
                                 <span class="badge bg-secondary">Draft</span>
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('pmb.konten-pmb.berita.edit', $item->id) }}" class="btn btn-sm btn-warning">
-                                    <i class="fas fa-edit"></i>
+                                <a href="{{ route('pmb.konten-pmb.berita.edit', $item->hashid) }}" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i>
                                 </a>
-                                <form action="{{ route('pmb.konten-pmb.berita.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?')">
+                                <form action="{{ route('pmb.konten-pmb.berita.destroy', $item->hashid) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
                             </td>

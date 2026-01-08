@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pegawai;
 use App\Models\UnitKerja;
+use App\Models\NamaJabatan;
 use App\Models\Provinsi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -12,41 +13,18 @@ class PegawaiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pegawai::with(['unitKerja']);
+        $pegawai = Pegawai::with(['unitKerja', 'namaJabatan'])->orderBy('nama')->get();
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('nip', 'like', "%{$search}%")
-                  ->orWhere('nik', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('unit_kerja')) {
-            $query->where('unit_kerja_id', $request->unit_kerja);
-        }
-
-        if ($request->filled('jenis_pegawai')) {
-            $query->where('jenis_pegawai', $request->jenis_pegawai);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        $pegawai = $query->orderBy('nama')->paginate(15);
-        $unitKerja = UnitKerja::where('is_active', true)->orderBy('nama')->get();
-
-        return view('kepegawaian.pegawai.index', compact('pegawai', 'unitKerja'));
+        return view('kepegawaian.pegawai.index', compact('pegawai'));
     }
 
     public function create()
     {
         $unitKerja = UnitKerja::where('is_active', true)->orderBy('nama')->get();
+        $namaJabatans = NamaJabatan::aktif()->orderBy('level')->orderBy('urutan')->get();
         $provinsi = Provinsi::orderBy('nama')->get();
         
-        return view('kepegawaian.pegawai.create', compact('unitKerja', 'provinsi'));
+        return view('kepegawaian.pegawai.create', compact('unitKerja', 'namaJabatans', 'provinsi'));
     }
 
     public function store(Request $request)
@@ -63,7 +41,7 @@ class PegawaiController extends Controller
             'email' => 'nullable|email|max:255',
             'no_hp' => 'nullable|max:20',
             'unit_kerja_id' => 'nullable|exists:unit_kerja,id',
-            'jabatan' => 'nullable|max:100',
+            'nama_jabatan_id' => 'nullable|exists:nama_jabatan,id',
             'jenis_pegawai' => 'required|in:PNS,PPPK,Honorer,Kontrak,Tetap Yayasan',
             'status' => 'required|in:Aktif,Cuti,Non-Aktif,Pensiun',
             'tmt_pegawai' => 'nullable|date',
@@ -71,6 +49,12 @@ class PegawaiController extends Controller
         ]);
 
         $data = $request->except(['foto']);
+        
+        // Auto-fill jabatan from nama_jabatan_id
+        if ($request->filled('nama_jabatan_id')) {
+            $namaJabatan = NamaJabatan::find($request->nama_jabatan_id);
+            $data['jabatan'] = $namaJabatan?->nama;
+        }
 
         if ($request->hasFile('foto')) {
             $data['foto'] = $request->file('foto')->store('pegawai/foto', 'public');
@@ -92,9 +76,10 @@ class PegawaiController extends Controller
     public function edit(Pegawai $pegawai)
     {
         $unitKerja = UnitKerja::where('is_active', true)->orderBy('nama')->get();
+        $namaJabatans = NamaJabatan::aktif()->orderBy('level')->orderBy('urutan')->get();
         $provinsi = Provinsi::orderBy('nama')->get();
         
-        return view('kepegawaian.pegawai.edit', compact('pegawai', 'unitKerja', 'provinsi'));
+        return view('kepegawaian.pegawai.edit', compact('pegawai', 'unitKerja', 'namaJabatans', 'provinsi'));
     }
 
     public function update(Request $request, Pegawai $pegawai)
@@ -111,7 +96,7 @@ class PegawaiController extends Controller
             'email' => 'nullable|email|max:255',
             'no_hp' => 'nullable|max:20',
             'unit_kerja_id' => 'nullable|exists:unit_kerja,id',
-            'jabatan' => 'nullable|max:100',
+            'nama_jabatan_id' => 'nullable|exists:nama_jabatan,id',
             'jenis_pegawai' => 'required|in:PNS,PPPK,Honorer,Kontrak,Tetap Yayasan',
             'status' => 'required|in:Aktif,Cuti,Non-Aktif,Pensiun',
             'tmt_pegawai' => 'nullable|date',
@@ -119,6 +104,14 @@ class PegawaiController extends Controller
         ]);
 
         $data = $request->except(['foto', '_token', '_method']);
+        
+        // Auto-fill jabatan from nama_jabatan_id
+        if ($request->filled('nama_jabatan_id')) {
+            $namaJabatan = NamaJabatan::find($request->nama_jabatan_id);
+            $data['jabatan'] = $namaJabatan?->nama;
+        } else {
+            $data['jabatan'] = null;
+        }
 
         if ($request->hasFile('foto')) {
             if ($pegawai->foto) {

@@ -35,6 +35,6 @@ class KeunggulanPmb extends Model
         if ($this->gambar && file_exists(public_path('storage/' . $this->gambar))) {
             return asset('storage/' . $this->gambar);
         }
-        return null;
+        return asset('images/keunggulan-default.jpg');
     }
 }

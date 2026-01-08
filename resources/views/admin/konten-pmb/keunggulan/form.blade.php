@@ -9,7 +9,7 @@
             <h5 class="mb-0"><i class="fas fa-star me-2"></i>{{ isset($keunggulan) ? 'Edit Keunggulan' : 'Tambah Keunggulan' }}</h5>
         </div>
         <div class="card-body">
-            <form action="{{ isset($keunggulan) ? route('pmb.konten-pmb.keunggulan.update', $keunggulan->id) : route('pmb.konten-pmb.keunggulan.store') }}" method="POST">
+            <form action="{{ isset($keunggulan) ? route('pmb.konten-pmb.keunggulan.update', $keunggulan->hashid) : route('pmb.konten-pmb.keunggulan.store') }}" method="POST">
                 @csrf
                 @if(isset($keunggulan))
                 @method('PUT')

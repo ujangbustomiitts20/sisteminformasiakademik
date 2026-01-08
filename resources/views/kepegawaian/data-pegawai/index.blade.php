@@ -145,124 +145,105 @@
             <div class="tab-content" id="pegawaiTabContent">
                 <!-- Tab Semua -->
                 <div class="tab-pane fade {{ $tab == 'semua' ? 'show active' : '' }}" id="semua" role="tabpanel">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-striped align-middle">
-                            <thead class="table-light">
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-hover table-striped align-middle table-sm">
+                            <thead class="table-light sticky-top">
                                 <tr>
-                                    <th width="5%">No</th>
+                                    <th width="40">No</th>
                                     <th>Nama</th>
                                     <th>NIP/NIDN</th>
-                                    <th>Jenis</th>
+                                    <th width="80">Jenis</th>
                                     <th>Unit/Prodi</th>
-                                    <th>Status</th>
-                                    <th width="10%">Aksi</th>
+                                    <th width="70">Status</th>
+                                    <th width="90">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @php $no = 1; @endphp
-                                @foreach($dosens as $dosen)
+                                @php $no = ($semuaPaginated->currentPage() - 1) * $semuaPaginated->perPage() + 1; @endphp
+                                @forelse($semuaPaginated as $item)
                                 <tr>
                                     <td>{{ $no++ }}</td>
                                     <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-success bg-opacity-10 rounded-circle p-2 me-2">
-                                                <i class="bi bi-mortarboard text-success"></i>
-                                            </div>
-                                            <div>
-                                                <strong>{{ $dosen->nama }}</strong>
-                                                @if($dosen->gelar_depan || $dosen->gelar_belakang)
-                                                    <br><small class="text-muted">{{ $dosen->gelar_depan }} {{ $dosen->gelar_belakang }}</small>
-                                                @endif
-                                            </div>
-                                        </div>
+                                        <strong>{{ $item->nama }}</strong>
+                                        @if(isset($item->gelar_depan) || isset($item->gelar_belakang))
+                                            <br><small class="text-muted">{{ $item->gelar_depan ?? '' }} {{ $item->gelar_belakang ?? '' }}</small>
+                                        @elseif(isset($item->jabatan))
+                                            <br><small class="text-muted">{{ $item->jabatan }}</small>
+                                        @endif
                                     </td>
                                     <td>
-                                        @if($dosen->nidn)<span class="badge bg-primary">NIDN: {{ $dosen->nidn }}</span>@endif
-                                        @if($dosen->nip)<br><small class="text-muted">NIP: {{ $dosen->nip }}</small>@endif
+                                        @if(isset($item->nidn))
+                                            <small>NIDN: {{ $item->nidn }}</small>
+                                            @if($item->nip)<br><small class="text-muted">NIP: {{ $item->nip }}</small>@endif
+                                        @else
+                                            <small>NIP: {{ $item->nip ?? '-' }}</small>
+                                        @endif
                                     </td>
-                                    <td><span class="badge bg-success">Dosen</span></td>
-                                    <td>{{ $dosen->programStudi->nama ?? '-' }}</td>
                                     <td>
-                                        <span class="badge bg-{{ strtolower($dosen->status) == 'aktif' ? 'success' : 'secondary' }}">
-                                            {{ $dosen->status }}
+                                        @if(isset($item->nidn))
+                                            <span class="badge bg-success">Dosen</span>
+                                        @else
+                                            <span class="badge bg-info">Tendik</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $item->programStudi->nama ?? $item->unitKerja->nama ?? '-' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ strtolower($item->status) == 'aktif' ? 'success' : 'secondary' }}">
+                                            {{ ucfirst($item->status) }}
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="{{ route('kepegawaian.index', $dosen->hashid) }}" class="btn btn-sm btn-outline-primary" title="Detail Kepegawaian">
-                                            <i class="bi bi-folder"></i>
-                                        </a>
-                                        <a href="{{ route('dosen.show', $dosen->hashid) }}" class="btn btn-sm btn-outline-info" title="Lihat Profil">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
+                                        @if(isset($item->nidn))
+                                            <a href="{{ route('kepegawaian.index', $item->hashid) }}" class="btn btn-sm btn-outline-primary" title="Kepegawaian"><i class="bi bi-folder"></i></a>
+                                            <a href="{{ route('dosen.show', $item->hashid) }}" class="btn btn-sm btn-outline-info" title="Detail"><i class="bi bi-eye"></i></a>
+                                        @else
+                                            <a href="{{ route('kepegawaian.pegawai.riwayat.index', $item->hashid) }}" class="btn btn-sm btn-outline-primary" title="Kepegawaian"><i class="bi bi-folder"></i></a>
+                                            <a href="{{ route('kepegawaian.pegawai.show', $item->hashid) }}" class="btn btn-sm btn-outline-info" title="Detail"><i class="bi bi-eye"></i></a>
+                                        @endif
                                     </td>
                                 </tr>
-                                @endforeach
-                                @foreach($pegawais as $pegawai)
+                                @empty
                                 <tr>
-                                    <td>{{ $no++ }}</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-info bg-opacity-10 rounded-circle p-2 me-2">
-                                                <i class="bi bi-person-badge text-info"></i>
-                                            </div>
-                                            <div>
-                                                <strong>{{ $pegawai->nama }}</strong>
-                                                @if($pegawai->jabatan)
-                                                    <br><small class="text-muted">{{ $pegawai->jabatan }}</small>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        @if($pegawai->nip)<span class="badge bg-secondary">NIP: {{ $pegawai->nip }}</span>@endif
-                                    </td>
-                                    <td><span class="badge bg-info">Tendik</span></td>
-                                    <td>{{ $pegawai->unitKerja->nama ?? '-' }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ strtolower($pegawai->status) == 'aktif' ? 'success' : 'secondary' }}">
-                                            {{ ucfirst($pegawai->status) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('kepegawaian.pegawai.riwayat.index', $pegawai->hashid) }}" class="btn btn-sm btn-outline-primary" title="Detail Kepegawaian">
-                                            <i class="bi bi-folder"></i>
-                                        </a>
-                                        <a href="{{ route('kepegawaian.pegawai.show', $pegawai->hashid) }}" class="btn btn-sm btn-outline-info" title="Lihat Profil">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox fs-1"></i>
+                                        <p class="mb-0">Tidak ada data</p>
                                     </td>
                                 </tr>
-                                @endforeach
+                                @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <small class="text-muted">Menampilkan {{ $semuaPaginated->firstItem() ?? 0 }} - {{ $semuaPaginated->lastItem() ?? 0 }} dari {{ $semuaPaginated->total() }} data</small>
+                        {{ $semuaPaginated->appends(['tab' => 'semua'])->links() }}
                     </div>
                 </div>
 
                 <!-- Tab Dosen -->
                 <div class="tab-pane fade {{ $tab == 'dosen' ? 'show active' : '' }}" id="dosen" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-muted">Total: {{ $dosens->count() }} dosen</span>
+                        <span class="text-muted">Total: {{ $dosensPaginated->total() }} dosen</span>
                         <a href="{{ route('dosen.create') }}" class="btn btn-sm btn-success">
                             <i class="bi bi-plus-circle me-1"></i> Tambah Dosen
                         </a>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover table-striped align-middle">
-                            <thead class="table-light">
+                    <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+                        <table class="table table-hover table-striped align-middle table-sm">
+                            <thead class="table-light sticky-top">
                                 <tr>
-                                    <th width="5%">No</th>
+                                    <th width="40">No</th>
                                     <th>Nama</th>
                                     <th>NIDN</th>
                                     <th>NIP</th>
                                     <th>Program Studi</th>
-                                    <th>Status</th>
-                                    <th width="12%">Aksi</th>
+                                    <th width="70">Status</th>
+                                    <th width="100">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($dosens as $index => $dosen)
+                                @forelse($dosensPaginated as $index => $dosen)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ ($dosensPaginated->currentPage() - 1) * $dosensPaginated->perPage() + $index + 1 }}</td>
                                     <td>
                                         <strong>{{ $dosen->nama }}</strong>
                                         @if($dosen->gelar_depan || $dosen->gelar_belakang)
@@ -278,15 +259,9 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="{{ route('kepegawaian.index', $dosen->hashid) }}" class="btn btn-sm btn-outline-primary" title="Kepegawaian">
-                                            <i class="bi bi-folder"></i>
-                                        </a>
-                                        <a href="{{ route('dosen.show', $dosen->hashid) }}" class="btn btn-sm btn-outline-info" title="Detail">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a href="{{ route('dosen.edit', $dosen->hashid) }}" class="btn btn-sm btn-outline-warning" title="Edit">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
+                                        <a href="{{ route('kepegawaian.index', $dosen->hashid) }}" class="btn btn-sm btn-outline-primary" title="Kepegawaian"><i class="bi bi-folder"></i></a>
+                                        <a href="{{ route('dosen.show', $dosen->hashid) }}" class="btn btn-sm btn-outline-info" title="Detail"><i class="bi bi-eye"></i></a>
+                                        <a href="{{ route('dosen.edit', $dosen->hashid) }}" class="btn btn-sm btn-outline-warning" title="Edit"><i class="bi bi-pencil"></i></a>
                                     </td>
                                 </tr>
                                 @empty
@@ -300,33 +275,37 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <small class="text-muted">Menampilkan {{ $dosensPaginated->firstItem() ?? 0 }} - {{ $dosensPaginated->lastItem() ?? 0 }} dari {{ $dosensPaginated->total() }} data</small>
+                        {{ $dosensPaginated->appends(['tab' => 'dosen'])->links() }}
+                    </div>
                 </div>
 
                 <!-- Tab Tendik -->
                 <div class="tab-pane fade {{ $tab == 'tendik' ? 'show active' : '' }}" id="tendik" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-muted">Total: {{ $pegawais->count() }} tenaga kependidikan</span>
+                        <span class="text-muted">Total: {{ $pegawaisPaginated->total() }} tenaga kependidikan</span>
                         <a href="{{ route('kepegawaian.pegawai.create') }}" class="btn btn-sm btn-primary">
                             <i class="bi bi-plus-circle me-1"></i> Tambah Tendik
                         </a>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover table-striped align-middle">
-                            <thead class="table-light">
+                    <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+                        <table class="table table-hover table-striped align-middle table-sm">
+                            <thead class="table-light sticky-top">
                                 <tr>
-                                    <th width="5%">No</th>
+                                    <th width="40">No</th>
                                     <th>Nama</th>
                                     <th>NIP</th>
                                     <th>Jabatan</th>
                                     <th>Unit Kerja</th>
-                                    <th>Status</th>
-                                    <th width="12%">Aksi</th>
+                                    <th width="70">Status</th>
+                                    <th width="100">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($pegawais as $index => $pegawai)
+                                @forelse($pegawaisPaginated as $index => $pegawai)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ ($pegawaisPaginated->currentPage() - 1) * $pegawaisPaginated->perPage() + $index + 1 }}</td>
                                     <td>
                                         <strong>{{ $pegawai->nama }}</strong>
                                         @if($pegawai->email)
@@ -342,15 +321,9 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="{{ route('kepegawaian.pegawai.riwayat.index', $pegawai->hashid) }}" class="btn btn-sm btn-outline-primary" title="Kepegawaian">
-                                            <i class="bi bi-folder"></i>
-                                        </a>
-                                        <a href="{{ route('kepegawaian.pegawai.show', $pegawai->hashid) }}" class="btn btn-sm btn-outline-info" title="Detail">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a href="{{ route('kepegawaian.pegawai.edit', $pegawai->hashid) }}" class="btn btn-sm btn-outline-warning" title="Edit">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
+                                        <a href="{{ route('kepegawaian.pegawai.riwayat.index', $pegawai->hashid) }}" class="btn btn-sm btn-outline-primary" title="Kepegawaian"><i class="bi bi-folder"></i></a>
+                                        <a href="{{ route('kepegawaian.pegawai.show', $pegawai->hashid) }}" class="btn btn-sm btn-outline-info" title="Detail"><i class="bi bi-eye"></i></a>
+                                        <a href="{{ route('kepegawaian.pegawai.edit', $pegawai->hashid) }}" class="btn btn-sm btn-outline-warning" title="Edit"><i class="bi bi-pencil"></i></a>
                                     </td>
                                 </tr>
                                 @empty
@@ -363,6 +336,10 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <small class="text-muted">Menampilkan {{ $pegawaisPaginated->firstItem() ?? 0 }} - {{ $pegawaisPaginated->lastItem() ?? 0 }} dari {{ $pegawaisPaginated->total() }} data</small>
+                        {{ $pegawaisPaginated->appends(['tab' => 'tendik'])->links() }}
                     </div>
                 </div>
             </div>

@@ -9,7 +9,7 @@
             <h5 class="mb-0"><i class="fas fa-quote-right me-2"></i>{{ isset($testimoni) ? 'Edit Testimoni' : 'Tambah Testimoni' }}</h5>
         </div>
         <div class="card-body">
-            <form action="{{ isset($testimoni) ? route('pmb.konten-pmb.testimoni.update', $testimoni->id) : route('pmb.konten-pmb.testimoni.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ isset($testimoni) ? route('pmb.konten-pmb.testimoni.update', $testimoni->hashid) : route('pmb.konten-pmb.testimoni.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @if(isset($testimoni))
                 @method('PUT')

@@ -22,26 +22,8 @@
         </a>
     </div>
     <div class="card-body">
-        <!-- Filter -->
-        <form method="GET" action="{{ route('kepegawaian.unit-kerja.index') }}" class="mb-4">
-            <div class="row g-2">
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="search" class="form-control" placeholder="Cari kode atau nama..." value="{{ request('search') }}">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-outline-primary">
-                        <i class="bi bi-funnel me-1"></i>Filter
-                    </button>
-                    <a href="{{ route('kepegawaian.unit-kerja.index') }}" class="btn btn-outline-secondary">Reset</a>
-                </div>
-            </div>
-        </form>
-        
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table id="unitKerjaTable" class="table table-hover table-striped" style="width:100%">
                 <thead class="table-light">
                     <tr>
                         <th width="50">No</th>
@@ -54,9 +36,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($unitKerja as $index => $unit)
+                    @foreach($unitKerja as $index => $unit)
                     <tr>
-                        <td>{{ $unitKerja->firstItem() + $index }}</td>
+                        <td>{{ $index + 1 }}</td>
                         <td><code>{{ $unit->kode }}</code></td>
                         <td>
                             <strong>{{ $unit->nama }}</strong>
@@ -90,26 +72,42 @@
                             </div>
                         </td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="text-center py-4">
-                            <i class="bi bi-building text-muted" style="font-size: 2rem;"></i>
-                            <p class="text-muted mb-0 mt-2">Belum ada data unit kerja</p>
-                        </td>
-                    </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
-        
-        @if($unitKerja->hasPages())
-        <div class="d-flex justify-content-between align-items-center mt-3">
-            <div class="text-muted small">
-                Menampilkan {{ $unitKerja->firstItem() }} - {{ $unitKerja->lastItem() }} dari {{ $unitKerja->total() }} data
-            </div>
-            {{ $unitKerja->withQueryString()->links() }}
-        </div>
-        @endif
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    $('#unitKerjaTable').DataTable({
+        responsive: true,
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json',
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_ data per halaman",
+            info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+            infoEmpty: "Tidak ada data",
+            infoFiltered: "(difilter dari _MAX_ total data)",
+            zeroRecords: "Data tidak ditemukan",
+            paginate: {
+                first: "Pertama",
+                last: "Terakhir",
+                next: "Selanjutnya",
+                previous: "Sebelumnya"
+            }
+        },
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]],
+        order: [[2, 'asc']],
+        columnDefs: [
+            { orderable: false, targets: [0, 6] },
+            { searchable: false, targets: [0, 6] }
+        ]
+    });
+});
+</script>
+@endpush

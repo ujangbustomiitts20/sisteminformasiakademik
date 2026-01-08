@@ -9,7 +9,7 @@
             <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>{{ isset($faq) ? 'Edit FAQ' : 'Tambah FAQ' }}</h5>
         </div>
         <div class="card-body">
-            <form action="{{ isset($faq) ? route('pmb.konten-pmb.faq.update', $faq->id) : route('pmb.konten-pmb.faq.store') }}" method="POST">
+            <form action="{{ isset($faq) ? route('pmb.konten-pmb.faq.update', $faq->hashid) : route('pmb.konten-pmb.faq.store') }}" method="POST">
                 @csrf
                 @if(isset($faq))
                 @method('PUT')

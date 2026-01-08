@@ -176,6 +176,38 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
+                                <label for="unit_kerja_id" class="form-label">Unit Kerja</label>
+                                <select name="unit_kerja_id" id="unit_kerja_id" class="form-select @error('unit_kerja_id') is-invalid @enderror">
+                                    <option value="">-- Pilih Unit Kerja --</option>
+                                    @foreach($unitKerja as $unit)
+                                    <option value="{{ $unit->id }}" {{ old('unit_kerja_id') == $unit->id ? 'selected' : '' }}>{{ $unit->nama }}</option>
+                                    @endforeach
+                                </select>
+                                @error('unit_kerja_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nama_jabatan_id" class="form-label">Jabatan Struktural</label>
+                                <select name="nama_jabatan_id" id="nama_jabatan_id" class="form-select @error('nama_jabatan_id') is-invalid @enderror">
+                                    <option value="">-- Pilih Jabatan --</option>
+                                    @foreach($namaJabatans as $jab)
+                                    <option value="{{ $jab->id }}" {{ old('nama_jabatan_id') == $jab->id ? 'selected' : '' }}>{{ $jab->nama }}</option>
+                                    @endforeach
+                                </select>
+                                @error('nama_jabatan_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">Jabatan struktural seperti Rektor, Dekan, Kaprodi, dll</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
                                 <label for="jabatan_fungsional" class="form-label">Jabatan Fungsional</label>
                                 <select name="jabatan_fungsional" id="jabatan_fungsional" class="form-select @error('jabatan_fungsional') is-invalid @enderror">
                                     <option value="">-- Pilih --</option>

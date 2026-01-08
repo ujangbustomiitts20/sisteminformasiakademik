@@ -6,15 +6,15 @@
 <div class="container-fluid">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Kelola FAQ</h5>
+            <h5 class="mb-0"><i class="bi bi-question-circle me-2"></i>Kelola FAQ</h5>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalFaq">
-                <i class="fas fa-plus me-1"></i>Tambah FAQ
+                <i class="bi bi-plus-lg me-1"></i>Tambah FAQ
             </button>
         </div>
         <div class="card-body">
             @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             @endif
@@ -50,19 +50,19 @@
                             </td>
                             <td>
                                 <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalFaq" 
-                                    data-id="{{ $item->id }}"
+                                    data-id="{{ $item->hashid }}"
                                     data-pertanyaan="{{ $item->pertanyaan }}"
                                     data-jawaban="{{ $item->jawaban }}"
                                     data-kategori="{{ $item->kategori }}"
                                     data-urutan="{{ $item->urutan }}"
                                     data-is_active="{{ $item->is_active }}">
-                                    <i class="fas fa-edit"></i>
+                                    <i class="bi bi-pencil"></i>
                                 </button>
-                                <form action="{{ route('pmb.konten-pmb.faq.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?')">
+                                <form action="{{ route('pmb.konten-pmb.faq.destroy', $item->hashid) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
                             </td>
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (id) {
             // Edit mode
             modalTitle.textContent = 'Edit FAQ';
-            form.action = "{{ url('admin/pmb/konten-portal/faq') }}/" + id;
+            form.action = "{{ url('pmb/konten-portal/faq') }}/" + id;
             methodField.innerHTML = '@method("PUT")';
             
             document.getElementById('pertanyaan').value = button.dataset.pertanyaan;

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Dosen;
 use App\Models\User;
 use App\Models\ProgramStudi;
+use App\Models\UnitKerja;
+use App\Models\NamaJabatan;
 use App\Models\Provinsi;
 use App\Models\Kabupaten;
 use App\Models\Kecamatan;
@@ -18,34 +20,18 @@ class DosenController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Dosen::with(['programStudi.fakultas']);
+        $dosen = Dosen::with(['programStudi.fakultas'])->orderBy('nama')->get();
 
-        if ($request->search) {
-            $query->where(function($q) use ($request) {
-                $q->where('nidn', 'like', "%{$request->search}%")
-                    ->orWhere('nama', 'like', "%{$request->search}%");
-            });
-        }
-
-        if ($request->program_studi_id) {
-            $query->where('program_studi_id', $request->program_studi_id);
-        }
-
-        if ($request->status) {
-            $query->where('status', $request->status);
-        }
-
-        $dosen = $query->orderBy('nama')->paginate(15);
-        $programStudi = ProgramStudi::all();
-
-        return view('dosen.index', compact('dosen', 'programStudi'));
+        return view('dosen.index', compact('dosen'));
     }
 
     public function create()
     {
         $programStudi = ProgramStudi::with('fakultas')->get();
+        $unitKerja = UnitKerja::where('is_active', true)->orderBy('nama')->get();
+        $namaJabatans = NamaJabatan::aktif()->orderBy('level')->orderBy('urutan')->get();
         $provinsi = Provinsi::orderBy('nama')->get();
-        return view('dosen.create', compact('programStudi', 'provinsi'));
+        return view('dosen.create', compact('programStudi', 'unitKerja', 'namaJabatans', 'provinsi'));
     }
 
     public function store(Request $request)
@@ -55,6 +41,9 @@ class DosenController extends Controller
             'nama' => 'required|max:255',
             'email' => 'required|email|unique:dosen,email|unique:users,email',
             'program_studi_id' => 'required|exists:program_studi,id',
+            'unit_kerja_id' => 'nullable|exists:unit_kerja,id',
+            'nama_jabatan_id' => 'nullable|exists:nama_jabatan,id',
+            'jabatan_struktural' => 'nullable|max:100',
             'jenis_kelamin' => 'required|in:L,P',
             'jabatan_fungsional' => 'nullable|max:100',
             'golongan' => 'nullable|max:20',
@@ -96,10 +85,20 @@ class DosenController extends Controller
                 'password' => Hash::make($request->nidn),
                 'role' => 'dosen',
             ]);
+            
+            // Auto-fill jabatan_struktural from nama_jabatan_id
+            $jabatanStruktural = $request->jabatan_struktural;
+            if ($request->filled('nama_jabatan_id') && empty($jabatanStruktural)) {
+                $namaJabatan = NamaJabatan::find($request->nama_jabatan_id);
+                $jabatanStruktural = $namaJabatan?->nama;
+            }
 
             $data = [
                 'user_id' => $user->id,
                 'program_studi_id' => $request->program_studi_id,
+                'unit_kerja_id' => $request->unit_kerja_id,
+                'nama_jabatan_id' => $request->nama_jabatan_id,
+                'jabatan_struktural' => $jabatanStruktural,
                 'nidn' => $request->nidn,
                 'nama' => $request->nama,
                 'jenis_kelamin' => $request->jenis_kelamin,
@@ -168,6 +167,8 @@ class DosenController extends Controller
     public function edit(Dosen $dosen)
     {
         $programStudi = ProgramStudi::with('fakultas')->get();
+        $unitKerja = UnitKerja::where('is_active', true)->orderBy('nama')->get();
+        $namaJabatans = NamaJabatan::aktif()->orderBy('level')->orderBy('urutan')->get();
         $provinsi = Provinsi::orderBy('nama')->get();
         
         // Load wilayah data for edit form
@@ -175,7 +176,7 @@ class DosenController extends Controller
         $kecamatan = $dosen->kabupaten_id ? Kecamatan::where('kabupaten_id', $dosen->kabupaten_id)->orderBy('nama')->get() : collect();
         $kelurahan = $dosen->kecamatan_id ? Kelurahan::where('kecamatan_id', $dosen->kecamatan_id)->orderBy('nama')->get() : collect();
         
-        return view('dosen.edit', compact('dosen', 'programStudi', 'provinsi', 'kabupaten', 'kecamatan', 'kelurahan'));
+        return view('dosen.edit', compact('dosen', 'programStudi', 'unitKerja', 'namaJabatans', 'provinsi', 'kabupaten', 'kecamatan', 'kelurahan'));
     }
 
     public function update(Request $request, Dosen $dosen)
@@ -185,6 +186,9 @@ class DosenController extends Controller
             'nama' => 'required|max:255',
             'email' => 'required|email|unique:dosen,email,' . $dosen->id,
             'program_studi_id' => 'required|exists:program_studi,id',
+            'unit_kerja_id' => 'nullable|exists:unit_kerja,id',
+            'nama_jabatan_id' => 'nullable|exists:nama_jabatan,id',
+            'jabatan_struktural' => 'nullable|max:100',
             'jenis_kelamin' => 'required|in:L,P',
             'status' => 'required|in:Aktif,Cuti,Nonaktif',
             'gelar_depan' => 'nullable|max:50',
@@ -217,6 +221,12 @@ class DosenController extends Controller
         ]);
 
         $data = $request->except(['_token', '_method', 'foto']);
+        
+        // Auto-fill jabatan_struktural from nama_jabatan_id
+        if ($request->filled('nama_jabatan_id') && empty($request->jabatan_struktural)) {
+            $namaJabatan = NamaJabatan::find($request->nama_jabatan_id);
+            $data['jabatan_struktural'] = $namaJabatan?->nama;
+        }
 
         // Handle foto upload
         if ($request->hasFile('foto')) {

@@ -6,15 +6,15 @@
 <div class="container-fluid">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-images me-2"></i>Kelola Slider</h5>
+            <h5 class="mb-0"><i class="bi bi-images me-2"></i>Kelola Slider</h5>
             <a href="{{ route('pmb.konten-pmb.slider.create') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus me-1"></i>Tambah Slider
+                <i class="bi bi-plus-lg me-1"></i>Tambah Slider
             </a>
         </div>
         <div class="card-body">
             @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             @endif
@@ -48,14 +48,14 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('pmb.konten-pmb.slider.edit', $slider->id) }}" class="btn btn-sm btn-warning">
-                                    <i class="fas fa-edit"></i>
+                                <a href="{{ route('pmb.konten-pmb.slider.edit', $slider->hashid) }}" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i>
                                 </a>
-                                <form action="{{ route('pmb.konten-pmb.slider.destroy', $slider->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?')">
+                                <form action="{{ route('pmb.konten-pmb.slider.destroy', $slider->hashid) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
                             </td>

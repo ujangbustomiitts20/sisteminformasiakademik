@@ -38,11 +38,9 @@
                     </div>
                     
                     <!-- Featured Image -->
-                    @if($berita->gambar)
                     <div class="mb-4">
                         <img src="{{ $berita->gambar_url }}" class="img-fluid rounded-4 w-100" alt="{{ $berita->judul }}" style="max-height: 400px; object-fit: cover;">
                     </div>
-                    @endif
                     
                     <!-- Content -->
                     <div class="article-content">

@@ -191,9 +191,14 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="jabatan" class="form-label">Jabatan</label>
-                        <input type="text" name="jabatan" id="jabatan" class="form-control @error('jabatan') is-invalid @enderror" value="{{ old('jabatan', $pegawai->jabatan) }}">
-                        @error('jabatan')
+                        <label for="nama_jabatan_id" class="form-label">Jabatan</label>
+                        <select name="nama_jabatan_id" id="nama_jabatan_id" class="form-select @error('nama_jabatan_id') is-invalid @enderror">
+                            <option value="">-- Pilih Jabatan --</option>
+                            @foreach($namaJabatans as $jab)
+                            <option value="{{ $jab->id }}" {{ old('nama_jabatan_id', $pegawai->nama_jabatan_id) == $jab->id ? 'selected' : '' }}>{{ $jab->nama }}</option>
+                            @endforeach
+                        </select>
+                        @error('nama_jabatan_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
