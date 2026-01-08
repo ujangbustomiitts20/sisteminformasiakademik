@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', setting('app_name', 'SIAKAD')) - {{ setting('app_description', 'Sistem Informasi Akademik') }}</title>
+    <title>@yield('title', setting('app_name', 'NADI ITTS')) - {{ setting('app_description', 'Narasi & Akademik Data Integratif') }}</title>
     
     @if(setting('institution_favicon'))
     <link rel="icon" href="{{ Storage::url(setting('institution_favicon')) }}" type="image/x-icon">
@@ -14,9 +14,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- DataTables CSS -->
-    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -304,8 +301,8 @@
             @else
             <i class="bi bi-mortarboard-fill me-2"></i>
             @endif
-            <h4>{{ setting('app_name', 'SIAKAD') }}</h4>
-            <small>{{ setting('app_description', 'Sistem Informasi Akademik') }}</small>
+            <h4>{{ setting('app_name', 'NADI ITTS') }}</h4>
+            <small>{{ setting('app_description', 'Narasi & Akademik Data Integratif') }}</small>
         </div>
         
         <div class="sidebar-menu">
@@ -1361,13 +1358,6 @@
     
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- jQuery (required for DataTables) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
     
     <script>
         // Sidebar toggle for mobile

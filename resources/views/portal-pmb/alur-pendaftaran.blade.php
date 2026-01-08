@@ -187,7 +187,7 @@
                                 <li>Verifikasi dokumen asli</li>
                                 <li>Pengisian data mahasiswa baru</li>
                                 <li>Foto untuk KTM (Kartu Tanda Mahasiswa)</li>
-                                <li>Pembuatan akun SIAKAD</li>
+                                <li>Pembuatan akun {{ setting('app_name', 'NADI ITTS') }}</li>
                             </ol>
                         </div>
                     </div>

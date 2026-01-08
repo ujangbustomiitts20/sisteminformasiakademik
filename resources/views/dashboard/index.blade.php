@@ -17,7 +17,7 @@
         <div class="card">
             <div class="card-body text-center py-5">
                 <i class="bi bi-mortarboard-fill text-primary" style="font-size: 4rem;"></i>
-                <h3 class="mt-3">Selamat Datang di SIAKAD</h3>
+                <h3 class="mt-3">Selamat Datang di {{ setting('app_name', 'NADI ITTS') }}</h3>
                 <p class="text-muted">Sistem Informasi Akademik</p>
             </div>
         </div>

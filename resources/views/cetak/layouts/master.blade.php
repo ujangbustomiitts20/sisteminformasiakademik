@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>@yield('title', 'Dokumen') - {{ setting('institution_name', 'SIAKAD') }}</title>
+    <title>@yield('title', 'Dokumen') - {{ setting('institution_name', setting('nama_institusi', 'Institut Teknologi Tangerang Selatan')) }}</title>
     <style>
         /* ===== BASE STYLES ===== */
         * {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - SIAKAD</title>
+    <title>Login - {{ setting('app_name', 'NADI ITTS') }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -240,8 +240,8 @@
             <div class="logo-icon">
                 <i class="bi bi-mortarboard-fill"></i>
             </div>
-            <h1>NADI ITTS</h1>
-            <p>Narasi & Akademik Data Integratif Institut Teknologi Tangerang Selatan</p>
+            <h1>{{ setting('app_name', 'NADI ITTS') }}</h1>
+            <p>{{ setting('app_description', 'Narasi & Akademik Data Integratif Institut Teknologi Tangerang Selatan') }}</p>
             
             <div class="feature-list">
                 <div class="feature-item">
@@ -305,7 +305,7 @@
             
             <div class="text-center mt-4">
                 <small class="text-muted">
-                    &copy; {{ date('Y') }} NADI ITTS - {{ setting('nama_institusi', 'Universitas') }}
+                    &copy; {{ date('Y') }} {{ setting('app_name', 'NADI ITTS') }} - {{ setting('nama_institusi', 'Institut Teknologi Tangerang Selatan') }}
                 </small>
             </div>
         </div>

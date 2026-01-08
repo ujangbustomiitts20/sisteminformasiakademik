@@ -235,7 +235,7 @@
     </div>
 
     <div class="footer">
-        <p>Surat ini dibuat secara otomatis oleh Sistem Informasi Akademik (SIAKAD)</p>
+        <p>Surat ini dibuat secara otomatis oleh {{ setting('app_name', 'NADI ITTS') }}</p>
         <p>Dicetak pada: {{ now()->format('d/m/Y H:i:s') }}</p>
     </div>
 </body>

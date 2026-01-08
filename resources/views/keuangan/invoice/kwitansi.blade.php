@@ -172,9 +172,9 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>UNIVERSITAS SIAKAD</h1>
-            <p>Jl. Pendidikan No. 123, Kota Akademik 12345</p>
-            <p>Telp: (021) 1234567 | Email: keuangan@siakad.ac.id</p>
+            <h1>{{ setting('nama_institusi', 'Institut Teknologi Tangerang Selatan') }}</h1>
+            <p>{{ setting('alamat_institusi', 'Jl. Pendidikan No. 123') }}</p>
+            <p>Telp: {{ setting('telepon_institusi', '(021) 1234567') }} | Email: {{ setting('email_keuangan', 'keuangan@itts.ac.id') }}</p>
         </div>
 
         <div class="kwitansi-title">
@@ -262,7 +262,7 @@
 
         <div class="footer">
             <p>Kwitansi ini sah sebagai bukti pembayaran</p>
-            <p>Dicetak oleh sistem SIAKAD pada {{ now()->format('d/m/Y H:i:s') }}</p>
+            <p>Dicetak oleh sistem {{ setting('app_name', 'NADI ITTS') }} pada {{ now()->format('d/m/Y H:i:s') }}</p>
         </div>
     </div>
 </body>

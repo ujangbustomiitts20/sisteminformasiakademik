@@ -25,7 +25,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>UNIVERSITAS SIAKAD</h1>
+        <h1>{{ setting('nama_institusi', 'Institut Teknologi Tangerang Selatan') }}</h1>
         <p>Jl. Pendidikan No. 123, Kota Akademik 12345</p>
     </div>
 
@@ -74,7 +74,7 @@
     </table>
 
     <div class="footer">
-        <p>Dokumen ini dicetak secara otomatis oleh sistem SIAKAD</p>
+        <p>Dokumen ini dicetak secara otomatis oleh sistem {{ setting('app_name', 'NADI ITTS') }}</p>
     </div>
 </body>
 </html>

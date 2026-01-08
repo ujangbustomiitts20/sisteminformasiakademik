@@ -139,7 +139,7 @@
     
     <div class="footer">
         <p>Dicetak pada: {{ now()->format('d F Y H:i') }} WIB</p>
-        <p>Dokumen ini digenerate secara otomatis oleh sistem {{ setting('app_name', 'SIAKAD') }}</p>
+        <p>Dokumen ini digenerate secara otomatis oleh sistem {{ setting('app_name', 'NADI ITTS') }}</p>
     </div>
 </body>
 </html>

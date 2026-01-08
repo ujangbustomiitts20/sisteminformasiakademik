@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Slip Gaji - {{ $slipGaji->no_slip }} - {{ setting('institution_name', 'SIAKAD') }}</title>
+    <title>Slip Gaji - {{ $slipGaji->no_slip }} - {{ setting('institution_name', setting('nama_institusi', 'Institut Teknologi Tangerang Selatan')) }}</title>
     <style>
         * {
             margin: 0;
@@ -14,48 +14,6 @@
             font-size: 12px;
             line-height: 1.4;
             padding: 20px;
-        }
-        /* Tombol Print */
-        .print-buttons {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 1000;
-        }
-        .btn-print {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            text-decoration: none;
-        }
-        .btn-print-primary {
-            background-color: #0d6efd;
-            color: white;
-        }
-        .btn-print-primary:hover {
-            background-color: #0b5ed7;
-        }
-        .btn-print-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        .btn-print-secondary:hover {
-            background-color: #5c636a;
-        }
-        @media print {
-            .print-buttons {
-                display: none !important;
-            }
-            body {
-                padding: 0;
-            }
         }
         .header {
             text-align: center;
@@ -167,21 +125,10 @@
     </style>
 </head>
 <body>
-    <!-- Tombol Print -->
-    <div class="print-buttons">
-        <button onclick="window.print()" class="btn-print btn-print-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
-                <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
-            </svg>
-            Cetak Slip Gaji
+    <div class="no-print" style="text-align: center; margin-bottom: 20px;">
+        <button onclick="window.print()" style="padding: 10px 20px; font-size: 14px; cursor: pointer;">
+            🖨️ Cetak Slip Gaji
         </button>
-        <a href="{{ route('dosen.slip-gaji.index') }}" class="btn-print btn-print-secondary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
-            </svg>
-            Kembali
-        </a>
     </div>
 
     <div class="header">
